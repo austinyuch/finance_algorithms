@@ -19,9 +19,7 @@ def get單位價格差(flt_起始價格:float,
                 flt最終價格:float,
                 int_交易次數:int)->float:
     flt總價格差 = flt_起始價格 - flt最終價格
-    print(f'{flt總價格差=}')
     flt_單位價格差 = abs(flt總價格差) / (int_交易次數 )
-    print(f'{flt_單位價格差=}')
     return flt_單位價格差
 
 def getLst買入價格(flt_起始價格:float,
@@ -36,8 +34,6 @@ def getLst買入價格(flt_起始價格:float,
             continue
         else:
             lst_買入價格.append(flt買入價格)
-
-    print(f'{lst_買入價格=}')
 
     return lst_買入價格
 
@@ -159,8 +155,6 @@ def get一組等差金字塔下單資料(flt_起始價格:float,
                                             flt_一組金字塔的加總金額,
                                             flt_起始價格)
 
-    print(f'{dic_單位等差金字塔下單資料=}')
-
     return dic_單位等差金字塔下單資料
 
 
@@ -230,8 +224,6 @@ def get一組等比金字塔下單資料(flt_起始價格:float,
     dic_單位等比金字塔下單資料= etl_percentage(dic_單位等比金字塔下單資料,
                                             flt_一組金字塔的加總金額,
                                             flt_起始價格)
-
-    print(f'{dic_單位等比金字塔下單資料=}')
 
     return dic_單位等比金字塔下單資料
 

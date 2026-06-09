@@ -1,0 +1,37 @@
+2026-06-09 21:45:40,836 - list index out of range
+Traceback (most recent call last):
+  File "/home/ac/projects/finance_algorithms/invest_algorithms/api.py", line 113, in get_pyramid_arithmetic
+    dic_ret = algo_pyramid.get買入等差金字塔(fltBudget,#flt_總預算
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+                                        fltPriceInit, #flt_起始價格
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+                                        fltOrderAmountArithmeticParam,  #flt_下單數量等差參數
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        flt_起始單位數=fltOrderAmountInit)#flt_起始單位數
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ac/projects/finance_algorithms/invest_algorithms/algo_pyramid.py", line 180, in get買入等差金字塔
+    dic_單位等差金字塔下單資料 = get一組等差金字塔下單資料(flt_起始價格,
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+                                                int_交易次數,
+                                                ^^^^^^^^^^^^^
+    ...<2 lines>...
+                                                lst_買入價格,
+                                                ^^^^^^^^^^^^^
+                                                flt_最小增加數量)
+                                                ^^^^^^^^^^^^^^^^^
+  File "/home/ac/projects/finance_algorithms/invest_algorithms/algo_pyramid.py", line 145, in get一組等差金字塔下單資料
+    dic_本階下單資料 = get本階下單資料(lst_買入價格,
+                       ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+                                flt_最小增加數量,
+                                ^^^^^^^^^^^^^^^^^
+                                round單位數,
+                                ^^^^^^^^^^^^
+                                i,
+                                ^^
+                                flt_本階單位數)
+                                ^^^^^^^^^^^^^^^
+  File "/home/ac/projects/finance_algorithms/invest_algorithms/algo_pyramid.py", line 115, in get本階下單資料
+    flt_本階下單金額 = lst_買入價格[i] *  flt_本階單位數
+                       ~~~~~~~~~~~~^^^
+IndexError: list index out of range

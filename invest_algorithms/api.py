@@ -1,32 +1,27 @@
-import asyncio
-import uuid
-import os
-from fastapi import FastAPI, Header, Request, Form, Cookie
-from fastapi import Depends, HTTPException, status, BackgroundTasks
+from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import FileResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-import confs as cfg
 
+import confs as cfg
 import loggingsys
+import algo_pyramid
 
 
 log = loggingsys.generate_general_my_log(log_name=__name__,
                                         log_level=cfg.GLOBAL_LOG_LEVEL,
                                         interval="d")
 
-
-import algo_pyramid
-
 app = FastAPI()
-origins = cfg.lst_origins
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    # Explicit allowlist from API_CORS_ORIGINS; empty means no cross-origin access.
+    # Credentials are disabled because the API is stateless (no cookies/auth),
+    # which also avoids the invalid "*" + allow_credentials combination.
+    allow_origins=cfg.lst_origins,
+    allow_credentials=False,
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
 @app.get("/")
@@ -131,7 +126,10 @@ def get_pyramid_arithmetic(
 
     except Exception as e:
         log.error(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid parameters for pyramid calculation.",
+        )
 
 @app.get("/api/pyramidGeometric")
 def get_pyramid_geometric(
@@ -215,4 +213,7 @@ def get_pyramid_geometric(
 
     except Exception as e:
         log.error(e)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid parameters for pyramid calculation.",
+        )

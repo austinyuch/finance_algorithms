@@ -2,26 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import time
-
-from confs import PATH_LOG_FOLDER, GLOBAL_LOG_LEVEL, LOG_BACKUP_COUNT
-from pathlib import Path
 from logging.handlers import TimedRotatingFileHandler
 
-# from datetime import date
+from confs import PATH_LOG_FOLDER, GLOBAL_LOG_LEVEL, LOG_BACKUP_COUNT
 
 
-def generate_general_my_log(log_name=None,log_level=None,interval="m"):
-    # today = date.today()
-    # today_string = today.strftime("%Y-%m-%d")
-    # current_path = os.path.dirname(os.path.abspath(__file__))
-    # parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    # if not os.path.isdir(parent_path):
-    #     # os.makedirs(parent_path,mode=0o777)
-    #     os.mkdir(parent_path)
-    # log_path = os.path.join(parent_path, 'log', '{}_{}.log'.format(log_name, today_string))
-    if log_name == None:
+def generate_general_my_log(log_name=None, log_level=None, interval="m"):
+    if log_name is None:
         log_name = __name__
     if interval == "d":
         logtimestr = time.strftime("%Y%m%d")  # daily log
@@ -30,14 +18,9 @@ def generate_general_my_log(log_name=None,log_level=None,interval="m"):
     else:
         logtimestr = time.strftime("%Y")  # yearly log
     logfile_name = f'{log_name}_{logtimestr}.log'
-    # logfile_name = f'daily_sync_{logtimestr}.log'
-    logfolder = str(PATH_LOG_FOLDER)
-    if not PATH_LOG_FOLDER.exists():
-        os.mkdir(logfolder)
-    # logfile = logfolder.joinpath(logfile_name)
+    PATH_LOG_FOLDER.mkdir(parents=True, exist_ok=True)
     PATH_LOGFILE = PATH_LOG_FOLDER.joinpath(logfile_name)
-    # log_path = os.path(PATH_LOGFILE)
-    
+
     return MyLog(log_file_path=PATH_LOGFILE, log_name=log_name, log_level=log_level)
 
 
@@ -54,22 +37,11 @@ class MyLog():
             self.log_name = log_name
 
         self.logger = logging.getLogger(self.log_name)
-        if log_level == None:
-            self.logging_level = GLOBAL_LOG_LEVEL
-        else:
-            if log_level == "CRITICAL":
-                self.logging_level = logging.CRITICAL
-            elif log_level == "ERROR":
-                self.logging_level = logging.ERROR
-            elif log_level == "WARNING":
-                self.logging_level = logging.WARNING
-            elif log_level == "INFO":
-                self.logging_level = logging.INFO
-            elif log_level == "DEBUG":
-                self.logging_level = logging.DEBUG
-            elif log_level == "NOTSET":
-                self.logging_level = logging.NOTSET
-            
+        level_name = (log_level or GLOBAL_LOG_LEVEL or "INFO").upper()
+        # logging.getLevelName(name) -> int for known names; fall back to INFO.
+        self.logging_level = logging.getLevelName(level_name)
+        if not isinstance(self.logging_level, int):
+            self.logging_level = logging.INFO
 
         if not self.logger.handlers:
             formatter = logging.Formatter('%(asctime)s - %(message)s')

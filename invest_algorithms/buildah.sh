@@ -1,34 +1,34 @@
 #!/bin/bash
-# Pull a base image that has Python 3.10
-base_image=python:3.10
+set -euo pipefail
+
+# Build a container image using uv on a Python 3.13 base.
+base_image=python:3.13-slim
 
 # Create a new container from the base image
 container=$(buildah from $base_image)
 
-# Install Poetry on the container
-# buildah run $container curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
-buildah run $container python3 -m pip install -U pip poetry
+# Install uv (standalone, no pip needed)
+buildah copy --from=ghcr.io/astral-sh/uv:latest $container /uv /usr/local/bin/uv
 
 # Set the working directory for the container
 buildah config --workingdir /app $container
 
-# Copy your pyproject.toml file and other Python files to the container
-buildah copy $container pyproject.toml .
+# Copy project metadata, lockfile and source
+buildah copy $container pyproject.toml uv.lock ./
+buildah copy $container invest_algorithms ./invest_algorithms
 
-# Use Poetry to create and activate a virtual environment on the container
-buildah run $container poetry shell
+# Install dependencies from the lockfile (no dev deps)
+buildah run $container uv sync --frozen --no-dev
 
-# Use Poetry to install dependencies on the container
-buildah run $container poetry install
+# Bind to all interfaces inside the container
+buildah config --env API_HOST=0.0.0.0 $container
 
-# Use Poetry to build your package on the container
-# buildah run $container poetry build
-
-# Set the entrypoint for the container
-buildah config --entrypoint '["python", "main.py"]' $container
+# Set the entrypoint (run from the source dir so flat imports resolve)
+buildah config --workingdir /app/invest_algorithms $container
+buildah config --entrypoint '["uv", "run", "--project", "/app", "python", "main.py"]' $container
 
 # Commit the container to an image
-buildah commit --format docker $container python-app:latest
+buildah commit --format docker $container invest-algorithms:latest
 
 # Clean up the container
 buildah rm $container
