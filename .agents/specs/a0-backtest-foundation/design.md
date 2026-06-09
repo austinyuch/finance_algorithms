@@ -43,11 +43,13 @@ tests/            # 沿用既有 tests/,新增 quantlab 測試(含 golden tests)
 - `JoblibExecutor` 實作 `ParallelExecutor.map`;每個 job 接收明確 seed(由母 seed 衍生),確保平行/序列結果一致(AC-A0-06)。
 - `envs/`:三框架各一份環境定義(venv requirements 或容器映像);executor 提交 job 時指定目標環境,避免 CUDA 衝突。Ray 介面預留,不在 A0 實作。
 
-### 2.5 Tracking(tracking/)— MLflow(local)
-- `MlflowResultStore` 實作 `ResultStore`;backend 用 local file store / SQLite,保持輕量。
-- `log()`:把 `ResultRecord`(config/seed/data_version/metrics)寫成 MLflow run(params + metrics + artifact)。
-- `leaderboard()`:查 MLflow 依 `sharpe_net`(out_of_sample)排序,含 `is_baseline` 對照。
-- `get(run_id)`:取回完整設定供重現。
+### 2.5 Tracking(tracking/)
+- **後端決策(2026-06-10 更新):** 原訂 MLflow,但其在 **Python 3.13 依賴衝突**(protobuf 5 移除 `google.protobuf.service`;setuptools 81 移除 `pkg_resources`;pin 後回退到 mlflow 1.27.0)無法乾淨安裝。`ResultStore` Protocol 即 backend 接縫,故**預設改用零重依賴 SQLite `LocalResultStore`**;MLflow backend 延後到乾淨環境再接入。
+- `LocalResultStore`(stdlib `sqlite3`)實作 `ResultStore`:
+  - `log()`:把 `ResultRecord` 存成一列(run_id / strategy_name / 擷取的 OOS-net Sharpe / is_baseline / 完整 record JSON);run_id 缺則生成。
+  - `leaderboard()`:依 **OOS net** Sharpe 排序(FMEA-A0-05:只認 out_of_sample+net,杜絕用高 IS/full 灌水);NULL(無 OOS-net)排末。
+  - `get(run_id)`:回完整 record JSON,供重現。
+- **延後(同 Protocol 可插拔):** `MlflowResultStore` + `mlflow ui` 視覺化,待乾淨環境(mlflow 2.x)。
 
 ## 3. 資料流
 

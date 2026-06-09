@@ -46,12 +46,19 @@ A0-0 contract codegen ──┬─> A0-1 PIT data ──┐
 - **REFACTOR:** 抽出 seed 衍生策略、job 序列化 helper。保持綠。
 - **AC:** AC-A0-06、PBT-4、三框架冒煙綠燈。
 
-## A0-4 — Tier2 追蹤(MLflow local)(Impl)
+## A0-4 — Tier2 追蹤(Impl)
 - **Role:** Coder · **Effort:** M · **depends_on:** ["A0-0"] · **Implements:** REQ-A0-TRK-001/002/003
-- **RED:** 先寫 failing 測試:log→get 往返;**PBT-3**(任意 config+seed → record 重現指標一致);leaderboard 依 OOS net Sharpe 排序且可追溯回 config。執行 → 紅燈。
-- **GREEN:** `MlflowResultStore`(local file/SQLite backend)`log`/`leaderboard`/`get`;leaderboard 強制 `out_of_sample`+`net`(FMEA-A0-05);`mlflow ui` 啟動說明。執行 → 綠燈。
-- **REFACTOR:** 抽出 record↔MLflow 映射層。保持綠。
+- **⚠️ 後端決策變更(2026-06-10):** 原訂 MLflow 在 **Python 3.13 環境依賴衝突**無法乾淨安裝
+  (protobuf 5 移除 `google.protobuf.service`;setuptools 81 移除 `pkg_resources`;
+  pin 後 uv 把 mlflow 回退到 2022 年的 1.27.0)。`ResultStore` Protocol 即 swappable
+  backend 接縫,故**改用零重依賴 SQLite `LocalResultStore` 為預設**;MLflow backend 延後到
+  乾淨環境(mlflow 2.x)再以同 Protocol 接入。能力不變(log/get/leaderboard/OOS-net 強制)。
+- **RED:** 先寫 failing 測試:log→get 往返;leaderboard 依 **OOS net** Sharpe 排序且可追溯回 run_id;
+  **FMEA-A0-05**(leaderboard 只認 OOS+net,忽略高 IS/full);**PBT-3**(任意 seed → 引擎兩次 run 指標一致)。
+- **GREEN:** `LocalResultStore`(stdlib sqlite3)`log`/`leaderboard`/`get`;leaderboard 強制 `out_of_sample`+`net`(FMEA-A0-05)。
+- **REFACTOR:** 抽出 OOS-net 擷取 helper。保持綠。
 - **AC:** AC-A0-07、PBT-3 綠燈;leaderboard 可追溯。
+- **待辦(非阻塞):** MLflow backend(含 `mlflow ui` 視覺化)於乾淨環境接入,走同 `ResultStore` Protocol。
 
 ## A0-5 — 整合測試(golden + PBT 端到端)(Integration)
 - **Role:** QA_Engineer · **Effort:** M · **depends_on:** ["A0-1","A0-2","A0-3","A0-4"]
