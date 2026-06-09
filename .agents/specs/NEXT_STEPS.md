@@ -2,12 +2,14 @@
 
 > 高階、滾動、可覆寫。跨 spec 當前狀態與恢復點。詳細真相見各 spec artifact。
 
-## Current State (2026-06-09)
-- **Active spec:** `a0-backtest-foundation`(Epic A0,皇冠鑽石地基)
-- **Current phase:** SDD Phase 2 — Design authoring(`design.md` + `contract/`)
-- **Work classification:** `new spec`
-- **Next action:** 完成 `a0-backtest-foundation/design.md` + `contract/` → 取得使用者授權 → 進 Phase 3 Tasks
-- **Blockers:** 無。技術選擇已鎖定:(1) 追蹤=MLflow(local backend);(2) 平行=joblib-first 預留 Ray;(3) 引擎=向量化先行預留事件式。
+## Current State (2026-06-10)
+- **Active spec:** `a0-backtest-foundation` — **DONE(Review PASSED)**。分支 `spec/a0-backtest-foundation`,9 commits 未 push。
+- **A0 epic 完成:** 7/7 task(A0-0~A0-6),**66 tests passed**,mypy clean(24 檔),mutation spot-check 5/5。verdict 見 [a0-backtest-foundation/review.md](./a0-backtest-foundation/review.md)。
+- **Next action(新工作):** (a) push/PR `spec/a0-backtest-foundation` lane;或 (b) 進 **Epic A**(反台積電對衝 thin slice,作品集中心),依賴 A0 已就緒;或 (c) 補 A0 residual(MLflow backend、import-linter、mutmut 自動化、三框架真機驗證)。
+- **A0 residual(刻意降級,非阻塞,見 review.md §Residual):** MLflow 延後(現 SQLite LocalResultStore);三框架 env 僅宣告;成本僅周轉型;mutation 手動;import-linter / drift-guard 待辦。
+- **Loop:** A0 實作目標已達成 → 自主 loop 在此收束(spec 已 implemented)。
+- **Blockers:** 無。技術已鎖定:追蹤=MLflow(local);平行=joblib-first 預留 Ray;引擎=向量化先行;codegen=datamodel-codegen(--enum-field-as-literal --field-constraints,mypy 相容)。
+- **待補(非阻塞):** import-linter 正式化框架隔離(目前用 AST 測試守住);spec contract/interfaces.py ↔ quantlab/contracts/interfaces.py drift-guard 測試。
 - **Lane hint:** A0 為地基,動實作碼前先開 `spec/a0-backtest-foundation` 分支(目前在 main,tree 乾淨)。
 
 ## Scheduled Ops
