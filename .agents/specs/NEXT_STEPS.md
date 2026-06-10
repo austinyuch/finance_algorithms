@@ -2,14 +2,12 @@
 
 > 高階、滾動、可覆寫。跨 spec 當前狀態與恢復點。詳細真相見各 spec artifact。
 
-## Current State (2026-06-10)
-- **A0 epic:** DONE、已 merged 進 main(PR #1)。
-- **Epic A:** **DONE(Review PASSED)**。分支 `spec/a-tsmc-hedge-slice`(off main),**11 commits 未 push**。
-- **Epic A 全部完成:** A-1 篩選 / A-2 LSTM(torch)/ A-3 baseline / A-4 對衝 / A-5 整合 / A-6 writeup。全套 **83 tests passed**,mypy clean(29 檔)。verdict 見 [a-tsmc-hedge-slice/review.md](./a-tsmc-hedge-slice/review.md)。
-- **誠實 slice 結果(合成資料):** LSTM tie buy&hold、對衝降 Sharpe、隨機地板;未宣稱 alpha。重現 `uv run python scripts/run_tsmc_hedge_slice.py`。
-- **Next action:** (a) push/PR `spec/a-tsmc-hedge-slice`;或 (b) 進 **Epic B**(真實資料源接入,把合成 provider 換成真實 PIT 資料,即可重跑同一 slice);或 (c) 補 residual。
-- **反指標定義(已鎖):** 共整合 + 反向 spread。資料合成先行(strategy C)。
-- **A0 residual(見 a0 review.md):** MLflow 延後(現 SQLite)、三框架 env 僅宣告、成本僅周轉型、mutation 手動、import-linter/drift-guard 待辦。
+## Current State (2026-06-11)
+- **已 merged 進 main:** A0(PR #1)、Epic A(PR #2)、residual hardening(PR #3)。main 全套 **85 passed**、mypy clean(29 檔)。
+- **Active spec:** `b-data-platform`(Epic B,真實資料源接入)— **啟動中**。
+- **Epic B 目標:** 把合成 provider 換成真實 PIT 資料,讓 `run_hedge_slice` / `run_tsmc_hedge_slice.py` 在真實資料上重跑。橋接每日 vintage snapshot(已在累積)→ A0 PIT DataProvider。
+- **反指標定義(已鎖):** 共整合 + 反向 spread。
+- **Residual 狀態:** ✅ import-linter + drift-guard 已關閉(PR #3)。仍延後(環境阻擋):MLflow(Py3.13)、mutmut 自動化(sandbox)、三框架真機 GPU、成本事件型(屬 Epic B)。
 - **高階計畫:** [allweather-portfolio-platform/](./allweather-portfolio-platform/)(problem-space + epic-breakdown + 資料治理)。
 
 ## Scheduled Ops
