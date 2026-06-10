@@ -30,7 +30,11 @@ def screen_one_candidate(job: Mapping[str, Any]) -> dict:
     cand = job["candidate"]
     pmax = job["adf_pmax"]
 
+    min_obs = int(job.get("min_obs", 30))
     hist = data.history(asof, "close", [target, cand]).dropna()
+    if len(hist) < min_obs:                              # 樣本太少 → 不檢定、不入選(防 ADF 報錯)
+        return {"symbol": cand, "hedge_ratio": float("nan"), "adf_p": float("nan"),
+                "cointegrated": False, "reverse": False, "selected": False}
     x = hist[target].to_numpy(dtype="float64")
     y = hist[cand].to_numpy(dtype="float64")
     hedge_ratio, adf_p = _engle_granger(x, y)
