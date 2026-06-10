@@ -3,11 +3,11 @@
 > 高階、滾動、可覆寫。跨 spec 當前狀態與恢復點。詳細真相見各 spec artifact。
 
 ## Current State (2026-06-11)
-- **已 merged 進 main:** A0(PR #1)、Epic A(PR #2)、residual hardening(PR #3)。main 全套 **85 passed**、mypy clean(29 檔)。
-- **Active spec:** `b-data-platform`(Epic B,真實資料源接入)— **啟動中**。
-- **Epic B 目標:** 把合成 provider 換成真實 PIT 資料,讓 `run_hedge_slice` / `run_tsmc_hedge_slice.py` 在真實資料上重跑。橋接每日 vintage snapshot(已在累積)→ A0 PIT DataProvider。
-- **反指標定義(已鎖):** 共整合 + 反向 spread。
-- **Residual 狀態:** ✅ import-linter + drift-guard 已關閉(PR #3)。仍延後(環境阻擋):MLflow(Py3.13)、mutmut 自動化(sandbox)、三框架真機 GPU、成本事件型(屬 Epic B)。
+- **已 merged 進 main:** A0(PR #1)、Epic A(PR #2)、residual hardening(PR #3)、Epic B B-1/B-2(PR #4)。main 全套 **91 passed**、mypy clean(30 檔)、import-linter KEPT。
+- **Active spec:** `b-data-platform`(Epic B)。B-1/B-2 ✅ merged;當前 lane `spec/b-data-platform-cont` 續推 B-4/B-5/B-6。
+- **B-2 已啟用:** daily_snapshot 加 FRED 價格代理(SP500/那指/黃金/油/DEXTAUS),cron 下次起累積真實價格(繞過 Stooq 404)。
+- **Epic B 剩餘:** B-4(as-of 頻率對齊)· B-5(`pit_strictness` → **a0 CR overlay**:改 backtest_config schema)· B-3(bulk crawler,FRED 已被 snapshot 涵蓋全史;Stooq/個股=真機 handoff)· B-6(review)。
+- **Residual 狀態:** ✅ import-linter + drift-guard(PR #3)。延後(環境阻擋):MLflow(Py3.13)、mutmut 自動化、三框架真機 GPU。
 - **高階計畫:** [allweather-portfolio-platform/](./allweather-portfolio-platform/)(problem-space + epic-breakdown + 資料治理)。
 
 ## Scheduled Ops
