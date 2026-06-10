@@ -18,8 +18,10 @@ def compute_metrics(returns: pd.Series, turnover: float, periods_per_year: float
                 "basis": basis, "segment": segment}
 
     wealth = (1.0 + r).cumprod()
-    cumulative = float(wealth.iloc[-1] - 1.0)
-    annualized_return = float((1.0 + cumulative) ** (periods_per_year / n) - 1.0)
+    final = float(wealth.iloc[-1])
+    cumulative = final - 1.0
+    # 防護:總資產歸零/翻負(極端虧損或無效資料)→ 視為 -100%,避免負底分數冪變複數
+    annualized_return = -1.0 if final <= 0 else float(final ** (periods_per_year / n) - 1.0)
 
     std = float(r.std(ddof=1)) if n >= 2 else 0.0
     annualized_vol = std * (periods_per_year ** 0.5)

@@ -5,7 +5,7 @@ run_backtest_job 為 module-level(可被 joblib pickling),供 Tier1 平行 sweep
 """
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from quantlab.engine import VectorizedEngine
 
@@ -20,3 +20,27 @@ def run_and_log(strategy: Any, data: Any, config: Mapping[str, Any], store: Any)
     result = VectorizedEngine().run(strategy, data, config)
     run_id = store.log(result)
     return run_id, result
+
+
+def run_hedge_slice(data: Any, config: Mapping[str, Any], store: Any, *,
+                    target: str, candidates: Sequence[str], hedge_fraction: float = 0.3) -> list[dict]:
+    """反台積電對衝 thin slice 編排:HedgeStrategy + 笨 baselines 全鏈 → leaderboard。
+
+    baselines = buy&hold(target)、等權(target+candidates)、隨機(seeded)。
+    回傳 store.leaderboard()(依 OOS-net Sharpe 排序)。
+    """
+    from quantlab.strategies import (
+        BuyAndHold, HedgeStrategy, RandomStrategy, StaticWeights,
+    )
+
+    universe = [target] + list(candidates)
+    seed = int(config.get("seed", 0))
+    strategies = [
+        HedgeStrategy(target, candidates, hedge_fraction),
+        BuyAndHold([target]),
+        StaticWeights({s: 1.0 for s in universe}),
+        RandomStrategy(universe, seed=seed),
+    ]
+    for strat in strategies:
+        run_and_log(strat, data, config, store)
+    return store.leaderboard()
