@@ -55,11 +55,13 @@ def _parse_stooq(source: str, available_date: str, raw: str) -> list[dict]:
 
 
 def build_provider_from_vintage(vintage_root: str | Path,
-                                fred_price_series: set | None = None) -> InMemoryPITDataProvider:
+                                fred_price_series: set | None = None,
+                                strict: bool = False) -> InMemoryPITDataProvider:
     """vintage JSON → A0 PIT provider。
 
     fred_price_series:指定哪些 FRED series 當「價格資產」載入(symbol=series、close=value),
     其餘 FRED series 仍為 macro。用以繞過 Stooq,以 FRED 的股指/黃金/油/匯率序列當價格。
+    strict(CR-B5):排除 is_approximate=true 列(每筆 is_approximate 來自 vintage JSON)。
     """
     price_set = set(fred_price_series or ())
     root = Path(vintage_root)
@@ -71,6 +73,7 @@ def build_provider_from_vintage(vintage_root: str | Path,
             source = rec.get("source", "")
             available = rec.get("available_date")
             raw = rec.get("raw", "")
+            approx = bool(rec.get("is_approximate", False))
             if not available or not isinstance(raw, str):
                 continue
             if source.startswith("fred:"):
@@ -78,20 +81,25 @@ def build_provider_from_vintage(vintage_root: str | Path,
                 for event_date, avail, value in _parse_fred_rows(available, raw):
                     if series in price_set:
                         price_rows.append({"symbol": series, "event_date": event_date,
-                                           "available_date": avail, "close": value})
+                                           "available_date": avail, "close": value,
+                                           "is_approximate": approx})
                     else:
                         macro_rows.append({"series": series, "event_date": event_date,
-                                           "available_date": avail, "value": value})
+                                           "available_date": avail, "value": value,
+                                           "is_approximate": approx})
             elif source.startswith("stooq:"):
-                price_rows += _parse_stooq(source, available, raw)
+                for r in _parse_stooq(source, available, raw):
+                    price_rows.append({**r, "is_approximate": approx})
             # noaa / 其他:不解析
 
-    macro = pd.DataFrame(macro_rows, columns=["series", "event_date", "available_date", "value"])
-    prices = pd.DataFrame(price_rows, columns=["symbol", "event_date", "available_date", "close"])
+    macro = pd.DataFrame(macro_rows,
+                         columns=["series", "event_date", "available_date", "value", "is_approximate"])
+    prices = pd.DataFrame(price_rows,
+                          columns=["symbol", "event_date", "available_date", "close", "is_approximate"])
     if price_rows:
         first = prices.groupby("symbol", as_index=False)["event_date"].min()
         listings = pd.DataFrame({"symbol": first["symbol"], "list_date": first["event_date"],
                                  "delist_date": pd.NaT})
     else:
         listings = pd.DataFrame(columns=["symbol", "list_date", "delist_date"])
-    return InMemoryPITDataProvider(prices, listings, macro)
+    return InMemoryPITDataProvider(prices, listings, macro, strict=strict)

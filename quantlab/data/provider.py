@@ -26,10 +26,18 @@ class InMemoryPITDataProvider:
     macro    欄位:series, event_date, available_date, value
     """
 
-    def __init__(self, prices: pd.DataFrame, listings: pd.DataFrame, macro: pd.DataFrame) -> None:
-        self._prices = prices.copy()
+    def __init__(self, prices: pd.DataFrame, listings: pd.DataFrame, macro: pd.DataFrame,
+                 strict: bool = False) -> None:
+        # strict(pit_strictness,CR-B5):排除 is_approximate=true 列;additive,預設不變行為
+        self._prices = self._apply_strict(prices.copy(), strict)
         self._listings = listings.copy()
-        self._macro = macro.copy()
+        self._macro = self._apply_strict(macro.copy(), strict)
+
+    @staticmethod
+    def _apply_strict(df: pd.DataFrame, strict: bool) -> pd.DataFrame:
+        if strict and "is_approximate" in df.columns:
+            return df[~df["is_approximate"].astype(bool)]
+        return df
 
     def get(self, asof, fields: Sequence[str], symbols: Sequence[str] | None = None) -> pd.DataFrame:
         asof = pd.Timestamp(asof)

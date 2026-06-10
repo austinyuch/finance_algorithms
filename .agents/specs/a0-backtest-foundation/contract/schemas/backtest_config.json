@@ -24,7 +24,8 @@
     },
     "seed": {"type": "integer", "description": "隨機種子 (可重現)"},
     "data_version": {"type": "string", "description": "DataProvider 資料版本標籤 (可重現)"},
-    "engine": {"type": "string", "enum": ["vectorized", "event_driven"], "default": "vectorized", "description": "引擎實作;A0 預設 vectorized,event_driven 為未來預留"}
+    "engine": {"type": "string", "enum": ["vectorized", "event_driven"], "default": "vectorized", "description": "引擎實作;A0 預設 vectorized,event_driven 為未來預留"},
+    "pit_strictness": {"type": "string", "enum": ["strict", "lenient"], "default": "lenient", "description": "PIT 嚴格度 (CR-B5):strict 只用 is_approximate=false 資料;lenient 含估算可得日"}
   },
   "required": ["start", "end", "rebalance", "fill", "mode", "seed", "data_version", "walk_forward"]
 }
