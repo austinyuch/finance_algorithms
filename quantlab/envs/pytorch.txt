@@ -1,0 +1,6 @@
+# 隔離環境定義:PyTorch lane(REQ-A0-PAR-003)
+# 獨立 venv / 容器映像,避免與其他框架的 CUDA/cuDNN 版本衝突。
+# 安裝:uv venv .venv-torch && uv pip install -r quantlab/envs/pytorch.txt
+torch>=2.2
+numpy
+pandas

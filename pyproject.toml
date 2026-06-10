@@ -7,6 +7,9 @@ readme = "readme.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.3",
+    "joblib>=1.5.3",
+    "pandas>=3.0.3",
+    "pydantic>=2.13.4",
     "uvicorn[standard]>=0.49.0",
 ]
 
@@ -15,6 +18,10 @@ dev = [
     "pytest>=9.0.3",
     "pytest-mock>=3.15.1",
     "jupyterlab>=4.4",
+    "datamodel-code-generator>=0.61.0",
+    "hypothesis>=6.155.2",
+    "mypy>=2.1.0",
+    "mutmut>=3.6.0",
 ]
 
 # Application project (not a distributable package): uv manages the
@@ -24,3 +31,15 @@ package = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# repo root on import path so top-level `import quantlab` resolves at collection time
+pythonpath = ["."]
+
+[tool.mutmut]
+# 對方法論核心(成本/指標/walk-forward/PIT 取數)做 mutation testing
+paths_to_mutate = [
+    "quantlab/costs/model.py",
+    "quantlab/engine/metrics.py",
+    "quantlab/engine/walkforward.py",
+    "quantlab/data/provider.py",
+]
+tests_dir = ["tests/"]

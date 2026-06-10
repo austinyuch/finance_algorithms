@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "a0/backtest_config.json",
+  "title": "BacktestConfig",
+  "description": "單次回測設定 (REQ-A0-BT-001/004)。連同 seed 與 data_version 構成可重現三元組 (AC-A0-04)。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start": {"type": "string", "format": "date", "description": "回測起日"},
+    "end": {"type": "string", "format": "date", "description": "回測迄日"},
+    "rebalance": {"type": "string", "enum": ["monthly", "quarterly", "semiannual"], "description": "再平衡頻率 (月~半年)"},
+    "fill": {"type": "string", "enum": ["next_open", "next_close", "same_close"], "description": "成交時點模型"},
+    "mode": {"type": "string", "enum": ["gross", "net"], "description": "報酬模式;net 含 cost_config"},
+    "cost_config": {"$ref": "cost_config.json"},
+    "walk_forward": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "train_window_months": {"type": "integer", "minimum": 1},
+        "test_window_months": {"type": "integer", "minimum": 1},
+        "step_months": {"type": "integer", "minimum": 1}
+      },
+      "required": ["train_window_months", "test_window_months", "step_months"]
+    },
+    "seed": {"type": "integer", "description": "隨機種子 (可重現)"},
+    "data_version": {"type": "string", "description": "DataProvider 資料版本標籤 (可重現)"},
+    "engine": {"type": "string", "enum": ["vectorized", "event_driven"], "default": "vectorized", "description": "引擎實作;A0 預設 vectorized,event_driven 為未來預留"}
+  },
+  "required": ["start", "end", "rebalance", "fill", "mode", "seed", "data_version", "walk_forward"]
+}
