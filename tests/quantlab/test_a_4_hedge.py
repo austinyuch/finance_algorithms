@@ -39,7 +39,7 @@ def _synth():
     n = 120
     dates = pd.date_range("2010-01-31", periods=n, freq="ME")
     tsmc = 100.0 + np.cumsum(rng.normal(0, 1, n))
-    plant = 50.0 - 0.5 * tsmc + rng.normal(0, 0.5, n)
+    plant = 150.0 - 0.5 * tsmc + rng.normal(0, 0.5, n)
     rand = 80.0 + np.cumsum(rng.normal(0, 1, n))
     rows = [{"symbol": s, "event_date": d, "available_date": d, "close": float(v)}
             for s, arr in (("TSMC", tsmc), ("PLANT", plant), ("RAND", rand))

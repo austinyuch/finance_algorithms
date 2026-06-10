@@ -19,7 +19,7 @@ def _synth():
     n = 120
     dates = pd.date_range("2010-01-31", periods=n, freq="ME")
     tsmc = 100.0 + np.cumsum(rng.normal(0, 1, n))
-    plant = 50.0 - 0.5 * tsmc + rng.normal(0, 0.5, n)     # 共整合 + 反向
+    plant = 150.0 - 0.5 * tsmc + rng.normal(0, 0.5, n)     # 共整合 + 反向
     rand = 80.0 + np.cumsum(rng.normal(0, 1, n))          # 獨立隨機漫步
     rows = []
     for i, d in enumerate(dates):
