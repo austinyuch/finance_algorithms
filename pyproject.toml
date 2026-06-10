@@ -24,6 +24,7 @@ dev = [
     "hypothesis>=6.155.2",
     "mypy>=2.1.0",
     "mutmut>=3.6.0",
+    "import-linter>=2.11",
 ]
 
 # Application project (not a distributable package): uv manages the
@@ -35,6 +36,17 @@ package = false
 testpaths = ["tests"]
 # repo root on import path so top-level `import quantlab` resolves at collection time
 pythonpath = ["."]
+
+[tool.importlinter]
+root_package = "quantlab"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+# 框架隔離鐵律(NFR-A0-FWAGN-001):回測核心不得依賴任何 ML 框架
+name = "Backtest core (engine/data) is framework-agnostic"
+type = "forbidden"
+source_modules = ["quantlab.engine", "quantlab.data"]
+forbidden_modules = ["torch", "tensorflow", "jax", "flax"]
 
 [tool.mutmut]
 # 對方法論核心(成本/指標/walk-forward/PIT 取數)做 mutation testing
