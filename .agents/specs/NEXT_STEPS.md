@@ -3,14 +3,13 @@
 > 高階、滾動、可覆寫。跨 spec 當前狀態與恢復點。詳細真相見各 spec artifact。
 
 ## Current State (2026-06-10)
-- **Active spec:** `a0-backtest-foundation` — **DONE(Review PASSED)**。分支 `spec/a0-backtest-foundation`,9 commits 未 push。
-- **A0 epic 完成:** 7/7 task(A0-0~A0-6),**66 tests passed**,mypy clean(24 檔),mutation spot-check 5/5。verdict 見 [a0-backtest-foundation/review.md](./a0-backtest-foundation/review.md)。
-- **Next action(新工作):** (a) push/PR `spec/a0-backtest-foundation` lane;或 (b) 進 **Epic A**(反台積電對衝 thin slice,作品集中心),依賴 A0 已就緒;或 (c) 補 A0 residual(MLflow backend、import-linter、mutmut 自動化、三框架真機驗證)。
-- **A0 residual(刻意降級,非阻塞,見 review.md §Residual):** MLflow 延後(現 SQLite LocalResultStore);三框架 env 僅宣告;成本僅周轉型;mutation 手動;import-linter / drift-guard 待辦。
-- **Loop:** A0 實作目標已達成 → 自主 loop 在此收束(spec 已 implemented)。
-- **Blockers:** 無。技術已鎖定:追蹤=MLflow(local);平行=joblib-first 預留 Ray;引擎=向量化先行;codegen=datamodel-codegen(--enum-field-as-literal --field-constraints,mypy 相容)。
-- **待補(非阻塞):** import-linter 正式化框架隔離(目前用 AST 測試守住);spec contract/interfaces.py ↔ quantlab/contracts/interfaces.py drift-guard 測試。
-- **Lane hint:** A0 為地基,動實作碼前先開 `spec/a0-backtest-foundation` 分支(目前在 main,tree 乾淨)。
+- **A0 epic:** DONE、**已 merged 進 main**(PR #1,merge commit eba4004)。
+- **Active spec:** `a-tsmc-hedge-slice`(Epic A,作品集中心)。分支 `spec/a-tsmc-hedge-slice`(off main),4 commits 未 push。
+- **Epic A 進度:** A-1 共整合-反向篩選 ✅ · A-3 笨 baseline 群 ✅ · A-4 對衝部位建構 ✅(含降波動 showcase)。全套 **77 tests passed**,mypy clean(28 檔)。
+- **Next action:** A-2 LSTM 訊號(**需裝 PyTorch ~數百 MB**,屆時確認)→ A-5 整合 leaderboard(HedgeStrategy vs baselines)→ A-6 一頁誠實 writeup。
+- **反指標定義(已鎖):** 共整合 + 反向 spread(Engle-Granger,hedge ratio<0)。資料合成先行(strategy C)。
+- **A0 residual(見 a0 review.md):** MLflow 延後(現 SQLite)、三框架 env 僅宣告、成本僅周轉型、mutation 手動、import-linter/drift-guard 待辦。
+- **高階計畫:** [allweather-portfolio-platform/](./allweather-portfolio-platform/)(problem-space + epic-breakdown + 資料治理)。
 
 ## Scheduled Ops
 - **每日 vintage snapshot routine 已上線**:`trig_01G7GG93ELcs2x98GvxDcjdD`(台灣 08:00 / 00:00 UTC),跑 `scripts/daily_snapshot.py` → commit+push `data/vintage/raw/<date>/` 到 main。首次執行 2026-06-10 08:00。
