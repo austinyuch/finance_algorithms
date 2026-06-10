@@ -49,6 +49,18 @@ class InMemoryPITDataProvider:
                        .set_index("symbol"))
         return latest[cols]
 
+    def history(self, asof, field: str, symbols: Sequence[str]) -> pd.DataFrame:
+        """PIT 歷史:index=event_date、columns=symbols 的寬表,只含 available_date<=asof
+        的列;同 (symbol,event_date) 取最新可得版本(處理修訂)。REQ-A-DATA-001。"""
+        asof = pd.Timestamp(asof)
+        df = _available_at(self._prices, asof)
+        df = df[df["symbol"].isin(list(symbols))]
+        if df.empty:
+            return pd.DataFrame(index=pd.Index([], name="event_date"))
+        df = (df.sort_values(["available_date"])
+                .groupby(["symbol", "event_date"], as_index=False).tail(1))
+        return df.pivot(index="event_date", columns="symbol", values=field).sort_index()
+
     def universe(self, asof) -> list[str]:
         asof = pd.Timestamp(asof)
         listed = self._listings["list_date"] <= asof
