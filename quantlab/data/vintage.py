@@ -19,8 +19,8 @@ import pandas as pd
 from quantlab.data.provider import InMemoryPITDataProvider
 
 
-def _parse_fred(source: str, available_date: str, raw: str) -> list[dict]:
-    series = source.split(":", 1)[1]
+def _parse_fred_rows(available_date: str, raw: str) -> list[tuple]:
+    """回 [(event_date, available_date, value), ...]。"""
     rows = list(csv.reader(io.StringIO(raw)))
     out = []
     for row in rows[1:]:
@@ -30,8 +30,7 @@ def _parse_fred(source: str, available_date: str, raw: str) -> list[dict]:
             value = float(row[1])
         except ValueError:
             continue
-        out.append({"series": series, "event_date": pd.Timestamp(row[0]),
-                    "available_date": pd.Timestamp(available_date), "value": value})
+        out.append((pd.Timestamp(row[0]), pd.Timestamp(available_date), value))
     return out
 
 
@@ -55,7 +54,14 @@ def _parse_stooq(source: str, available_date: str, raw: str) -> list[dict]:
     return out
 
 
-def build_provider_from_vintage(vintage_root: str | Path) -> InMemoryPITDataProvider:
+def build_provider_from_vintage(vintage_root: str | Path,
+                                fred_price_series: set | None = None) -> InMemoryPITDataProvider:
+    """vintage JSON → A0 PIT provider。
+
+    fred_price_series:指定哪些 FRED series 當「價格資產」載入(symbol=series、close=value),
+    其餘 FRED series 仍為 macro。用以繞過 Stooq,以 FRED 的股指/黃金/油/匯率序列當價格。
+    """
+    price_set = set(fred_price_series or ())
     root = Path(vintage_root)
     macro_rows: list[dict] = []
     price_rows: list[dict] = []
@@ -68,10 +74,17 @@ def build_provider_from_vintage(vintage_root: str | Path) -> InMemoryPITDataProv
             if not available or not isinstance(raw, str):
                 continue
             if source.startswith("fred:"):
-                macro_rows += _parse_fred(source, available, raw)
+                series = source.split(":", 1)[1]
+                for event_date, avail, value in _parse_fred_rows(available, raw):
+                    if series in price_set:
+                        price_rows.append({"symbol": series, "event_date": event_date,
+                                           "available_date": avail, "close": value})
+                    else:
+                        macro_rows.append({"series": series, "event_date": event_date,
+                                           "available_date": avail, "value": value})
             elif source.startswith("stooq:"):
                 price_rows += _parse_stooq(source, available, raw)
-            # noaa / 其他:B-1 不解析
+            # noaa / 其他:不解析
 
     macro = pd.DataFrame(macro_rows, columns=["series", "event_date", "available_date", "value"])
     prices = pd.DataFrame(price_rows, columns=["symbol", "event_date", "available_date", "close"])
