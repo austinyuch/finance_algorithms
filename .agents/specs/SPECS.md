@@ -14,7 +14,7 @@
 | Spec | Epic | Lifecycle | Depends On | Impacts | Open CRs | Lane |
 |---|---|---|---|---|---|---|
 | [a0-backtest-foundation](./a0-backtest-foundation/) | A0 | **Implemented · Review PASSED**(7/7 task, 66 tests, mutation 5/5) | — (greenfield 地基) | (未來)A,B,C,D,E,F,G 全依賴其介面 | — | `spec/a0-backtest-foundation` |
-| _a-tsmc-hedge-slice_ | A | Planned | a0-backtest-foundation | — | — | (TBD) |
+| [a-tsmc-hedge-slice](./a-tsmc-hedge-slice/) | A | **Implemented · Review PASSED**(6/6 task, 83 tests) | a0-backtest-foundation | a0(history() + metrics 防護,additive) | — | `spec/a-tsmc-hedge-slice` |
 | _b-data-platform_ | B | Planned | a0-backtest-foundation | — | — | (TBD) |
 | _c-portfolio-core_ | C | Planned | b-data-platform | invest_algorithms/algo_pyramid(進場整合) | — | (TBD) |
 | _d-ml-models_ | D | Planned | b, c, a0 | — | — | (TBD) |
