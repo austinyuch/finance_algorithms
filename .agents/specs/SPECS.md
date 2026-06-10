@@ -15,7 +15,7 @@
 |---|---|---|---|---|---|---|
 | [a0-backtest-foundation](./a0-backtest-foundation/) | A0 | **Implemented · Review PASSED**(7/7 task, 66 tests, mutation 5/5) | — (greenfield 地基) | (未來)A,B,C,D,E,F,G 全依賴其介面 | — | `spec/a0-backtest-foundation` |
 | [a-tsmc-hedge-slice](./a-tsmc-hedge-slice/) | A | **Implemented · Review PASSED**(6/6 task, 83 tests) | a0-backtest-foundation | a0(history() + metrics 防護,additive) | — | `spec/a-tsmc-hedge-slice` |
-| [b-data-platform](./b-data-platform/) | B | **In Progress**(B-1/B-2 merged:vintage loader + FRED 價格代理) | a0-backtest-foundation | a0(history()/metrics 已 additive;B-5 將提 `pit_strictness` CR) | B-5 pit_strictness(規劃中) | `spec/b-data-platform` |
+| [b-data-platform](./b-data-platform/) | B | **Implemented(repo-side)· Review PASSED**(B-1/2/4/5;B-3 bulk=真機 handoff) | a0-backtest-foundation | a0(history()/metrics additive;**CR-B5** pit_strictness additive schema) | — (CR-B5 Implemented) | `spec/b-data-platform` |
 | _c-portfolio-core_ | C | Planned | b-data-platform | invest_algorithms/algo_pyramid(進場整合) | — | (TBD) |
 | _d-ml-models_ | D | Planned | b, c, a0 | — | — | (TBD) |
 | _e-mlops-tier3_ | E | Deferred(R3) | d | — | — | (TBD) |

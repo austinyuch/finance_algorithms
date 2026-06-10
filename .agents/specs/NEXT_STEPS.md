@@ -4,9 +4,10 @@
 
 ## Current State (2026-06-11)
 - **已 merged 進 main:** A0(PR #1)、Epic A(PR #2)、residual hardening(PR #3)、Epic B B-1/B-2(PR #4)。main 全套 **91 passed**、mypy clean(30 檔)、import-linter KEPT。
-- **Active spec:** `b-data-platform`(Epic B)。B-1/B-2 ✅ merged;當前 lane `spec/b-data-platform-cont` 續推 B-4/B-5/B-6。
-- **B-2 已啟用:** daily_snapshot 加 FRED 價格代理(SP500/那指/黃金/油/DEXTAUS),cron 下次起累積真實價格(繞過 Stooq 404)。
-- **Epic B 剩餘:** B-4(as-of 頻率對齊)· B-5(`pit_strictness` → **a0 CR overlay**:改 backtest_config schema)· B-3(bulk crawler,FRED 已被 snapshot 涵蓋全史;Stooq/個股=真機 handoff)· B-6(review)。
+- **Active spec:** `b-data-platform`(Epic B)— **Implemented(repo-side)· Review PASSED**。lane `spec/b-data-platform-cont`(未 push)。
+- **Epic B 完成:** B-1 loader / B-2 FRED 價格代理 / B-4 as-of 對齊 / B-5 pit_strictness(**CR-B5** overlay,已 Implemented) / B-6 review。**B-3 bulk = 真機 handoff**(FRED 全史已被 snapshot 涵蓋;Stooq/個股待真機)。verdict 見 [b-data-platform/review.md](./b-data-platform/review.md)。
+- **B-2 已啟用:** daily_snapshot 加 FRED 價格代理,cron 累積真實價格中(繞過 Stooq 404)。
+- **Next action:** push/PR/merge `spec/b-data-platform-cont`;之後可進 **Epic C(組合最佳化)** 或等真機累積真實價格後重跑 Epic A slice。
 - **Residual 狀態:** ✅ import-linter + drift-guard(PR #3)。延後(環境阻擋):MLflow(Py3.13)、mutmut 自動化、三框架真機 GPU。
 - **高階計畫:** [allweather-portfolio-platform/](./allweather-portfolio-platform/)(problem-space + epic-breakdown + 資料治理)。
 
