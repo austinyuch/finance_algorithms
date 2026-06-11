@@ -110,6 +110,21 @@ th {
   list-style: none;
 }
 
+.readiness-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 14px;
+}
+
+.readiness-grid span {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 8px 10px;
+}
+
 .allocation-row,
 .date-list li,
 .evidence-panel li {

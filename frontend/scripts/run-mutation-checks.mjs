@@ -12,6 +12,13 @@ const mutations = [
     original: 'claimBoundary: "no_alpha_claim",',
     mutated: 'claimBoundary: "alpha_claim" as never,',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
+  },
+  {
+    name: "frontend-public-hosting-overclaim",
+    path: "lib/showcase-fixture.ts",
+    original: 'publicHosting: "not_proven",',
+    mutated: 'publicHosting: "proven" as never,',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   }
 ];
 

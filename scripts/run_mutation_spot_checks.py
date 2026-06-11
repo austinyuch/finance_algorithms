@@ -77,6 +77,22 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_d_5_robust_optimization.py::test_robust_strategy_degraded_history_falls_back_and_preserves_claim_boundary"),
     ),
+    MutationSpec(
+        name="e-registry-claim-boundary",
+        path="quantlab/mlops/experiment_registry.py",
+        original='claim_boundary: str = "no_alpha_claim",',
+        mutated='claim_boundary: str = "alpha_claim",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_experiment_registry_dedupes_same_config_and_preserves_no_alpha_claim"),
+    ),
+    MutationSpec(
+        name="b-source-health-claim-boundary",
+        path="quantlab/data/source_health.py",
+        original='"claim_boundary": "source_contract_status_only"',
+        mutated='"claim_boundary": "source_contract_ready"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_b_6_source_health.py::test_source_health_summary_marks_stooq_blocked_without_reenabling_defaults"),
+    ),
 )
 
 

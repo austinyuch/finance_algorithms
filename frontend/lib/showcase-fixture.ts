@@ -32,7 +32,19 @@ const dashboard: ShowcaseDashboard = {
   warnings: ["local_runtime_only"],
   evidence: {
     readiness: "local_runtime_only",
-    tests: ["145 passed", "mutation 5/5 killed", "F coverage 95%", "D2 coverage 87.1%"]
+    tests: [
+      "156 passed",
+      "mutation 8/8 killed",
+      "F Next.js coverage 84.37%",
+      "E-lite coverage 97.3%",
+      "B source-health coverage 97.6%"
+    ]
+  },
+  demoReadiness: {
+    publicHosting: "not_proven",
+    visualRegression: "not_proven",
+    dependencyAudit: "moderate_advisory",
+    claim: "local_demo_only"
   }
 };
 

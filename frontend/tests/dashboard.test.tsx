@@ -17,6 +17,8 @@ describe("F Next.js showcase dashboard", () => {
     expect(html).toContain("data-section=\"evidence\"");
     expect(html).toContain("no_alpha_claim");
     expect(html).toContain("local_runtime_only");
+    expect(html).toContain("not_proven");
+    expect(html).toContain("local_demo_only");
   });
 
   it("serves validated dashboard payload from the API route", async () => {
@@ -26,12 +28,41 @@ describe("F Next.js showcase dashboard", () => {
     expect(response.status).toBe(200);
     expect(() => assertDashboardPayload(payload)).not.toThrow();
     expect(payload.claimBoundary).toBe("no_alpha_claim");
+    expect(payload.demoReadiness.publicHosting).toBe("not_proven");
+    expect(payload.demoReadiness.visualRegression).toBe("not_proven");
   });
 
   it("rejects malformed claim boundaries", () => {
     const payload = { ...getShowcaseDashboard(), claimBoundary: "alpha_claim" };
 
     expect(() => assertDashboardPayload(payload)).toThrow(/no_alpha_claim/);
+  });
+
+  it("rejects overclaimed public demo readiness", () => {
+    const payload = {
+      ...getShowcaseDashboard(),
+      demoReadiness: {
+        ...getShowcaseDashboard().demoReadiness,
+        publicHosting: "proven"
+      }
+    };
+
+    expect(() => assertDashboardPayload(payload)).toThrow(/public hosting/);
+  });
+
+  it("rejects missing demo readiness and visual-regression overclaims", () => {
+    const { demoReadiness: _missing, ...withoutReadiness } = getShowcaseDashboard();
+    expect(() => assertDashboardPayload(withoutReadiness)).toThrow(/demoReadiness/);
+
+    expect(() =>
+      assertDashboardPayload({
+        ...getShowcaseDashboard(),
+        demoReadiness: {
+          ...getShowcaseDashboard().demoReadiness,
+          visualRegression: "proven"
+        }
+      })
+    ).toThrow(/visual regression/);
   });
 
   it("PBT: leaderboard sorted validator matches descending scores", () => {
