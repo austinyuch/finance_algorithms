@@ -1,0 +1,97 @@
+# MANUAL_GENERATION_GUIDE.md — How the User Manual is Generated
+
+> Project-specific generation note for `docs/manual/`, produced with the
+> `user-manual-skill`. This is the canonical guide; the skill's mandated
+> per-project file at `docs/manual/MANUAL_GENERATION_GUIDE.md` is a short pointer
+> to this document. Referenced briefly from [`AGENTS.md`](../AGENTS.md).
+
+## 1. Product surface classification
+
+`finance_algorithms` is **Backend / Tool / CLI-dominant Hybrid**:
+
+- **Dominant surface:** `quantlab` package + `scripts/*.py` CLI demos + the legacy
+  `invest_algorithms` FastAPI. Primary evidence = **live command transcripts** and
+  report artifacts. Browser screenshots are NOT the production gate here.
+- **Secondary surface:** the `frontend/` Next.js showcase dashboard. Primary
+  evidence = the committed **static export** (`frontend/out/`), because the
+  dashboard is fixture-driven by design and its owning spec is
+  `CONDITIONAL / local_demo_only`.
+
+## 2. Sources combined into the manual
+
+| Source | Role |
+|---|---|
+| [`.agents/specs/SPECS.md`](../.agents/specs/SPECS.md) | Feature registry & dependency map |
+| [`.agents/specs/NEXT_STEPS.md`](../.agents/specs/NEXT_STEPS.md) | Rolling state (backlog/gap hint only — **not** a readiness authority) |
+| [`.agents/specs/ISSUE_LOG.md`](../.agents/specs/ISSUE_LOG.md) | Open improvement items (e.g. `ISSUE-B3-001`) |
+| [`.agents/specs/RTM.md`](../.agents/specs/RTM.md) | Cross-spec traceability (verification context only) |
+| [`.agents/specs/**/review.md`](../.agents/specs/) | **Authoritative** Live-Demo Readiness verdicts |
+| [`docs/FEATURES.md`](./FEATURES.md) | Stable feature inventory |
+| [`docs/EVIDENCE_METADATA_CONTRACT.md`](./EVIDENCE_METADATA_CONTRACT.md) | Evidence field semantics |
+| [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](./DEMO_RISK_WARNING_TAXONOMY.md) | Warning codes |
+
+## 3. Evidence capture (Backend/CLI lane — primary)
+
+Canonical seed/demo commands. Each writes a transcript under
+`docs/manual/assets/`:
+
+```bash
+uv run python scripts/run_tsmc_hedge_slice.py     # → backend-hedge-slice-01-leaderboard.txt
+uv run python scripts/run_vintage_slice.py        # → backend-vintage-slice-01-readiness.txt
+uv run python scripts/daily_snapshot.py --dry-run # → backend-daily-snapshot-01-dryrun.txt
+uv run python scripts/snapshot_ops_gate.py --help # → backend-ops-gate-01-help.txt
+```
+
+Authoritative gates (recorded in the manual evidence panel):
+
+```bash
+uv run pytest -q                                   # 190 passed (2026-06-12)
+uv run mypy quantlab/ --ignore-missing-imports     # clean, 50 files
+uv run lint-imports                                # engine/data KEPT
+(cd frontend && npm test && npm audit --omit=dev)  # 20 passed, 0 vulnerabilities
+```
+
+## 4. Evidence capture (Web UI lane — secondary)
+
+The dashboard is captured from the **committed static export**, regenerated with:
+
+```bash
+cd frontend && npm run export:public-demo   # → frontend/out/{index.html,showcase.json,...}
+```
+
+`frontend/out/index.html` is real rendered dashboard markup driven by
+`lib/showcase-fixture.ts`. A real chromium-headless screenshot is captured by:
+
+```bash
+cd frontend && npm run visual:browser     # → frontend/out/browser-visual.png (status proven)
+npm run probe:public-demo                 # → frontend/out/public-hosting-probe.json (HTTP 200)
+```
+
+The manual embeds `browser-visual.png` as `live_screenshot` evidence (the static
+export ships semantic HTML without the app stylesheet, so the shot is
+intentionally unstyled). A long-running `next start` server still requires a
+registry-governed local port (`local-infra-registry-governance`); the headless
+smoke and static export need none, so they are the default evidence path. The
+dashboard's data remains fixture-driven (`MOCK_DOMINANT_EVIDENCE`,
+`no_alpha_claim`); the visual diff gate is hash-equality, not pixel-tolerance CI.
+
+## 5. Runtime governance note
+
+Any live, port-bound service (`next start`, `uvicorn`) must first obtain a
+governed allocation via `local-infra-registry-governance`
+(`~/.config/opencode/local-infra/registry.json`). CLI demos and the static export
+require **no** port allocation and are the default evidence path.
+
+## 6. Output contract (four-quadrant)
+
+- `docs/manual/en/index.md` + `docs/manual/zh-tw/index.md` (plain-text reference)
+- `docs/manual/en/index.html` + `docs/manual/zh-tw/index.html` (visual)
+- Every evidence block shows `Evidence Source` / `Coverage Tier` / `Readiness
+  State`; fallback/fixture/mock cases show the matching warning code.
+
+## 7. Regeneration checklist
+
+1. Refresh assets via §3–§4 commands.
+2. Re-copy readiness verdicts from `review.md` (never from task counts).
+3. Update the four manual files; keep EN and ZH-TW in sync.
+4. Sanity-check relative asset paths resolve.

@@ -1,0 +1,14 @@
+Uninstalled 1 package in 0.52ms
+Installed 1 package in 2ms
+usage: snapshot_ops_gate.py [-h] [--allow-failures] [--allow-dry-run]
+                            report_json
+
+validate daily snapshot report JSON
+
+positional arguments:
+  report_json
+
+options:
+  -h, --help        show this help message and exit
+  --allow-failures
+  --allow-dry-run

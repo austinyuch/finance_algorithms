@@ -7,6 +7,20 @@ Finance Algorithms is a Python 3.13 research workspace with two related parts:
 
 The current product direction is tracked under `.agents/specs/`, with `SPECS.md` as the stable registry and `NEXT_STEPS.md` as the rolling handoff memo.
 
+## Documentation
+
+| Doc | Path | Audience |
+|---|---|---|
+| User manual (EN / 繁中) | `docs/manual/{en,zh-tw}/index.html` | Operators, researchers |
+| Executive review | `docs/review/index.html` | Stakeholders |
+| Feature catalog | `docs/FEATURES.md` | Everyone |
+| Traceability bridge | `.agents/specs/RTM.md` | Verification context |
+
+Regeneration steps live in `docs/MANUAL_GENERATION_GUIDE.md` and
+`docs/REVIEW_GENERATION_GUIDE.md`. Readiness claims in these docs are copied from
+`.agents/specs/**/review.md`; every model slice carries an explicit
+`no_alpha_claim` boundary.
+
 ## Repository Map
 
 | Path | Purpose |

@@ -28,3 +28,4 @@
 - **A0 = 關鍵路徑起點**;其 `contract/` 介面一旦穩定會被全 program 依賴 → 變更需走 CR overlay。
 - 既有模組 `invest_algorithms/`(FastAPI + algo_pyramid)為 **immutable 既有基線**;A0 不修改它,僅在其上建立新地基。未來 Epic C 的進場整合會以 `[Impacts: invest_algorithms/algo_pyramid]` 宣告。
 - External contract authority:資料源(Yahoo/FRED/證交所/主計總處/央行/氣候)屬 **external**,將於 Epic B 登錄 Source of Truth / Pin。
+- **Stakeholder docs**:`docs/manual/{en,zh-tw}/index.{md,html}`(操作手冊)與 `docs/review/index.html`(高階審閱)由本 registry + 各 `review.md` 生成;readiness 一律沿用 `review.md`,不由 task counts 反推。生成規範見 `docs/MANUAL_GENERATION_GUIDE.md`、`docs/REVIEW_GENERATION_GUIDE.md`;cross-spec traceability bridge 見 `RTM.md`。

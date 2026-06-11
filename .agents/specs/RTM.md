@@ -1,0 +1,55 @@
+# RTM.md — Requirements Traceability Matrix (Bridge)
+
+> Cross-spec traceability and verification context only. **Not** a readiness
+> authority — authoritative Live-Demo Readiness lives in each
+> `.agents/specs/**/review.md`; the stable registry is
+> [`SPECS.md`](./SPECS.md); rolling state is [`NEXT_STEPS.md`](./NEXT_STEPS.md).
+> Generated docs ([`docs/manual/`](../../docs/manual/),
+> [`docs/review/`](../../docs/review/)) consume this bridge for verification
+> context, never to derive verdicts.
+
+## Epic → requirement → implementation → test → review
+
+| Epic | Core requirement (abridged) | Key implementation | Test / evidence anchor | Review verdict |
+|---|---|---|---|---|
+| A0 | Lookahead-safe vectorized backtest with OOS-net metrics, walk-forward, parallel run, tracking | `quantlab/{contracts,data,engine,parallel,tracking}` | `test_a0_0..5`; mutation 5/5; CR-A0 regime scheduling | **PASSED** |
+| A | TSMC hedge slice ranked vs baselines | `quantlab/strategies/`, `scripts/run_tsmc_hedge_slice.py` | `test_a_1..5` (83 tests); live leaderboard transcript | **PASSED** (synthetic; `no_alpha_claim`) |
+| B | PIT vintage loader, FRED proxies, as-of alignment, `pit_strictness`, source-health, snapshot run report + ops gate | `quantlab/data/`, `scripts/{daily_snapshot,snapshot_ops_gate}.py` | `test_b_1..5`; `test_daily_snapshot.py` (19); CR-B5/B7..B11 | **PASSED (repo-side)**; residual `ISSUE-B3-001` (Stooq) |
+| C | Optimizer, multi-period allocation, regime rebalance selector, pyramid-entry adapter | `quantlab/portfolio/` | `test_c_1..5` (123) | **PASSED** |
+| D | First-regime, return/risk forecast, robust optimizer, family evaluator — OOS-net baselines | `quantlab/models/`, `quantlab/research/` | `test_d_1,3,4,5,6`; real-data regime benchmark | **PASSED** (`no_alpha_claim`) |
+| E | Experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge | `quantlab/mlops/`, `quantlab/showcase/` | `test_e_1` (7); trace 97.3% | **PASSED** (registry-only) |
+| F | Showcase read API, Next.js dashboard, demo hardening, public/static showcase | `quantlab/showcase/`, `frontend/` | `test_f_1`; `frontend` npm test (20); static export | **CONDITIONAL** · `local_demo_only` |
+| F/B/E ops | Browser visual diff, public-hosting probe, schedule run proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/out/*` | `browser-visual.png` `proven`; probe HTTP 200; mutation 22/22 | **PASSED** (ops-visual-drift-artifacts; hash-equality diff) |
+| G | Source-contract-first local alt-data loader (two optional slices) | `quantlab/data/` alt-data loader | `test_g_1` (7); PBT + mutation | **PASSED** (default-disabled) |
+| Legacy | Arithmetic/geometric pyramid order sizing API | `invest_algorithms/` | `tests/test_algo_pyramid.py` | stable legacy baseline |
+
+## Verification snapshot (2026-06-12)
+
+| Gate | Command | Result |
+|---|---|---|
+| Python suite | `uv run pytest -q` | **190 passed** |
+| Type check | `uv run mypy quantlab/ --ignore-missing-imports` | clean, 50 files |
+| Architecture | `uv run lint-imports` | KEPT (71 files, 174 deps) |
+| Frontend unit | `cd frontend && npm test` | 20 passed |
+| Frontend supply chain | `npm audit --omit=dev` | 0 vulnerabilities |
+| Python mutation | `uv run python scripts/run_mutation_spot_checks.py` | 22/22 killed |
+| Browser visual | `cd frontend && npm run visual:browser` | `proven` (chromium-headless) |
+| Public-hosting probe | `cd frontend && npm run probe:public-demo` | HTTP 200 `proven` |
+
+## Open verification gaps (owned elsewhere)
+
+- Visual diff is **hash-equality**, not pixel-tolerance CI with stored baselines —
+  residual in `ops-visual-drift-artifacts/review.md`.
+- No live **scheduled** GitHub Actions run artifact yet — residual in
+  `ops-visual-drift-artifacts/review.md`.
+- Real-data backtest — deferred until ≥2 price assets accumulate
+  (`run_vintage_slice.py`).
+- Stooq source contract — `ISSUE-B3-001` (folded into CR-B7/B8/B9).
+
+> Resolved 2026-06-11/12: live chromium-headless browser screenshot
+> (`browser-visual.png` `proven`) and public-hosting probe (HTTP 200 `proven`)
+> now exist; the earlier `not_proven` / `configured_not_observed` claims are
+> superseded by `ops-visual-drift-artifacts/review.md`.
+
+Doc reconciliation on 2026-06-12 surfaced **no new unowned issues**; all gaps
+trace to an existing spec/CR/review or `ISSUE_LOG.md`.

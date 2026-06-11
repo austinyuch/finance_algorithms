@@ -1,0 +1,9 @@
+Uninstalled 1 package in 0.61ms
+Installed 1 package in 2ms
+strategy          OOS net Sharpe
+--------------------------------
+BuyAndHold                0.3911
+LSTMStrategy              0.3911
+HedgeStrategy             0.3528
+StaticWeights             0.2759
+RandomStrategy           -0.0092
