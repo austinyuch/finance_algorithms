@@ -55,6 +55,26 @@ def test_stooq_vintage_to_pit_price(tmp_path):
     assert p.get(pd.Timestamp("2026-06-08"), ["close"], ["SPY.US"]).empty
 
 
+def test_yahoo_vintage_to_pit_price(tmp_path):
+    from quantlab.data.vintage import build_provider_from_vintage
+
+    root = tmp_path / "raw"
+    raw = json.dumps({
+        "chart": {"result": [{
+            "timestamp": [1780963200, 1781049600],
+            "indicators": {"quote": [{"close": [1000.0, 1010.5]}]},
+        }], "error": None}
+    })
+    _write(root, "2026-06-11", "yahoo_2330.TW.json", "yahoo:2330.TW", "2026-06-11", raw)
+
+    p = build_provider_from_vintage(root)
+    df = p.get(pd.Timestamp("2026-06-12"), ["close"], ["2330.TW"])
+    assert float(df.loc["2330.TW", "close"]) == 1010.5
+    assert df.loc["2330.TW", "event_date"] == pd.Timestamp("2026-06-10")
+    assert df.loc["2330.TW", "available_date"] == pd.Timestamp("2026-06-11")
+    assert p.get(pd.Timestamp("2026-06-10"), ["close"], ["2330.TW"]).empty
+
+
 def test_empty_vintage_dir(tmp_path):
     from quantlab.data.vintage import build_provider_from_vintage
 

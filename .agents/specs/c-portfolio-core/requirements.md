@@ -9,6 +9,7 @@
 - **Impacts:** 未來 C-4 與 `invest_algorithms/algo_pyramid`(進場整合,**additive adapter,不改既有金字塔**)。
 - **First-slice boundary(C-1):** 組合最佳化器 + 一個 Strategy:依 PIT 歷史估 μ/Σ,**最大化預期報酬 s.t. 年化波動 ≤ vol_cap**,long-only、sum=1;可丟進 A0 回測。
 - **Continuation boundary(C-2):** 多期配置只混合短/中/長 horizon 的配置權重;不引入 regime 判斷,不改 A0 engine,不改 legacy `algo_pyramid`。
+- **Continuation boundary(C-3):** portfolio 層提供時間 + regime-label 再平衡日期 selector,消費 Epic D `predict(asof,data)` signal contract;不改 A0 engine 排程。
 
 ## 1. 鎖定目標函數(承 problem-space)
 > `maximize E[3~5yr 報酬] s.t. 年化波動 ≤ 30%、maxDD ≤ -50%`(積極成長 + 風險上限)。
@@ -19,10 +20,10 @@
 - **REQ-C-OPT-001**(C-1)`optimize_max_return_under_vol(mu, cov, vol_cap, w_max)`:long-only、sum=1、年化波動 ≤ vol_cap 下最大化 `wᵀμ`;若連最小波動組合都超過 vol_cap → 回退最小波動組合(best-effort)。
 - **REQ-C-STRAT-001**(C-1)`MeanVarianceStrategy`:相容 A0 Strategy Protocol;每 asof 由 PIT 歷史估 μ(年化平均)/Σ(年化共變異)→ 最佳化 → 權重;歷史不足 → 等權。
 - **REQ-C-MULTI-001**(C-2)多期(短/中/長)配置:`MultiHorizonMeanVarianceStrategy` 應各自使用 horizon-specific `lookback` / `vol_cap` 估權重,再依 `budget_weight` 混合成單一 long-only、sum=1 配置;歷史不足時回等權。
-- **REQ-C-REBAL-001**(後續)再平衡觸發(時間 + regime)。
+- **REQ-C-REBAL-001**(C-3)再平衡觸發(時間 + regime):應選出第一個觀測日、指定時間頻率到期日,以及 regime label 改變日;可直接消費 D classifier。
 - **REQ-C-PYRAMID-001**(後續)組合決定各資產預算後,進場接 `algo_pyramid`(adapter)。
 
-## 3. Acceptance Criteria(C-1 / C-2)
+## 3. Acceptance Criteria(C-1 / C-2 / C-3)
 
 #### AC-C-01 最佳化滿足約束且最大化報酬(REQ-C-OPT-001)
 1. Given μ、Σ、vol_cap
@@ -52,5 +53,16 @@
 2. When `MultiHorizonMeanVarianceStrategy.generate_signal(asof, data)`
 3. Then 系統應回傳等權配置,不丟例外,不產生集中配置
 
+#### AC-C-06 時間 + regime 再平衡 selector(REQ-C-REBAL-001)
+1. Given 有序日期與對應 regime labels
+2. When `select_rebalance_dates(dates, labels, frequency)`
+3. Then 第一個日期必定入選,時間頻率到期日入選,regime label 改變日入選
+4. And 結果保持有序、為輸入日期子集合,日期與 label 長度不一致時 fail-closed
+
+#### AC-C-07 D regime classifier hook(REQ-C-REBAL-001)
+1. Given D `FirstRegimeClassifier` 與 PIT provider
+2. When `select_regime_rebalance_dates(dates, classifier, data, frequency)`
+3. Then selector 只透過 `classifier.predict(asof,data).label` 取得 regime,不耦合 ML framework 或改 A0 engine
+
 ## 4. Out of Scope（本回合）
-再平衡觸發、regime（Epic D）。金字塔進場整合已由 C-4 additive adapter 完成。
+A0 engine-level event scheduling remains future work. 金字塔進場整合已由 C-4 additive adapter 完成。

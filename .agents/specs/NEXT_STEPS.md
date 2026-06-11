@@ -4,32 +4,37 @@
 
 ## Current State (2026-06-11)
 
-- **Main local evidence:** `uv run pytest -q` → **108 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(36 files); `uv run lint-imports` → KEPT.
-- **Governance sync completed:** `quantlab/TESTS.md` refreshed as row-level test catalog; `.agents/specs/TESTS.md` added as workspace rollup; `SPECS.md` updated for C-2 and D first-model spec.
-- **Epic B B-3 proof attempt:** `uv run python scripts/daily_snapshot.py` captured partial FRED/NOAA data under `data/vintage/raw/2026-06-11/` but exited 1. All configured Stooq symbols, including `2330.tw`, returned HTTP 404; configured FRED gold proxy returned HTTP 404; several FRED series timed out.
-  - Tracking surface: [ISSUE_LOG.md](./ISSUE_LOG.md) `ISSUE-B3-001`.
-  - Current classification: B remains repo-side Review PASSED; B-3 external/source-contract proof is not closed for Stooq/TSMC.
-- **Epic C:** `c-portfolio-core` is **Implemented(core+C-2) · Review PASSED**.
-  - C-2 added `HorizonConfig` + `MultiHorizonMeanVarianceStrategy`, with 3 tests in `test_c_2_multihorizon`.
-  - C-3 time/regime rebalance remains planned; regime hook depends on Epic D.
-- **Epic D:** [d-first-regime-model](./d-first-regime-model/) is created with requirements/design/tasks. Scope is a deterministic PIT-safe first regime classifier, OOS-net baseline comparison, and future C-3 additive hook. Tier3 MLOps remains deferred.
+- **Current branch lane:** `spec/d-first-regime-model`. Future `main` updates should go through PR/squash flow, not direct push.
+- **Latest local evidence:** `uv run pytest -q` → **123 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(39 files); `uv run lint-imports` → KEPT.
+- **PR:** branch PR opened at `https://github.com/austinyuch/finance_algorithms/pull/7`.
+- **ISSUE-B3-001 handled in advance:**
+  - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
+  - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
+  - Promoted/folded into [CR-B8 Yahoo chart fallback](./b-data-platform/change-requests/cr-b8-yahoo-chart-fallback.md) for TSMC/TWSE fallback capture and PIT loading.
+  - Residual: Stooq itself remains external/source-contract blocked; TSMC/TWSE fallback is now live-smoke proven through Yahoo chart from this environment.
+- **Epic D first slice:** [d-first-regime-model](./d-first-regime-model/) is **Implemented(first slice) · Review PASSED**.
+  - Added `RegimeSignal`, `RegimeFeatureBuilder`, `FirstRegimeClassifier`, and `RegimeAllocationStrategy`.
+  - Targeted D evidence: 6 tests for PIT-safe signal and OOS-net baseline integration.
+  - Conservative writeup: synthetic data proves pipeline correctness only; no alpha claim.
+- **Epic C C-3:** time/regime rebalance selector implemented additively in `quantlab/portfolio/rebalance.py`; no A0 engine scheduling change.
 
 ## Recommended Next Action
 
-1. Start implementation for [d-first-regime-model/tasks.md](./d-first-regime-model/tasks.md) Task 1, unless B-3 source correction is prioritized.
-2. If B-3 source correction is prioritized, promote `ISSUE-B3-001` to a B CR overlay only after selecting replacement source symbols/URLs or source pins that require repo changes.
-3. After D first-model implementation, return to C-3 for time-based rebalance plus optional regime hook consumption.
+1. Run `git diff --check`, stage only this slice, commit, and push to PR #7.
+2. Next implementation slice: decide whether to add A0 engine-level event scheduling for regime-triggered rebalances or move to the next model/data priority.
+3. Keep Stooq-specific work blocked unless restoring/removing Stooq itself becomes a priority.
 
 ## Scheduled Ops
 
 - Daily vintage snapshot routine is expected to continue writing append-only files under `data/vintage/raw/<date>/`.
-- Current live proof says routine/source health is partial, not fully proven for Stooq/TSMC.
+- Current live proof says routine/source health is partial: Yahoo fallback is proven for `2330.TW` and `^TWII` on 2026-06-11; Stooq remains blocked.
 
 ## Resume Hints
 
-- For governance/test truth, read [quantlab/TESTS.md](../../quantlab/TESTS.md) then [.agents/specs/TESTS.md](./TESTS.md).
-- For B-3 source status, read [ISSUE_LOG.md](./ISSUE_LOG.md) and [b-data-platform/review.md](./b-data-platform/review.md).
-- For next model work, read [d-first-regime-model/requirements.md](./d-first-regime-model/requirements.md), [design.md](./d-first-regime-model/design.md), and [tasks.md](./d-first-regime-model/tasks.md).
+- For D closure truth, read [d-first-regime-model/review.md](./d-first-regime-model/review.md), [writeup.md](./d-first-regime-model/writeup.md), and [reports/implementation-report.md](./d-first-regime-model/reports/implementation-report.md).
+- For B-3 source status, read [ISSUE_LOG.md](./ISSUE_LOG.md), [b-data-platform/change-requests/cr-b7-source-health.md](./b-data-platform/change-requests/cr-b7-source-health.md), and [b-data-platform/change-requests/cr-b8-yahoo-chart-fallback.md](./b-data-platform/change-requests/cr-b8-yahoo-chart-fallback.md).
+- For C-3 closure truth, read [c-portfolio-core/reports/c3-rebalance-report.md](./c-portfolio-core/reports/c3-rebalance-report.md).
+- For test truth, read [quantlab/TESTS.md](../../quantlab/TESTS.md) then [.agents/specs/TESTS.md](./TESTS.md).
 
 ## Key Locked Decisions
 

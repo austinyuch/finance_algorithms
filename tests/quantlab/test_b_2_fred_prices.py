@@ -1,6 +1,6 @@
 """B-2 FRED 價格代理 → 真實價格資產 — RED 階段測試。
 
-對應 b-data-platform。解除 Stooq 404 阻塞:FRED(沙箱可用)有股指/黃金/油/匯率序列,
+對應 b-data-platform。解除 Stooq 404 阻塞:FRED(沙箱可用)有股指/商品/油/匯率序列,
 把指定的 FRED series 當成 price 資產載入,讓真實價格能進 backtest。測試不打網路。
 """
 from __future__ import annotations
@@ -53,5 +53,7 @@ def test_snapshot_captures_fred_price_proxies():
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     series = set(mod.FRED_SERIES)
-    # 至少含:美股指數、黃金、油、台幣匯率(FRED 在沙箱可用)
-    assert {"SP500", "DCOILWTICO", "DEXTAUS"} <= series
+    # 至少含:美股指數、商品、油、台幣匯率(FRED 在沙箱可用)
+    assert {"SP500", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"} <= series
+    assert "GOLDAMGBD228NLBM" not in series
+    assert "GOLDPMGBD228NLBM" not in series

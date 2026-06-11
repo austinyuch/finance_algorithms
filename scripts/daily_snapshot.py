@@ -42,17 +42,17 @@ OUT_ROOT = REPO_ROOT / "data" / "vintage" / "raw"
 TIMEOUT = 20
 
 # FRED 序列(fredgraph CSV,免金鑰)。每日抓當前值 = 向前自建 vintage。
-# 含總經 + 價格代理(SP500/那指/黃金/油/台幣匯率)— FRED 在沙箱可用,繞過 Stooq 404。
+# 含總經 + 價格代理(SP500/那指/銅/油/台幣匯率)— FRED 在沙箱可用,繞過 Stooq 404。
 # 載入時哪些當「價格資產」由 vintage loader 的 fred_price_series 決定(見 quantlab/data/vintage.py)。
 FRED_SERIES = [
     # 總經
     "FEDFUNDS", "CPIAUCSL", "GDPC1", "DGS10", "DGS2", "T10Y2Y", "UNRATE",
     # 價格代理(可當資產回測)
-    "SP500", "NASDAQCOM", "GOLDAMGBD228NLBM", "DCOILWTICO", "DEXTAUS",
+    "SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS",
 ]
 
 # 預設把哪些 FRED series 當價格資產(供 loader 參考;此處僅文件化清單)
-FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "GOLDAMGBD228NLBM", "DCOILWTICO", "DEXTAUS"]
+FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"]
 
 # Stooq 報價(免金鑰 CSV)。symbol 格式見 stooq.com;.us=美股, .tw=台股, ^=指數。
 # 全天候資產類別 proxy + TSMC + 匯率。使用者可自行增減。
@@ -61,6 +61,14 @@ STOOQ_SYMBOLS = [
     "btc.v",                                            # 加密(若不可用會被跳過)
     "2330.tw", "^twse",                                 # 台積電 + 台股加權
     "usdtwd",                                           # 美元台幣
+]
+
+# Yahoo chart fallback(免金鑰 JSON)。Stooq 在本環境穩定 404 時仍可捕捉 TSMC/TWSE。
+YAHOO_SYMBOLS = [
+    "SPY", "AGG", "TLT", "GLD", "DBC",
+    "BTC-USD",
+    "2330.TW", "^TWII",
+    "TWD=X",
 ]
 
 # NOAA Oceanic Niño Index(El Niño/ENSO),純文字。
@@ -115,6 +123,29 @@ def fetch_stooq(symbol: str, available_date: str) -> dict[str, Any]:
     return _record(f"stooq:{symbol}", available_date, text, event_date=event_date)
 
 
+def _latest_yahoo_event_date(raw: str) -> str | None:
+    data = json.loads(raw)
+    result = (data.get("chart", {}).get("result") or [None])[0]
+    if not result:
+        return None
+    timestamps = result.get("timestamp") or []
+    quotes = result.get("indicators", {}).get("quote") or []
+    closes = quotes[0].get("close", []) if quotes else []
+    valid = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]
+    if not valid:
+        return None
+    return dt.datetime.fromtimestamp(int(valid[-1][0]), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def fetch_yahoo_chart(symbol: str, available_date: str) -> dict[str, Any]:
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=1d"
+    r = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
+    r.raise_for_status()
+    text = r.text.strip()
+    return _record(f"yahoo:{symbol}", available_date, text,
+                   event_date=_latest_yahoo_event_date(text))
+
+
 def fetch_noaa_oni(available_date: str) -> dict[str, Any]:
     r = requests.get(NOAA_ONI_URL, timeout=TIMEOUT)
     r.raise_for_status()
@@ -132,6 +163,7 @@ def main() -> int:
     jobs: list[tuple[str, Any]] = []
     jobs += [(f"fred:{s}", lambda s=s: fetch_fred(s, available_date)) for s in FRED_SERIES]
     jobs += [(f"stooq:{s}", lambda s=s: fetch_stooq(s, available_date)) for s in STOOQ_SYMBOLS]
+    jobs += [(f"yahoo:{s}", lambda s=s: fetch_yahoo_chart(s, available_date)) for s in YAHOO_SYMBOLS]
     jobs += [("noaa:oni", lambda: fetch_noaa_oni(available_date))]
 
     print(f"[snapshot] available_date={available_date}  out={out_dir}  jobs={len(jobs)}"
