@@ -95,3 +95,47 @@ def test_result_store_family_evaluation_uses_real_run_records(tmp_path):
     assert report["source"] == "local_result_store"
     assert [row["run_id"] for row in report["rows"]] == [forecast, robust, regime, baseline]
     assert report["baseline_run_ids"] == [baseline]
+
+
+def test_model_family_evaluation_artifact_is_checksumed_and_written(tmp_path):
+    from quantlab.models import (
+        build_model_family_evaluation,
+        build_model_family_evaluation_artifact,
+        validate_model_family_evaluation_artifact,
+        write_model_family_evaluation_artifact,
+    )
+
+    report = build_model_family_evaluation({
+        "baseline": [_record("baseline", "StaticWeights", 0.2, baseline=True)],
+        "forecast": [_record("forecast", "ForecastAllocationStrategy", 0.8)],
+    })
+    artifact = build_model_family_evaluation_artifact(
+        report,
+        artifact_uri="file://artifacts/d-eval.json",
+        generated_at="2026-06-11T00:00:00Z",
+    )
+    target = write_model_family_evaluation_artifact(artifact, tmp_path / "d-eval.json")
+
+    validate_model_family_evaluation_artifact(artifact)
+    assert artifact["artifact_kind"] == "model_family_evaluation_artifact"
+    assert artifact["row_count"] == 2
+    assert artifact["checksum"]
+    assert target.read_text(encoding="utf-8").endswith("\n")
+
+
+@given(scores=st.lists(st.floats(min_value=-2, max_value=2, allow_nan=False, allow_infinity=False),
+                       min_size=2, max_size=12))
+def test_pbt_model_family_artifact_row_count_matches_report(scores):
+    from quantlab.models import build_model_family_evaluation, build_model_family_evaluation_artifact
+
+    report = build_model_family_evaluation({
+        "family": [_record(f"run-{idx}", f"Strategy{idx}", score, baseline=(idx == 0))
+                   for idx, score in enumerate(scores)]
+    })
+    artifact = build_model_family_evaluation_artifact(
+        report,
+        artifact_uri="file://artifacts/d-eval.json",
+        generated_at="2026-06-11T00:00:00Z",
+    )
+
+    assert artifact["row_count"] == len(report["rows"])

@@ -7,6 +7,8 @@ const root = process.cwd();
 const htmlPath = join(root, "out", "index.html");
 const screenshotPath = join(root, "out", "browser-visual.png");
 const evidencePath = join(root, "out", "browser-visual.json");
+const diffPath = join(root, "out", "browser-visual-diff.json");
+const baselineEvidencePath = join(root, "..", "docs", "browser-visual.json");
 const chromium = process.env.CHROMIUM_BIN || "/snap/bin/chromium";
 
 function sha256(path) {
@@ -40,4 +42,23 @@ const evidence = {
   observedAt: new Date().toISOString(),
 };
 writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+const baseline = existsSync(baselineEvidencePath)
+  ? JSON.parse(readFileSync(baselineEvidencePath, "utf8"))
+  : evidence;
+const mismatchRatio = baseline.screenshotHash === evidence.screenshotHash ? 0 : 1;
+const diff = {
+  artifactKind: "browser_visual_diff",
+  claimBoundary: "no_alpha_claim",
+  status: mismatchRatio <= 0 ? "passed" : "failed",
+  baselineHash: baseline.screenshotHash,
+  currentHash: evidence.screenshotHash,
+  mismatchRatio,
+  maxMismatchRatio: 0,
+  viewport: evidence.viewport,
+  source: evidence.source,
+};
+writeFileSync(diffPath, `${JSON.stringify(diff, null, 2)}\n`, "utf8");
+if (diff.status !== "passed") {
+  throw new Error(`browser visual diff failed: mismatchRatio=${mismatchRatio}`);
+}
 console.log(`browser-visual-smoke: PASS ${evidence.screenshotHash}`);

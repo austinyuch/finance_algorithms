@@ -7,6 +7,7 @@ import {
   PUBLIC_SHOWCASE_URL,
   assertVisualSnapshotMatchesBaseline,
   buildBrowserVisualEvidence,
+  buildBrowserVisualDiffEvidence,
   buildPublicDemoManifest,
   buildVisualSnapshot,
   classifyPublicHostingEvidence,
@@ -80,6 +81,24 @@ describe("F public static showcase proof", () => {
     expect(evidence.status).toBe("proven");
     expect(evidence.claimBoundary).toBe("no_alpha_claim");
     expect(evidence.screenshotHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("compares browser visual evidence against a threshold", () => {
+    const baseline = buildBrowserVisualEvidence({
+      screenshotHash: "a".repeat(64),
+      viewport: "desktop-1440x900",
+      source: "chromium-headless",
+      observedAt: "2026-06-11T15:00:00Z",
+    });
+    const current = { ...baseline, screenshotHash: "b".repeat(64) };
+
+    const failed = buildBrowserVisualDiffEvidence({ baseline, current, mismatchRatio: 0.02, maxMismatchRatio: 0.01 });
+    const passed = buildBrowserVisualDiffEvidence({ baseline, current, mismatchRatio: 0.005, maxMismatchRatio: 0.01 });
+
+    expect(failed.status).toBe("failed");
+    expect(passed.status).toBe("passed");
+    expect(failed.baselineHash).toBe("a".repeat(64));
+    expect(failed.currentHash).toBe("b".repeat(64));
   });
 
   it("rejects static visual contract drift", () => {
@@ -160,6 +179,15 @@ describe("F public static showcase proof", () => {
         observedAt: "2026-06-11T15:00:00Z",
       }),
     ).toThrow(/screenshot hash/);
+    const baseline = buildBrowserVisualEvidence({
+      screenshotHash: "a".repeat(64),
+      viewport: "desktop-1440x900",
+      source: "chromium-headless",
+      observedAt: "2026-06-11T15:00:00Z",
+    });
+    expect(() =>
+      buildBrowserVisualDiffEvidence({ baseline, current: baseline, mismatchRatio: -0.1, maxMismatchRatio: 0.01 }),
+    ).toThrow(/mismatch ratio/);
   });
 
   it("PBT: visual hash changes when rendered HTML content changes", () => {
@@ -186,6 +214,30 @@ describe("F public static showcase proof", () => {
         });
         expect(evidence.status).not.toBe("proven");
       }),
+    );
+  });
+
+  it("PBT: visual diff status follows configured threshold", () => {
+    const baseline = buildBrowserVisualEvidence({
+      screenshotHash: "a".repeat(64),
+      viewport: "desktop-1440x900",
+      source: "chromium-headless",
+      observedAt: "2026-06-11T15:00:00Z",
+    });
+    fc.assert(
+      fc.property(
+        fc.float({ min: 0, max: 1, noNaN: true }),
+        fc.float({ min: 0, max: 1, noNaN: true }),
+        (mismatchRatio, maxMismatchRatio) => {
+          const evidence = buildBrowserVisualDiffEvidence({
+            baseline,
+            current: baseline,
+            mismatchRatio,
+            maxMismatchRatio,
+          });
+          expect(evidence.status).toBe(mismatchRatio <= maxMismatchRatio ? "passed" : "failed");
+        },
+      ),
     );
   });
 });

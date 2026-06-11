@@ -312,6 +312,59 @@ def test_schedule_report_records_retention_and_latest_pointer(tmp_path):
     assert (tmp_path / "latest-schedule-report.json").read_text(encoding="utf-8") == target.read_text(encoding="utf-8")
 
 
+def test_schedule_run_proof_records_smoke_tier_and_degraded_exit():
+    from scripts.snapshot_schedule_report import build_schedule_report, build_schedule_run_proof
+
+    report = {
+        "available_date": "2026-06-11",
+        "dry_run": True,
+        "counts": {"ok": 0, "skip": 0, "fail": 0, "dry": 2},
+        "jobs": [
+            {"source_id": "fred:GOOD", "status": "dry"},
+            {"source_id": "yahoo:2330.TW", "status": "dry"},
+        ],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+    schedule = build_schedule_report(report)
+
+    proof = build_schedule_run_proof(
+        schedule,
+        workflow="daily-snapshot",
+        trigger="workflow_dispatch",
+        command="uv run python scripts/daily_snapshot.py --dry-run --report-json report.json",
+        exit_code=0,
+        started_at="2026-06-11T00:00:00Z",
+        finished_at="2026-06-11T00:01:00Z",
+    )
+    degraded = build_schedule_run_proof(
+        schedule,
+        workflow="daily-snapshot",
+        trigger="schedule",
+        command="uv run python scripts/daily_snapshot.py --report-json report.json",
+        exit_code=1,
+        started_at="2026-06-11T00:00:00Z",
+        finished_at="2026-06-11T00:01:00Z",
+    )
+
+    assert proof["artifact_kind"] == "snapshot_schedule_run_proof"
+    assert proof["status"] == "clean"
+    assert proof["evidence_tier"] == "smoke"
+    assert proof["retention"] == "append_only"
+    assert degraded["status"] == "degraded"
+    assert degraded["evidence_tier"] == "live"
+
+
+def test_daily_snapshot_workflow_records_report_and_schedule_contract():
+    workflow = Path(".github/workflows/daily-snapshot.yml").read_text(encoding="utf-8")
+
+    assert "cron:" in workflow
+    assert "scripts/daily_snapshot.py --dry-run --report-json" in workflow
+    assert "scripts/snapshot_schedule_report.py" in workflow
+
+
 def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
     from scripts.snapshot_ops_gate import validate_snapshot_report
 
@@ -331,7 +384,7 @@ def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
 
 
 def test_stooq_source_contract_decision_requires_live_proof():
-    from quantlab.data.source_health import decide_stooq_contract
+    from quantlab.data.source_health import build_source_contract_reopen_evidence, decide_stooq_contract
 
     blocked = {
         "claim_boundary": "source_contract_status_only",
@@ -341,9 +394,29 @@ def test_stooq_source_contract_decision_requires_live_proof():
         "claim_boundary": "source_contract_status_only",
         "stooq": {"status": "available", "default_enabled": True},
     }
+    evidence = build_source_contract_reopen_evidence(
+        "stooq",
+        rows=[{"symbol": "spy.us", "event_date": "2026-06-11", "close": 123.45}],
+        observed_at="2026-06-11T00:00:00Z",
+    )
 
     assert decide_stooq_contract(blocked)["decision"] == "keep_default_disabled"
     assert decide_stooq_contract(available)["decision"] == "requires_live_close_rows"
+    opt_in = decide_stooq_contract(available, live_close_rows=evidence["rows"])
+    assert opt_in["decision"] == "eligible_for_opt_in_review"
+    assert opt_in["default_enabled"] == "false"
+
+
+@given(close=st.one_of(st.none(), st.floats(max_value=0, allow_nan=False, allow_infinity=False)))
+def test_pbt_stooq_reopen_evidence_rejects_missing_positive_close(close):
+    from quantlab.data.source_health import build_source_contract_reopen_evidence
+
+    with pytest.raises(ValueError, match="close"):
+        build_source_contract_reopen_evidence(
+            "stooq",
+            rows=[{"symbol": "spy.us", "event_date": "2026-06-11", "close": close}],
+            observed_at="2026-06-11T00:00:00Z",
+        )
 
 
 @given(

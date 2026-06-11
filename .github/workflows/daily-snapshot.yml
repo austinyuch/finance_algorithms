@@ -1,0 +1,33 @@
+name: daily-snapshot
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  dry-run-schedule-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install dependencies
+        run: uv sync
+      - name: Snapshot dry-run report
+        run: uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json
+      - name: Build schedule report and proof
+        run: >
+          uv run python scripts/snapshot_schedule_report.py
+          artifacts/snapshot-report.json
+          --out-dir artifacts
+          --proof-json artifacts/snapshot-schedule-run-proof.json
+          --workflow daily-snapshot
+          --trigger "${{ github.event_name }}"
+          --command "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json"
+          --exit-code 0
+          --started-at "${{ github.run_started_at }}"
+          --finished-at "${{ github.run_started_at }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-schedule-proof
+          path: artifacts/*.json

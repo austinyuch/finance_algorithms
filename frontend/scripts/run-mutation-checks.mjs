@@ -54,6 +54,13 @@ const mutations = [
     original: "/^[a-f0-9]{64}$/.test(input.screenshotHash)",
     mutated: "/^.+$/.test(input.screenshotHash)",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "rejects malformed visual baselines"]
+  },
+  {
+    name: "frontend-browser-visual-diff-threshold",
+    path: "lib/public-demo.ts",
+    original: 'status: input.mismatchRatio <= input.maxMismatchRatio ? "passed" : "failed",',
+    mutated: 'status: input.mismatchRatio <= input.maxMismatchRatio ? "failed" : "passed",',
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "visual diff status"]
   }
 ];
 

@@ -48,6 +48,18 @@ export interface BrowserVisualEvidence {
   observedAt: string;
 }
 
+export interface BrowserVisualDiffEvidence {
+  artifactKind: "browser_visual_diff";
+  claimBoundary: "no_alpha_claim";
+  status: "passed" | "failed";
+  baselineHash: string;
+  currentHash: string;
+  mismatchRatio: number;
+  maxMismatchRatio: number;
+  viewport: string;
+  source: "chromium-headless";
+}
+
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
 }
@@ -127,6 +139,44 @@ export function buildBrowserVisualEvidence(input: {
     viewport: input.viewport,
     source: input.source,
     observedAt: input.observedAt,
+  };
+}
+
+export function buildBrowserVisualDiffEvidence(input: {
+  baseline: BrowserVisualEvidence;
+  current: BrowserVisualEvidence;
+  mismatchRatio: number;
+  maxMismatchRatio: number;
+}): BrowserVisualDiffEvidence {
+  for (const evidence of [input.baseline, input.current]) {
+    if (evidence.claimBoundary !== "no_alpha_claim") {
+      throw new Error("browser visual diff must preserve no_alpha_claim");
+    }
+    if (!/^[a-f0-9]{64}$/.test(evidence.screenshotHash)) {
+      throw new Error("browser visual diff requires screenshot hash evidence");
+    }
+  }
+  if (input.baseline.viewport !== input.current.viewport) {
+    throw new Error("browser visual diff requires matching viewport");
+  }
+  if (
+    input.mismatchRatio < 0 ||
+    input.mismatchRatio > 1 ||
+    input.maxMismatchRatio < 0 ||
+    input.maxMismatchRatio > 1
+  ) {
+    throw new Error("browser visual diff mismatch ratio must be within [0,1]");
+  }
+  return {
+    artifactKind: "browser_visual_diff",
+    claimBoundary: "no_alpha_claim",
+    status: input.mismatchRatio <= input.maxMismatchRatio ? "passed" : "failed",
+    baselineHash: input.baseline.screenshotHash,
+    currentHash: input.current.screenshotHash,
+    mismatchRatio: input.mismatchRatio,
+    maxMismatchRatio: input.maxMismatchRatio,
+    viewport: input.current.viewport,
+    source: input.current.source,
   };
 }
 

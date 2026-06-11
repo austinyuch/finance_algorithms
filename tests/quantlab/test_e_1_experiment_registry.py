@@ -175,6 +175,73 @@ def test_tier3_manifest_and_drift_skeleton_remain_non_serving(tmp_path):
     assert drift["action"] == "manual_review_required"
 
 
+def test_drift_assessment_report_detects_metric_drift_without_serving_claim(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_drift_assessment_report,
+        validate_drift_assessment_report,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+
+    stable = build_drift_assessment_report(
+        entry,
+        reference_metrics={"oos_net_sharpe": 1.0},
+        current_metrics={"oos_net_sharpe": 1.04},
+        threshold=0.05,
+        observed_at="2026-06-11T00:00:00Z",
+    )
+    drifted = build_drift_assessment_report(
+        entry,
+        reference_metrics={"oos_net_sharpe": 1.0},
+        current_metrics={"oos_net_sharpe": 0.7},
+        threshold=0.05,
+        observed_at="2026-06-11T00:00:00Z",
+    )
+
+    validate_drift_assessment_report(stable)
+    assert stable["monitoring_status"] == "assessed_not_automated"
+    assert stable["serving_status"] == "not_serving"
+    assert stable["status"] == "stable"
+    assert drifted["status"] == "drift_detected"
+    assert drifted["claim_boundary"] == "no_alpha_claim"
+
+
+def test_drift_assessment_rejects_overclaim():
+    from quantlab.mlops import validate_drift_assessment_report
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        validate_drift_assessment_report({
+            "artifact_kind": "drift_assessment_report",
+            "claim_boundary": "alpha_claim",
+            "monitoring_status": "assessed_not_automated",
+            "serving_status": "not_serving",
+            "metric_deltas": {},
+        })
+
+
+@given(
+    reference=st.floats(min_value=-5, max_value=5, allow_nan=False, allow_infinity=False),
+    delta=st.floats(min_value=-1, max_value=1, allow_nan=False, allow_infinity=False),
+    threshold=st.floats(min_value=0.001, max_value=1, allow_nan=False, allow_infinity=False),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_drift_status_matches_absolute_threshold(tmp_path, reference, delta, threshold):
+    from quantlab.mlops import ExperimentRegistry, build_drift_assessment_report
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+    report = build_drift_assessment_report(
+        entry,
+        reference_metrics={"oos_net_sharpe": reference},
+        current_metrics={"oos_net_sharpe": reference + delta},
+        threshold=threshold,
+        observed_at="2026-06-11T00:00:00Z",
+    )
+
+    assert report["status"] == ("drift_detected" if abs(delta) > threshold else "stable")
+
+
 @given(count=st.integers(min_value=1, max_value=8))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_pbt_tier3_manifest_preserves_experiment_count(tmp_path, count):
