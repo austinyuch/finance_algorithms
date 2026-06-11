@@ -1,0 +1,150 @@
+:root {
+  color-scheme: light;
+  --ink: #17211b;
+  --muted: #52635a;
+  --line: #d7dfd9;
+  --surface: #f7faf8;
+  --panel: #ffffff;
+  --accent: #1d6f5f;
+  --accent-2: #b84f2f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dashboard-shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dashboard-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+}
+
+.dashboard-header p,
+.panel-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.dashboard-header h1,
+.panel h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+}
+
+.dashboard-header span,
+.warnings span {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 6px 9px;
+  font-size: 0.82rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.leaderboard-panel,
+.evidence-panel {
+  grid-column: 1 / -1;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  border-top: 1px solid var(--line);
+  padding: 10px 8px;
+  font-size: 0.95rem;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.allocation-grid,
+.date-list,
+.evidence-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.allocation-row,
+.date-list li,
+.evidence-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+}
+
+.allocation-row strong {
+  color: var(--accent);
+}
+
+.warnings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.warnings span {
+  border-color: #e3b9a9;
+  color: var(--accent-2);
+}
+
+@media (max-width: 760px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+    width: min(100vw - 20px, 680px);
+  }
+
+  .dashboard-header,
+  .panel-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}

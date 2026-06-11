@@ -10,20 +10,25 @@ Last refreshed: 2026-06-11.
 uv run pytest -q
 uv run mypy quantlab/ --ignore-missing-imports
 uv run lint-imports
+cd frontend && npm test -- --run
+cd frontend && npm run coverage
+cd frontend && npm run build
+cd frontend && npm run mutation
 ```
 
 ## Current Evidence Snapshot
 
 | Subsystem / spec | Catalog | Summary | Latest evidence |
 |---|---|---|---|
-| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 145 passed; mypy clean(44 files); import-linter KEPT |
-| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 145 passed |
-| `b-data-platform` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, and daily snapshot unit tests | `uv run pytest -q` included in 145 passed |
-| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 145 passed |
+| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 149 passed; mypy clean(45 files); import-linter KEPT |
+| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 149 passed |
+| `b-data-platform` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, and daily snapshot unit tests | `uv run pytest -q` included in 149 passed |
+| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 149 passed |
 | `d-first-regime-model` / `d-return-risk-forecast-model` | `quantlab/TESTS.md` | D tests for PIT signal, OOS-net baseline integration, D-3 real-source-format benchmark, and D2 return/risk forecast model | D2 targeted `uv run pytest -q tests/quantlab/test_d_4_return_risk_forecast.py` → 4 passed; D2 trace line coverage 87.1%; D2 mutation killed |
-| `f-showcase-read-api-dashboard` | `quantlab/TESTS.md` | F showcase read API/dashboard payload tests including PBT order, integration, and HTML smoke | `uv run pytest -q tests/quantlab/test_f_1_showcase_api.py` → 4 passed; line coverage 95%; mutation killed |
-| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 145 passed |
-| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 145 passed; `uv run lint-imports` KEPT |
+| `d-robust-portfolio-optimization-model` | `quantlab/TESTS.md` | D3 robust optimizer tests including downside penalty invariant, PBT weights, integration, and smoke | D3 targeted `uv run pytest -q tests/quantlab/test_d_5_robust_optimization.py` → 4 passed; D3 trace line coverage 88.0%; D3 mutation killed |
+| `f-showcase-read-api-dashboard` / `f-nextjs-showcase-dashboard` | `quantlab/TESTS.md`; `frontend/tests/dashboard.test.tsx` | F Python read API plus real Next.js dashboard route/component tests, PBT order, integration, and HTTP smoke | Python F 4 passed, 95% coverage; Next.js F 4 passed, 80.76% coverage, mutation killed, build/smoke passed |
+| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 149 passed |
+| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 149 passed; `uv run lint-imports` KEPT |
 
 ## External / Blocked Evidence Register
 

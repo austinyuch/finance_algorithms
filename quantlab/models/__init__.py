@@ -11,6 +11,12 @@ from quantlab.models.return_risk import (
     ReturnRiskForecaster,
     run_return_risk_forecast_benchmark,
 )
+from quantlab.models.robust_optimization import (
+    RobustAssetEstimate,
+    RobustOptimizationStrategy,
+    RobustPortfolioModel,
+    run_robust_optimization_benchmark,
+)
 
 __all__ = [
     "ForecastAllocationStrategy",
@@ -19,6 +25,10 @@ __all__ = [
     "RegimeFeatureBuilder",
     "ReturnRiskForecast",
     "ReturnRiskForecaster",
+    "RobustAssetEstimate",
+    "RobustOptimizationStrategy",
+    "RobustPortfolioModel",
     "RegimeSignal",
     "run_return_risk_forecast_benchmark",
+    "run_robust_optimization_benchmark",
 ]

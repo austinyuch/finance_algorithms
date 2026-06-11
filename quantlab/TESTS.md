@@ -1,8 +1,8 @@
 # quantlab — TESTS.md(folder-level test registry)
 
-Spec coverage: A0, A, B, C, D first model plus legacy `invest_algorithms` regression.
+Spec coverage: A0, A, B, C, D model families, F showcase, and legacy `invest_algorithms` regression.
 Canonical command: `uv run pytest -q`
-Last refreshed: 2026-06-11 · full suite **145 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(44 files) · `uv run lint-imports` KEPT · F line coverage 95% · D2 trace line coverage 87.1% · mutation automation 5/5 killed
+Last refreshed: 2026-06-11 · Python full suite **149 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(45 files) · `uv run lint-imports` KEPT · Python mutation spot checks 6/6 killed · F Next.js tests 4 passed, coverage 80.76%, build/smoke/mutation passed · D3 targeted 4 passed, trace line coverage 88.0%
 
 | Test ID / file | Covers | Spec / REQ / AC | Evidence |
 |---|---|---|---|
@@ -33,7 +33,9 @@ Last refreshed: 2026-06-11 · full suite **145 passed** · `uv run mypy quantlab
 | `test_d_2_regime_integration` | Regime allocation strategy vs static baseline in OOS-net leaderboard | d-first-regime-model REQ-D-BASELINE-001 / REQ-D-HOOK-001 | 2 pass |
 | `test_d_3_real_data_regime_benchmark` | Vintage-loader real-source-format regime benchmark vs static baseline with no-alpha claim | d-first-regime-model D-3 continuation | 2 pass |
 | `test_d_4_return_risk_forecast` | PIT-safe return/risk forecasts, degraded fallback metadata, PBT long-only weights, OOS-net benchmark smoke | d-return-risk-forecast-model REQ-D-FORECAST-001 / REQ-D-ALLOC-001 / REQ-D-BENCH-001 | 4 pass |
+| `test_d_5_robust_optimization` | PIT-safe robust optimizer estimates, downside penalty invariant, degraded fallback metadata, PBT long-only weights, OOS-net benchmark smoke | d-robust-portfolio-optimization-model REQ-D3-ROBUST-001 / REQ-D3-ALLOC-001 / REQ-D3-BENCH-001 | 4 pass |
 | `test_f_1_showcase_api` | Showcase read API, dashboard summary, conservative defaults, PBT leaderboard order, deterministic HTML smoke | f-showcase-read-api-dashboard REQ-F-SHOWCASE-001/002/003 | 4 pass |
+| `frontend/tests/dashboard.test.tsx` | Real Next.js dashboard component, `/api/showcase` route, PBT leaderboard validator, no-alpha claim boundary | f-nextjs-showcase-dashboard REQ-FNX-DASH-001 / REQ-FNX-API-001 / REQ-FNX-SMOKE-001 | 4 pass |
 | `test_algo_pyramid` | legacy pyramid calculator behavior | legacy `invest_algorithms` | 33 pass |
 
 ## External / Blocked Evidence
@@ -55,11 +57,15 @@ M1 PIT `<=`→`>=`、M2 成本 turnover→0、M3 walk-forward `<`→`<=`、M4 �
 - CR-A0 engine scheduling: bypassing `select_rebalance_dates(...)` was killed by the A0 regime rebalance example and PBT tests.
 - CR-B9 Stooq policy: defaulting Stooq to `["spy.us"]` was killed by `test_stooq_defaults_disabled_after_source_contract_block`.
 - D-3 benchmark: changing `claim_boundary` to `alpha_claim` was killed by the D-3 integration test.
-- `scripts/run_mutation_spot_checks.py`: automated suite killed 5/5 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`, `showcase-claim-boundary`, `d2-forecast-claim-boundary`).
+- `scripts/run_mutation_spot_checks.py`: automated suite killed 6/6 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`, `showcase-claim-boundary`, `d2-forecast-claim-boundary`, `d3-robust-claim-boundary`).
 - F showcase mutation: changing missing claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_dashboard_summary_conservative_defaults_and_no_mutation`.
 - D2 return/risk mutation: changing strategy metadata claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_forecast_strategy_fallback_metadata_for_degraded_history`.
+- D3 robust optimizer mutation: changing strategy metadata claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_robust_strategy_degraded_history_falls_back_and_preserves_claim_boundary`.
+- F Next.js mutation: changing fixture claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `frontend/tests/dashboard.test.tsx`.
 
 ## Line coverage spot checks
 
 - F showcase: `uv run pytest --cov=quantlab.showcase --cov-report=term-missing tests/quantlab/test_f_1_showcase_api.py` → 95%.
 - D2 return/risk: `pytest-cov` / `coverage run` hit NumPy native import instrumentation error (`cannot load module more than once per process`); fallback stdlib trace command passed and parsed `quantlab.models.return_risk` at 108/124 executable lines → 87.1%.
+- D3 robust optimizer: `pytest-cov` hit the same NumPy native import instrumentation error; fallback stdlib trace command passed and parsed `quantlab.models.robust_optimization` at 117/133 executable lines → 88.0%.
+- F Next.js: `cd frontend && npm run coverage` → 80.76% line coverage; `npm run build` and local HTTP smoke on `127.0.0.1:3042` passed.
