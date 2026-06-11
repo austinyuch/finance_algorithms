@@ -19,7 +19,14 @@ const baselinePath = join(root, "visual-baselines", "showcase.visual.json");
 const dashboard = getShowcaseDashboard();
 const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
 const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>QuantLab Showcase</title></head><body>${html}</body></html>`;
-const manifest = buildPublicDemoManifest(dashboard);
+const manifest = buildPublicDemoManifest(dashboard, {
+  pagesConfigured: true,
+  pagesStatus: process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS,
+  httpStatus: process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS
+    ? Number(process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS)
+    : undefined,
+  observedAt: process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT,
+});
 const snapshot = buildVisualSnapshot(html, dashboard);
 
 mkdirSync(outDir, { recursive: true });

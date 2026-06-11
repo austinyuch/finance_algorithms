@@ -2,9 +2,12 @@
   "targetUrl": "https://austinyuch.github.io/finance_algorithms/",
   "artifactKind": "github_pages_static_showcase",
   "hostingEvidence": {
-    "status": "configured_not_observed",
     "sourcePath": "docs/",
-    "publishMode": "github_pages_branch_source"
+    "publishMode": "github_pages_branch_source",
+    "pagesStatus": "built",
+    "httpStatus": 200,
+    "observedAt": "2026-06-11T15:20:00Z",
+    "status": "proven"
   },
   "claimBoundary": "no_alpha_claim",
   "dashboardClaim": "local_demo_only",

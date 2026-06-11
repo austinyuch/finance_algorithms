@@ -4,8 +4,8 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** no active implementation branch. `spec/next-gaps-1-6-public-ops` was squash-merged through `dev` and `main`.
-- **Latest evidence:** `uv run pytest -q` → **176 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **14/14 killed**; changed pure-Python fallback coverage 96% total (`alt_data` 100%, `experiment_registry` 99%, `evaluation` 100%, `snapshot_ops_gate` 85%); F Next.js tests 14 passed, line coverage 97.05%, `npm audit --json` 0 vulnerabilities, 6/6 frontend mutations killed, `npm run visual`, build, and production smoke passed.
+- **Current branch lane:** `spec/next-gaps-1-6-tier3-public` active in workspace; not yet committed/PR-merged.
+- **Latest evidence:** `uv run pytest -q` → **181 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **18/18 killed**; next-gap fallback trace coverage 100% for changed pure-Python modules (`experiment_registry`, `evaluation`, `source_health`, `snapshot_schedule_report`); F Next.js tests 18 passed, line coverage 94.93%, `npm audit --json` 0 vulnerabilities, 7/7 frontend mutations killed, `npm run visual`, `npm run visual:browser`, `npm run probe:public-demo`, build, and production smoke passed.
 - **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
@@ -44,12 +44,19 @@
 - **G alt-data second slice:** [g-alt-data-second-slice](./g-alt-data-second-slice/) is **Implemented · Review PASSED**; second optional default-disabled source contract and bundle PIT loader are in place.
 - **E registry durability bridge:** [e-registry-durability-bridge](./e-registry-durability-bridge/) is **Implemented · Review PASSED**; registry snapshots have checksums and `LocalResultStore` bridge consumes real OOS-net run records.
 - **D model-family evaluation:** [d-model-family-evaluation](./d-model-family-evaluation/) is **Implemented · Review PASSED**; D family comparison ranks OOS-net only, keeps baseline visible, and rejects alpha-claim records.
+- **Next gaps 1-6 Tier3/Public/Ops:** [next-gaps-1-6-tier3-public](./next-gaps-1-6-tier3-public/) is **Implemented · Review PASSED** in the working tree.
+  - F public hosting proof: GitHub Pages is configured for `main` `/docs`; `https://austinyuch.github.io/finance_algorithms/` returned HTTP 200 and `docs/deployment-manifest.json` records `hostingEvidence.status=proven`.
+  - F browser visual proof: `docs/browser-visual.json` records Chromium screenshot hash `823f7a9df2a199d0432d2e448059f69dfe18401595f186149d50706c04a2c92f`.
+  - E Tier3 first slice: non-serving run manifest and drift skeleton only; no serving, retraining, or automated drift monitoring claim.
+  - B scheduled ops: append-only schedule report helper and latest pointer are unit-tested.
+  - D evaluation: family evaluator can consume real `LocalResultStore` records.
+  - B Stooq: source-contract decision helper keeps blocked/default-disabled posture until live close rows are proven.
 
 ## Recommended Next Action
 
-1. Reassess the next most valuable gaps/issues/specs from the current `main`/`dev` tree.
-2. If public hosting proof is prioritized next, enable GitHub Pages branch-source settings for `docs/` and verify `https://austinyuch.github.io/finance_algorithms/`.
-3. Keep hosted URL status at `configured_not_observed` until the deployed URL is checked.
+1. Commit and push `spec/next-gaps-1-6-tier3-public`, then open the usual PR/squash path into `dev` and `main` if the user requests shipping.
+2. Reassess the next most valuable gaps/issues/specs from the merged `main`/`dev` tree after this lane lands.
+3. For future F hardening, treat browser screenshot hash proof as first proof only; pixel-diff thresholding remains a distinct follow-up.
 
 ## Scheduled Ops
 

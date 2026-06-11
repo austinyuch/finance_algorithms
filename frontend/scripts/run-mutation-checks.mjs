@@ -35,10 +35,10 @@ const mutations = [
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
-    name: "frontend-public-demo-hosting-overclaim",
+    name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
-    original: 'status: "configured_not_observed",\n      sourcePath:',
-    mutated: 'status: "proven" as never,\n      sourcePath:',
+    original: "if (probe.httpStatus === 200)",
+    mutated: "if (probe.httpStatus !== 200)",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
   },
   {
@@ -47,6 +47,13 @@ const mutations = [
     original: '"claimBoundary": "no_alpha_claim",',
     mutated: '"claimBoundary": "alpha_claim",',
     command: ["npm", "run", "visual"]
+  },
+  {
+    name: "frontend-browser-visual-hash-gate",
+    path: "lib/public-demo.ts",
+    original: "/^[a-f0-9]{64}$/.test(input.screenshotHash)",
+    mutated: "/^.+$/.test(input.screenshotHash)",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "rejects malformed visual baselines"]
   }
 ];
 

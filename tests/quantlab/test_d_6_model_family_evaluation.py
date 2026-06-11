@@ -73,3 +73,25 @@ def test_pbt_model_family_evaluation_sorted_descending(scores):
 
     ordered = [row["oos_net_sharpe"] for row in report["rows"]]
     assert ordered == sorted(scores, reverse=True)
+
+
+def test_result_store_family_evaluation_uses_real_run_records(tmp_path):
+    from quantlab.models import build_result_store_family_evaluation
+    from quantlab.tracking import LocalResultStore
+
+    store = LocalResultStore(tmp_path / "runs.sqlite")
+    baseline = store.log(_record("baseline", "StaticWeights", 0.2, baseline=True))
+    regime = store.log(_record("regime", "RegimeAllocationStrategy", 0.4))
+    forecast = store.log(_record("forecast", "ForecastAllocationStrategy", 0.8))
+    robust = store.log(_record("robust", "RobustOptimizationStrategy", 0.6))
+
+    report = build_result_store_family_evaluation(store, {
+        "baseline": [baseline],
+        "regime": [regime],
+        "return-risk": [forecast],
+        "robust": [robust],
+    })
+
+    assert report["source"] == "local_result_store"
+    assert [row["run_id"] for row in report["rows"]] == [forecast, robust, regime, baseline]
+    assert report["baseline_run_ids"] == [baseline]

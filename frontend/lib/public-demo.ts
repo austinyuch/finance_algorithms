@@ -4,13 +4,25 @@ import type { ShowcaseDashboard } from "./showcase-contract";
 
 export const PUBLIC_SHOWCASE_URL = "https://austinyuch.github.io/finance_algorithms/";
 
+export type PublicHostingStatus = "not_configured" | "configured_not_observed" | "proven";
+
+export interface PublicHostingProbe {
+  pagesConfigured: boolean;
+  pagesStatus?: string;
+  httpStatus?: number;
+  observedAt?: string;
+}
+
 export interface PublicDemoManifest {
   targetUrl: string;
   artifactKind: "github_pages_static_showcase";
   hostingEvidence: {
-    status: "configured_not_observed";
+    status: PublicHostingStatus;
     sourcePath: "docs/";
     publishMode: "github_pages_branch_source";
+    pagesStatus?: string;
+    httpStatus?: number;
+    observedAt?: string;
   };
   claimBoundary: "no_alpha_claim";
   dashboardClaim: "local_demo_only";
@@ -25,6 +37,15 @@ export interface VisualSnapshot {
   htmlHash: string;
   sections: string[];
   viewportContracts: string[];
+}
+
+export interface BrowserVisualEvidence {
+  status: "proven";
+  claimBoundary: "no_alpha_claim";
+  screenshotHash: string;
+  viewport: string;
+  source: "chromium-headless";
+  observedAt: string;
 }
 
 function sha256(text: string): string {
@@ -45,7 +66,31 @@ export function dashboardSections(dashboard: ShowcaseDashboard): string[] {
   return sections;
 }
 
-export function buildPublicDemoManifest(dashboard: ShowcaseDashboard): PublicDemoManifest {
+export function classifyPublicHostingEvidence(probe?: PublicHostingProbe): PublicDemoManifest["hostingEvidence"] {
+  if (!probe?.pagesConfigured) {
+    return {
+      status: "not_configured",
+      sourcePath: "docs/",
+      publishMode: "github_pages_branch_source",
+    };
+  }
+  const base = {
+    sourcePath: "docs/" as const,
+    publishMode: "github_pages_branch_source" as const,
+    pagesStatus: probe.pagesStatus,
+    httpStatus: probe.httpStatus,
+    observedAt: probe.observedAt,
+  };
+  if (probe.httpStatus === 200) {
+    return { ...base, status: "proven" };
+  }
+  return { ...base, status: "configured_not_observed" };
+}
+
+export function buildPublicDemoManifest(
+  dashboard: ShowcaseDashboard,
+  hostingProbe?: PublicHostingProbe,
+): PublicDemoManifest {
   if (dashboard.claimBoundary !== "no_alpha_claim") {
     throw new Error("public demo manifest must preserve no_alpha_claim");
   }
@@ -55,15 +100,33 @@ export function buildPublicDemoManifest(dashboard: ShowcaseDashboard): PublicDem
   return {
     targetUrl: PUBLIC_SHOWCASE_URL,
     artifactKind: "github_pages_static_showcase",
-    hostingEvidence: {
-      status: "configured_not_observed",
-      sourcePath: "docs/",
-      publishMode: "github_pages_branch_source",
-    },
+    hostingEvidence: classifyPublicHostingEvidence(hostingProbe ?? { pagesConfigured: true }),
     claimBoundary: "no_alpha_claim",
     dashboardClaim: dashboard.demoReadiness.claim,
     sections: dashboardSections(dashboard),
     dataHash: sha256(JSON.stringify(dashboard)),
+  };
+}
+
+export function buildBrowserVisualEvidence(input: {
+  screenshotHash: string;
+  viewport: string;
+  source: "chromium-headless";
+  observedAt: string;
+}): BrowserVisualEvidence {
+  if (!/^[a-f0-9]{64}$/.test(input.screenshotHash)) {
+    throw new Error("browser visual screenshot hash must be sha256 hex");
+  }
+  if (!input.viewport.trim() || !input.observedAt.trim()) {
+    throw new Error("browser visual evidence requires viewport and observedAt");
+  }
+  return {
+    status: "proven",
+    claimBoundary: "no_alpha_claim",
+    screenshotHash: input.screenshotHash,
+    viewport: input.viewport,
+    source: input.source,
+    observedAt: input.observedAt,
   };
 }
 

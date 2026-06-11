@@ -55,3 +55,20 @@ class SourceHealthRegistry:
                 "reason": latest.reason,
             }
         return out
+
+
+def decide_stooq_contract(source_health: dict[str, object]) -> dict[str, str]:
+    stooq = source_health.get("stooq")
+    if not isinstance(stooq, dict):
+        raise ValueError("source health missing stooq status")
+    if stooq.get("status") == "blocked" and stooq.get("default_enabled") is False:
+        return {
+            "decision": "keep_default_disabled",
+            "claim_boundary": "source_contract_status_only",
+            "required_evidence": "none_until_reopened",
+        }
+    return {
+        "decision": "requires_live_close_rows",
+        "claim_boundary": "source_contract_status_only",
+        "required_evidence": "non_empty_close_rows_before_default_enable",
+    }

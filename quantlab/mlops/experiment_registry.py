@@ -146,6 +146,65 @@ def load_registry_snapshot(path: str | Path) -> list[ExperimentEntry]:
     return [ExperimentEntry(**entry) for entry in artifact["entries"]]
 
 
+def build_tier3_run_manifest(
+    registry_snapshot: Mapping[str, Any],
+    *,
+    artifact_uri: str,
+) -> dict[str, Any]:
+    validate_registry_snapshot(registry_snapshot)
+    uri = artifact_uri.strip()
+    if not uri:
+        raise ValueError("artifact_uri is required")
+    entries = registry_snapshot["entries"]
+    return {
+        "artifact_kind": "tier3_run_manifest",
+        "claim_boundary": "no_alpha_claim",
+        "readiness": "artifact_manifest_only",
+        "serving_status": "not_serving",
+        "retraining_status": "not_configured",
+        "drift_monitoring_status": "skeleton_only",
+        "artifact_uri": uri,
+        "entry_count": len(entries),
+        "experiment_ids": [str(entry["experiment_id"]) for entry in entries],
+        "registry_checksum": registry_snapshot["checksum"],
+    }
+
+
+def validate_tier3_run_manifest(manifest: Mapping[str, Any]) -> None:
+    if manifest.get("artifact_kind") != "tier3_run_manifest":
+        raise ValueError("unknown tier3 manifest artifact")
+    if manifest.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("tier3 manifest must preserve no_alpha_claim")
+    if manifest.get("readiness") != "artifact_manifest_only":
+        raise ValueError("tier3 manifest must remain artifact_manifest_only")
+    if manifest.get("serving_status") != "not_serving":
+        raise ValueError("tier3 manifest must not claim serving")
+    if not isinstance(manifest.get("experiment_ids"), list):
+        raise ValueError("tier3 manifest experiment_ids must be a list")
+
+
+def build_drift_report_skeleton(
+    entry: ExperimentEntry,
+    *,
+    reference_window: str,
+    current_window: str,
+) -> dict[str, Any]:
+    if entry.claim_boundary != "no_alpha_claim":
+        raise ValueError("drift skeleton only accepts no_alpha_claim entries")
+    if not reference_window.strip() or not current_window.strip():
+        raise ValueError("drift skeleton requires reference and current windows")
+    return {
+        "artifact_kind": "drift_report_skeleton",
+        "claim_boundary": "no_alpha_claim",
+        "experiment_id": entry.experiment_id,
+        "model_family": entry.model_family,
+        "reference_window": reference_window,
+        "current_window": current_window,
+        "status": "not_assessed",
+        "action": "manual_review_required",
+    }
+
+
 def _oos_net_metrics(record: Mapping[str, Any]) -> dict[str, float]:
     for metric in record.get("metrics", []):
         if metric.get("segment") == "out_of_sample" and metric.get("basis") == "net":
