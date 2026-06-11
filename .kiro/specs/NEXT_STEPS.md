@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `spec/f-showcase-and-d-return-risk`, branched from `origin/dev`.
-- **Latest evidence:** `uv run pytest -q` → **149 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(45 files); `uv run lint-imports` → KEPT; Python mutation spot checks **6/6 killed**; F Next.js tests 4 passed, line coverage 80.76%, build/smoke/mutation passed; D3 trace coverage 88.0%.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`.
+- **Current branch lane:** `spec/e-lite-source-f-hardening`, branched from `dev` after PR #9 merge.
+- **Latest evidence:** `uv run pytest -q` → **156 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(48 files); `uv run lint-imports` → KEPT; Python mutation spot checks **8/8 killed**; E-lite trace coverage 97.3%; B source-health trace coverage 97.6%; F Next.js tests 6 passed, line coverage 84.37%, build/smoke/mutation passed.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -32,12 +32,15 @@
   - Public hosting and visual regression remain deferred.
 - **D robust optimizer third model family:** [d-robust-portfolio-optimization-model](./d-robust-portfolio-optimization-model/) is **Implemented · Review PASSED**.
   - Added downside-penalized robust optimizer strategy and OOS-net benchmark helper.
-- **E Tier3 readiness:** [e-mlops-tier3-readiness.md](./e-mlops-tier3-readiness.md) says E is planning-ready, but full implementation remains deferred; recommended next E lane is `e-mlops-tier3-lite`.
+- **E Tier3 readiness / E-lite:** [e-mlops-tier3-readiness.md](./e-mlops-tier3-readiness.md) moved E to planning-ready; [e-mlops-tier3-lite](./e-mlops-tier3-lite/) is **Implemented · Review PASSED** for registry-only experiment lineage.
+- **B source-health follow-up:** [CR-B10](./b-data-platform/change-requests/cr-b10-source-health-registry.md) is **Implemented(repo-side)**; source status summaries are explicit and do not re-enable blocked Stooq defaults.
+- **F demo hardening:** [f-demo-hardening](./f-demo-hardening/) is **Implemented · Review PASSED**; dashboard now exposes `local_demo_only`, `not_proven` public hosting/visual regression, and dependency audit posture.
 
 ## Recommended Next Action
 
-1. Commit and push the continuation on `spec/f-showcase-and-d-return-risk`.
-2. Next lane candidate: `e-mlops-tier3-lite` requirements/design, or public deployment/visual-regression hardening for F.
+1. Commit and push `spec/e-lite-source-f-hardening`.
+2. Open PR into `dev`.
+3. Next lane candidate after merge: public deployment/dependency remediation for F, or optional G alt-data.
 
 ## Scheduled Ops
 

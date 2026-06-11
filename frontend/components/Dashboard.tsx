@@ -76,6 +76,12 @@ export function Dashboard({ data }: { data: ShowcaseDashboard }) {
           <h2>Evidence</h2>
           <p>{data.evidence.readiness}</p>
         </div>
+        <div className="readiness-grid">
+          <span>{data.demoReadiness.claim}</span>
+          <span>Public hosting: {data.demoReadiness.publicHosting}</span>
+          <span>Visual regression: {data.demoReadiness.visualRegression}</span>
+          <span>Dependency audit: {data.demoReadiness.dependencyAudit}</span>
+        </div>
         <ul>
           {data.evidence.tests.map((item) => (
             <li key={item}>{item}</li>

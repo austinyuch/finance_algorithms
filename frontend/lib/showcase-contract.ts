@@ -24,6 +24,12 @@ export interface ShowcaseDashboard {
     readiness: "local_runtime_only";
     tests: string[];
   };
+  demoReadiness: {
+    publicHosting: "not_proven";
+    visualRegression: "not_proven";
+    dependencyAudit: "moderate_advisory";
+    claim: "local_demo_only";
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,5 +60,14 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   }
   if (!isRecord(value.evidence) || value.evidence.readiness !== "local_runtime_only") {
     throw new Error("dashboard evidence must be local_runtime_only");
+  }
+  if (!isRecord(value.demoReadiness)) {
+    throw new Error("dashboard demoReadiness must be present");
+  }
+  if (value.demoReadiness.publicHosting !== "not_proven") {
+    throw new Error("public hosting must remain not_proven until deployment evidence exists");
+  }
+  if (value.demoReadiness.visualRegression !== "not_proven") {
+    throw new Error("visual regression must remain not_proven until screenshot evidence exists");
   }
 }
