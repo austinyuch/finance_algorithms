@@ -64,3 +64,15 @@ def build_model_family_evaluation(
         "families": sorted({row.model_family for row in rows}),
         "baseline_run_ids": [row.run_id for row in rows if row.is_baseline],
     }
+
+
+def build_result_store_family_evaluation(
+    store: Any,
+    run_ids_by_family: Mapping[str, Sequence[str]],
+) -> dict[str, Any]:
+    records_by_family = {
+        family: [store.get(str(run_id)) for run_id in run_ids]
+        for family, run_ids in run_ids_by_family.items()
+    }
+    report = build_model_family_evaluation(records_by_family)
+    return {**report, "source": "local_result_store"}

@@ -143,3 +143,50 @@ def test_register_result_store_runs_rejects_missing_oos_net_metrics(tmp_path):
             config={},
             run_ids=[run_id],
         )
+
+
+def test_tier3_manifest_and_drift_skeleton_remain_non_serving(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_drift_report_skeleton,
+        build_tier3_run_manifest,
+        validate_tier3_run_manifest,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register(
+        "robust-portfolio",
+        "RobustOptimizationStrategy",
+        {"vol_cap": 0.2},
+        run_ids=["robust-run"],
+        metrics={"sharpe": 0.9},
+    )
+    snapshot = registry.snapshot_artifact()
+
+    manifest = build_tier3_run_manifest(snapshot, artifact_uri="file://artifacts/robust-run.json")
+    validate_tier3_run_manifest(manifest)
+    drift = build_drift_report_skeleton(entry, reference_window="2022Q1", current_window="2022Q2")
+
+    assert manifest["readiness"] == "artifact_manifest_only"
+    assert manifest["serving_status"] == "not_serving"
+    assert manifest["claim_boundary"] == "no_alpha_claim"
+    assert manifest["experiment_ids"] == [entry.experiment_id]
+    assert drift["status"] == "not_assessed"
+    assert drift["action"] == "manual_review_required"
+
+
+@given(count=st.integers(min_value=1, max_value=8))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_tier3_manifest_preserves_experiment_count(tmp_path, count):
+    from quantlab.mlops import ExperimentRegistry, build_tier3_run_manifest
+
+    registry_path = tmp_path / f"experiments-{count}.jsonl"
+    registry_path.unlink(missing_ok=True)
+    registry = ExperimentRegistry(registry_path)
+    for idx in range(count):
+        registry.register("family", f"Strategy{idx}", {"idx": idx})
+
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+
+    assert manifest["entry_count"] == count
+    assert len(manifest["experiment_ids"]) == count

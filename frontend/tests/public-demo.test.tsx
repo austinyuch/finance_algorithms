@@ -6,8 +6,10 @@ import { Dashboard } from "../components/Dashboard";
 import {
   PUBLIC_SHOWCASE_URL,
   assertVisualSnapshotMatchesBaseline,
+  buildBrowserVisualEvidence,
   buildPublicDemoManifest,
   buildVisualSnapshot,
+  classifyPublicHostingEvidence,
   dashboardSections,
 } from "../lib/public-demo";
 import { getShowcaseDashboard } from "../lib/showcase-fixture";
@@ -31,6 +33,30 @@ describe("F public static showcase proof", () => {
     expect(manifest.dataHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
+  it("records proven public hosting only when Pages and URL evidence agree", () => {
+    const manifest = buildPublicDemoManifest(getShowcaseDashboard(), {
+      pagesConfigured: true,
+      pagesStatus: "built",
+      httpStatus: 200,
+      observedAt: "2026-06-11T14:50:00Z",
+    });
+
+    expect(manifest.hostingEvidence.status).toBe("proven");
+    expect(manifest.hostingEvidence.pagesStatus).toBe("built");
+    expect(manifest.hostingEvidence.httpStatus).toBe(200);
+    expect(manifest.hostingEvidence.observedAt).toBe("2026-06-11T14:50:00Z");
+  });
+
+  it("keeps public hosting unobserved when Pages is configured but URL is not live", () => {
+    expect(
+      classifyPublicHostingEvidence({
+        pagesConfigured: true,
+        pagesStatus: "building",
+        httpStatus: 404,
+      }).status,
+    ).toBe("configured_not_observed");
+  });
+
   it("creates a deterministic static visual contract baseline", () => {
     const dashboard = getShowcaseDashboard();
     const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
@@ -41,6 +67,19 @@ describe("F public static showcase proof", () => {
     expect(snapshot.htmlHash).toMatch(/^[a-f0-9]{64}$/);
     expect(snapshot.sections).toContain("experiments");
     expect(() => assertVisualSnapshotMatchesBaseline(snapshot, snapshot)).not.toThrow();
+  });
+
+  it("creates browser visual evidence from a real screenshot hash", () => {
+    const evidence = buildBrowserVisualEvidence({
+      screenshotHash: "a".repeat(64),
+      viewport: "desktop-1440x900",
+      source: "chromium-headless",
+      observedAt: "2026-06-11T15:00:00Z",
+    });
+
+    expect(evidence.status).toBe("proven");
+    expect(evidence.claimBoundary).toBe("no_alpha_claim");
+    expect(evidence.screenshotHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it("rejects static visual contract drift", () => {
@@ -113,6 +152,14 @@ describe("F public static showcase proof", () => {
         viewportContracts: ["desktop-1440x900"],
       }),
     ).toThrow(/viewports changed/);
+    expect(() =>
+      buildBrowserVisualEvidence({
+        screenshotHash: "not-a-hash",
+        viewport: "desktop-1440x900",
+        source: "chromium-headless",
+        observedAt: "2026-06-11T15:00:00Z",
+      }),
+    ).toThrow(/screenshot hash/);
   });
 
   it("PBT: visual hash changes when rendered HTML content changes", () => {
@@ -125,6 +172,19 @@ describe("F public static showcase proof", () => {
         const changed = buildVisualSnapshot(`${html}<span>${suffix}</span>`, dashboard);
         expect(changed.htmlHash === base.htmlHash).toBe(false);
         expect(changed.sections).toEqual(base.sections);
+      }),
+    );
+  });
+
+  it("PBT: public hosting classifier never proves non-200 responses", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 100, max: 599 }).filter((status) => status !== 200), (httpStatus) => {
+        const evidence = classifyPublicHostingEvidence({
+          pagesConfigured: true,
+          pagesStatus: "built",
+          httpStatus,
+        });
+        expect(evidence.status).not.toBe("proven");
       }),
     );
   });

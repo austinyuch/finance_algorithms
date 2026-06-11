@@ -11,6 +11,8 @@
     "export:public-demo": "tsx scripts/export-public-demo.tsx",
     "export:public-demo:docs": "QUANTLAB_PUBLIC_DEMO_OUT_DIR=../docs tsx scripts/export-public-demo.tsx",
     "visual": "tsx scripts/export-public-demo.tsx",
+    "visual:browser": "node scripts/browser-visual-smoke.mjs",
+    "probe:public-demo": "node scripts/probe-public-demo.mjs",
     "mutation": "node scripts/run-mutation-checks.mjs",
     "smoke": "node scripts/public-demo-smoke.mjs"
   },
