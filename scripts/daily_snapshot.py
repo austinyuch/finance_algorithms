@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -54,14 +55,16 @@ FRED_SERIES = [
 # 預設把哪些 FRED series 當價格資產(供 loader 參考;此處僅文件化清單)
 FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"]
 
-# Stooq 報價(免金鑰 CSV)。symbol 格式見 stooq.com;.us=美股, .tw=台股, ^=指數。
-# 全天候資產類別 proxy + TSMC + 匯率。使用者可自行增減。
-STOOQ_SYMBOLS = [
-    "spy.us", "agg.us", "tlt.us", "gld.us", "dbc.us",  # 股/債/長債/金/商品
-    "btc.v",                                            # 加密(若不可用會被跳過)
-    "2330.tw", "^twse",                                 # 台積電 + 台股加權
-    "usdtwd",                                           # 美元台幣
-]
+def _csv_env_symbols(name: str, default: list[str]) -> list[str]:
+    raw = os.environ.get(name)
+    if raw is None:
+        return list(default)
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+# Stooq 報價(免金鑰 CSV)。2026-06-11 本環境重複 404,故預設停用以免 daily
+# snapshot 假性失敗;若要重試,設定 QUANTLAB_STOOQ_SYMBOLS="spy.us,2330.tw"。
+STOOQ_SYMBOLS = _csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", [])
 
 # Yahoo chart fallback(免金鑰 JSON)。Stooq 在本環境穩定 404 時仍可捕捉 TSMC/TWSE。
 YAHOO_SYMBOLS = [
@@ -73,6 +76,10 @@ YAHOO_SYMBOLS = [
 
 # NOAA Oceanic Niño Index(El Niño/ENSO),純文字。
 NOAA_ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+
+
+def _safe_source_id(source_id: str) -> str:
+    return source_id.replace(":", "_").replace("^", "idx_")
 
 
 def _today() -> str:
@@ -89,6 +96,33 @@ def _write(out_dir: Path, source_id: str, payload: dict[str, Any], dry: bool) ->
     out_dir.mkdir(parents=True, exist_ok=True)
     fpath.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return f"OK   {source_id}"
+
+
+def _source_health_summary() -> dict[str, object]:
+    from quantlab.data.source_health import SourceHealthRegistry
+
+    registry = SourceHealthRegistry()
+    for series in FRED_SERIES:
+        registry.record("fred", series, status="available", default_enabled=True,
+                        reason="configured fredgraph source")
+    if STOOQ_SYMBOLS:
+        for symbol in STOOQ_SYMBOLS:
+            registry.record("stooq", symbol, status="unknown", default_enabled=True,
+                            reason="operator opt-in source")
+    else:
+        registry.record("stooq", "*", status="blocked", default_enabled=False,
+                        reason="disabled by source-contract policy after observed 404s")
+    for symbol in YAHOO_SYMBOLS:
+        registry.record("yahoo", symbol, status="available", default_enabled=True,
+                        reason="configured chart fallback source")
+    registry.record("noaa", "oni", status="available", default_enabled=True,
+                    reason="configured public text source")
+    return registry.summary()
+
+
+def _write_report(path: Path, report: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def _record(source: str, available_date: str, raw: Any, **extra: Any) -> dict[str, Any]:
@@ -155,6 +189,8 @@ def fetch_noaa_oni(available_date: str) -> dict[str, Any]:
 def main() -> int:
     ap = argparse.ArgumentParser(description="每日 point-in-time snapshot 擷取器")
     ap.add_argument("--dry-run", action="store_true", help="只列出要抓的源,不寫檔")
+    ap.add_argument("--report-json", type=Path,
+                    help="write machine-readable run summary/source-health JSON")
     args = ap.parse_args()
 
     available_date = _today()
@@ -169,22 +205,51 @@ def main() -> int:
     print(f"[snapshot] available_date={available_date}  out={out_dir}  jobs={len(jobs)}"
           + ("  (DRY-RUN)" if args.dry_run else ""))
 
-    ok = skip = fail = 0
+    ok = skip = fail = dry = 0
+    job_reports: list[dict[str, Any]] = []
     for source_id, fn in jobs:
-        safe_id = source_id.replace(":", "_").replace("^", "idx_")
+        safe_id = _safe_source_id(source_id)
         try:
             payload = None if args.dry_run else fn()
             status = _write(out_dir, safe_id, payload or {}, args.dry_run)
             if status.startswith("OK"):
                 ok += 1
+                outcome = "ok"
             elif status.startswith("SKIP"):
                 skip += 1
+                outcome = "skip"
+            elif status.startswith("DRY"):
+                dry += 1
+                outcome = "dry"
+            else:
+                outcome = "unknown"
+            job_reports.append({
+                "source_id": source_id,
+                "safe_id": safe_id,
+                "status": outcome,
+            })
             print(f"  {status}")
         except Exception as e:  # degrade gracefully:逐源失敗不中斷
             fail += 1
+            job_reports.append({
+                "source_id": source_id,
+                "safe_id": safe_id,
+                "status": "fail",
+                "error_type": type(e).__name__,
+                "error": str(e),
+            })
             print(f"  FAIL {source_id}: {type(e).__name__}: {e}", file=sys.stderr)
 
     print(f"[snapshot] done. ok={ok} skip={skip} fail={fail}")
+    if args.report_json:
+        _write_report(args.report_json, {
+            "available_date": available_date,
+            "out_dir": str(out_dir),
+            "dry_run": bool(args.dry_run),
+            "counts": {"ok": ok, "skip": skip, "fail": fail, "dry": dry},
+            "jobs": job_reports,
+            "source_health": _source_health_summary(),
+        })
     return 0 if fail == 0 else 1
 
 

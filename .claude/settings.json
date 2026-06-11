@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 300 uv add mlflow)",
+      "Bash(timeout 200 uv add \"protobuf>=4.25,<5\")",
+      "Bash(timeout 200 uv add setuptools)",
+      "Bash(timeout 200 uv add \"setuptools<81\")",
+      "Bash(timeout 200 uv remove mlflow protobuf setuptools)",
+      "Bash(timeout 200 uv add --dev mutmut)",
+      "Bash(rm -rf mutants/ .mutmut-cache mutmut-results* 2>/dev/null; echo \"cleaned mutmut artifacts\"; ls -d mutants 2>/dev/null || echo \"\\(no mutants dir\\)\")",
+      "Bash(gh auth *)",
+      "Bash(gh pr create --base main --head spec/a0-backtest-foundation --title 'Epic A0: point-in-time backtest foundation \\(engine + parallel + tracking\\)' --body ' *)",
+      "Bash(gh pr *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('PR #%d: %s' % \\(d['number'], d['title']\\)\\); print\\('base:', d['baseRefName'], '<-', d['headRefName']\\); print\\('commits:', len\\(d['commits']\\)\\); print\\('+%d / -%d' % \\(d['additions'], d['deletions']\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d\\)\")",
+      "Bash(timeout 240 uv add statsmodels)",
+      "Bash(mkdir -p /home/ac/projects/finance_algorithms/.agents/specs/a-tsmc-hedge-slice && echo ok)",
+      "Bash(cd /home/ac/projects/finance_algorithms *)",
+      "Bash(timeout 580 uv add torch)",
+      "Bash(timeout 180 uv add --dev import-linter)",
+      "Bash(echo \"exit=$?\")"
+    ],
+    "additionalDirectories": [
+      "/home/ac/projects/finance_algorithms",
+      "/home/ac/projects/finance_algorithms/.agents/specs",
+      "/home/ac/projects/finance_algorithms/tests/quantlab"
+    ]
+  }
+}

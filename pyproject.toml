@@ -3,7 +3,7 @@ name = "invest-algorithms"
 version = "0.1.0"
 description = "Investment pyramid (arithmetic/geometric) algorithms API"
 authors = [{ name = "YuehChengChang", email = "ycchang.pmp@gmail.com" }]
-readme = "readme.md"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.3",
@@ -25,6 +25,7 @@ dev = [
     "mypy>=2.1.0",
     "mutmut>=3.6.0",
     "import-linter>=2.11",
+    "pytest-cov>=7.1.0",
 ]
 
 # Application project (not a distributable package): uv manages the

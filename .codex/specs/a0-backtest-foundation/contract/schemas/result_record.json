@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "a0/result_record.json",
+  "title": "ResultRecord",
+  "description": "一次回測的可重現紀錄 (REQ-A0-TRK-001/003)。由此可完整重建實驗 (AC-A0-04)。寫入 MLflow tracking。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {"type": "string"},
+    "strategy_name": {"type": "string"},
+    "strategy_metadata": {"type": "object", "description": "框架名/超參數/版本 (來自 Strategy.metadata)"},
+    "config": {"$ref": "backtest_config.json"},
+    "metrics": {
+      "type": "array",
+      "items": {"$ref": "performance_metrics.json"},
+      "description": "至少含 out_of_sample 一筆;通常含 gross 與 net、in_sample 與 out_of_sample"
+    },
+    "is_baseline": {"type": "boolean", "default": false, "description": "是否為笨 baseline (leaderboard 對照組)"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "required": ["run_id", "strategy_name", "config", "metrics"]
+}

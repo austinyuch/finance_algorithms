@@ -182,5 +182,79 @@ def test_main_degrades_gracefully(monkeypatch, tmp_path, capsys):
     assert rc == 1                                  # 有失敗 → 非 0
 
 
+def test_main_writes_machine_readable_report_for_dry_run(monkeypatch, tmp_path):
+    monkeypatch.setattr(ds, "OUT_ROOT", tmp_path / "vintage")
+    monkeypatch.setattr(ds, "FRED_SERIES", ["FEDFUNDS"])
+    monkeypatch.setattr(ds, "STOOQ_SYMBOLS", [])
+    monkeypatch.setattr(ds, "YAHOO_SYMBOLS", ["2330.TW"])
+    report_path = tmp_path / "snapshot-report.json"
+
+    monkeypatch.setattr(ds.sys, "argv", [
+        "daily_snapshot.py",
+        "--dry-run",
+        "--report-json",
+        str(report_path),
+    ])
+
+    rc = ds.main()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    assert rc == 0
+    assert report["available_date"] == ds._today()
+    assert report["dry_run"] is True
+    assert report["counts"] == {"ok": 0, "skip": 0, "fail": 0, "dry": 3}
+    assert report["source_health"]["claim_boundary"] == "source_contract_status_only"
+    assert report["source_health"]["stooq"]["status"] == "blocked"
+    assert report["source_health"]["stooq"]["default_enabled"] is False
+    assert report["source_health"]["yahoo"]["status"] == "available"
+
+
+def test_main_report_records_failed_sources_without_corrupting_successes(monkeypatch, tmp_path):
+    monkeypatch.setattr(ds, "OUT_ROOT", tmp_path / "vintage")
+    monkeypatch.setattr(ds, "FRED_SERIES", ["GOOD", "BAD"])
+    monkeypatch.setattr(ds, "STOOQ_SYMBOLS", [])
+    monkeypatch.setattr(ds, "YAHOO_SYMBOLS", [])
+    report_path = tmp_path / "snapshot-report.json"
+
+    def fake_get(url, *a, **k):
+        if "GOOD" in url:
+            return FakeResp("observation_date,GOOD\n2026-05-01,1.0\n")
+        if "BAD" in url:
+            return FakeResp("err", status=500)
+        return FakeResp("SEAS YR oni")
+
+    monkeypatch.setattr(ds.requests, "get", fake_get)
+    monkeypatch.setattr(ds.sys, "argv", [
+        "daily_snapshot.py",
+        "--report-json",
+        str(report_path),
+    ])
+
+    rc = ds.main()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    assert rc == 1
+    assert report["counts"]["ok"] == 2
+    assert report["counts"]["fail"] == 1
+    failed = [item for item in report["jobs"] if item["status"] == "fail"]
+    assert failed == [{
+        "source_id": "fred:BAD",
+        "safe_id": "fred_BAD",
+        "status": "fail",
+        "error_type": "HTTPError",
+        "error": "500 error",
+    }]
+
+
 def test_snapshot_includes_yahoo_tsmc_and_twse_sources():
     assert {"2330.TW", "^TWII"} <= set(ds.YAHOO_SYMBOLS)
+
+
+def test_stooq_defaults_disabled_after_source_contract_block():
+    assert ds.STOOQ_SYMBOLS == []
+
+
+def test_csv_env_symbols_trims_and_skips_empty_values(monkeypatch):
+    monkeypatch.setenv("QUANTLAB_STOOQ_SYMBOLS", " spy.us, ,2330.tw, ^twse ")
+
+    assert ds._csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", []) == ["spy.us", "2330.tw", "^twse"]
