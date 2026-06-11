@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance Algorithms — Executive Review</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{--blue:#005EB8;--sky:#04A9FB;--orange:#FF6A39;--green:#97D700;--grey:#3B4559;--line:#e3e8f0}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;color:var(--grey);background:#f5f7fb;line-height:1.65}
+  a{color:var(--blue)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  header.hero{background:radial-gradient(1200px 400px at 20% -10%,#13315c,#0a0e1a);color:#fff;padding:64px 0 52px;text-align:center}
+  header.hero h1{font-size:40px;margin:0 0 10px}
+  header.hero p{font-size:18px;opacity:.85;margin:0 auto;max-width:680px}
+  .stats{display:flex;gap:18px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:18px 26px;min-width:140px}
+  .stat b{display:block;font-size:30px;color:var(--sky)}
+  .stat span{font-size:13px;opacity:.8}
+  section{padding:44px 0}
+  h2.sec{font-size:26px;color:var(--blue);text-align:center;margin:0 0 8px}
+  .sub{text-align:center;color:#6b7689;margin:0 0 28px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .card h3{margin:0 0 10px;color:var(--grey)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;margin:0 4px 4px 0}
+  .b-pass{background:#e3f6d9;color:#3d6b00}.b-cond{background:#fff1d6;color:#9a6400}.b-mock{background:#ffe1d6;color:#9a3000}.b-base{background:#e6edf7;color:#2b4a78}
+  .ev{font-size:12px;color:#6b7689;border-top:1px dashed var(--line);margin-top:12px;padding-top:8px}
+  .press{background:#fff;border:1px solid var(--line);border-left:5px solid var(--orange);border-radius:12px;padding:26px 30px}
+  details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 16px;margin-bottom:10px}
+  summary{font-weight:600;cursor:pointer;padding:10px 0}
+  .gap{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  ul.clean{list-style:none;padding:0;margin:0}
+  ul.clean li{padding:9px 12px;border:1px solid var(--line);border-radius:9px;margin-bottom:9px;background:#fff;font-size:14px}
+  .sev{float:right;font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px}
+  .sH{background:#ffe1d6;color:#9a3000}.sM{background:#fff1d6;color:#9a6400}.sL{background:#e6edf7;color:#2b4a78}
+  .ok{color:#3d6b00;font-weight:700}
+  .timeline{border-left:3px solid var(--sky);padding-left:22px;margin-left:10px}
+  .timeline div{margin-bottom:16px;position:relative}
+  .timeline div::before{content:"";width:11px;height:11px;background:var(--blue);border-radius:50%;position:absolute;left:-29px;top:5px}
+  iframe.preview{width:100%;height:480px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .alert{background:#fff6e5;border:1px solid var(--orange);border-radius:10px;padding:12px 16px;margin:0 0 22px;color:#7a3600}
+  footer{background:#0a0e1a;color:#9fb0c8;text-align:center;padding:26px;font-size:13px}
+  @media(max-width:780px){.grid2,.grid3,.gap{grid-template-columns:1fr}header.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <h1>Finance Algorithms · QuantLab</h1>
+    <p>A portfolio-grade personal quant research lab: point-in-time data, vectorized backtesting, strategy comparison, and an honest, no-alpha-claim research dashboard.</p>
+    <div class="stats">
+      <div class="stat"><b>190</b><span>Python tests passing</span></div>
+      <div class="stat"><b>20</b><span>frontend tests passing</span></div>
+      <div class="stat"><b>0</b><span>dependency vulnerabilities</span></div>
+      <div class="stat"><b>9</b><span>spec epics implemented</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2 class="sec">Value Proposition</h2>
+    <p class="sub">One lab, two audiences — both served honestly.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>🔬 For the researcher (internal)</h3>
+        <ul>
+          <li>Every strategy is scored against dumb baselines on <b>out-of-sample net</b> metrics — no in-sample self-deception.</li>
+          <li>Point-in-time data discipline (<code>available_date &le; asof</code>) prevents lookahead by construction.</li>
+          <li>Reproducible CLI demos + a local experiment registry capture lineage.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>📈 For the stakeholder (external)</h3>
+        <ul>
+          <li>A portfolio piece that demonstrates <b>methodology honesty</b> over hype: every slice carries <code>no_alpha_claim</code>.</li>
+          <li>A read-only showcase dashboard summarizing leaderboard, regime, and allocation.</li>
+          <li>Transparent gap reporting — demo readiness is stated, never overclaimed.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Press Release</h2>
+    <p class="sub">Amazon-style backwards PR — written as if the lab has already succeeded.</p>
+    <div class="press">
+      <h3>QuantLab gives a solo quant a portfolio-grade research lab that never lies about its own results</h3>
+      <p><b>Taipei, 2026 —</b> Finance Algorithms today described QuantLab, a personal research platform that lets one person design, backtest, and compare investment strategies with the same point-in-time and out-of-sample discipline used by serious shops — while refusing to dress up synthetic experiments as alpha.</p>
+      <p>“The point was never to claim I beat the market,” the maintainer said. “The point was to build a lab where every number is reproducible, every backtest respects what I could actually have known at the time, and every demo says exactly how strong its evidence is.”</p>
+      <p><b>The problem:</b> personal quant projects routinely leak future information, compare strategies in-sample, and present mock dashboards as if they were live products. <b>The solution:</b> QuantLab enforces <code>available_date &le; asof</code> in the data layer, reports out-of-sample net metrics on a shared leaderboard, and caps every stakeholder-facing claim with explicit evidence labels. <b>Today:</b> nine spec epics are implemented and reviewed, 190 Python tests and 20 frontend tests pass, dependency audit is clean, and a fixture-driven showcase dashboard renders the latest research summary.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">FAQ</h2>
+    <p class="sub">Three audiences, straight answers.</p>
+    <details><summary>Internal · How much does this cost to maintain?</summary><p>It is a single Python 3.13 + Next.js workspace with <code>uv</code> and npm. CI-style gates (pytest, mypy, lint-imports, npm test/audit) run in seconds-to-minutes locally. No paid infra is required; external data sources are free (FRED/NOAA/Yahoo) and degrade per-source.</p></details>
+    <details><summary>Internal · Is it safe / compliant?</summary><p>It is paper-only research with no trading execution and no credentials. Dependency audit reports 0 vulnerabilities. The architecture linter forbids the data/engine core from importing ML frameworks, keeping the backtest core deterministic.</p></details>
+    <details><summary>External · How is this different from a notebook?</summary><p>It separates contracts, PIT data, a vectorized engine, strategy adapters, portfolio construction, and tracking into reviewed specs. Lookahead protection and out-of-sample net scoring are built into the engine, not bolted on per-experiment.</p></details>
+    <details><summary>External · What's the 6-month roadmap?</summary><p>Accumulate real price vintages until the live-data backtest unblocks, prove public hosting + visual regression for the dashboard, and expand the model-family evaluation. See the Roadmap below.</p></details>
+    <details><summary>User · What does it improve for me day to day?</summary><p>One command produces a baseline-anchored OOS leaderboard; one command captures an immutable daily data snapshot with a machine-readable run report; one dashboard summarizes the latest research state — all without hand-rolling lookahead-safe plumbing.</p></details>
+  </section>
+
+  <section>
+    <h2 class="sec">Core Features</h2>
+    <p class="sub">Readiness badges copied from <code>.agents/specs/**/review.md</code>.</p>
+    <div class="grid3">
+      <div class="card"><h3>🧱 Backtest foundation (A0)</h3><p>PIT data, vectorized engine, metrics, walk-forward, parallel run, local tracking.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">live_command_output · hybrid · a0-backtest-foundation/review.md</div></div>
+      <div class="card"><h3>⚖️ TSMC hedge slice (A)</h3><p>Hedge strategy + LSTM adapter + baselines, ranked by OOS net Sharpe.</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">live_command_output · hybrid · a-tsmc-hedge-slice/review.md · synthetic data</div></div>
+      <div class="card"><h3>🗂️ Data platform (B)</h3><p>Vintage PIT loader, FRED proxies, source-health, snapshot report + ops gate.</p><div><span class="badge b-pass">PASS (repo-side)</span><span class="badge b-cond">CROSS_SPEC_DEP</span></div><div class="ev">live_command_output · hybrid · b-data-platform/review.md · Stooq blocked</div></div>
+      <div class="card"><h3>📐 Portfolio core (C)</h3><p>Optimizer, multi-period allocation, regime rebalance selector, pyramid adapter.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · c-portfolio-core/review.md</div></div>
+      <div class="card"><h3>🧠 Model families (D)</h3><p>First-regime, return/risk forecaster, robust optimizer, family evaluator.</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">report_artifact · hybrid · d-*/review.md · no_alpha_claim</div></div>
+      <div class="card"><h3>🔭 MLOps E-lite (E)</h3><p>Experiment registry, config catalog, checksum snapshot, dashboard bridge.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · e-mlops-tier3-lite/review.md · registry-only</div></div>
+      <div class="card"><h3>📊 Showcase dashboard (F)</h3><p>Read API + Next.js app: leaderboard, regime, rebalance, experiments, evidence. Browser visual + public-hosting probe proven.</p><div><span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span></div><div class="ev">live_screenshot + static_export · hybrid · f-demo-hardening + ops-visual-drift-artifacts/review.md</div></div>
+      <div class="card"><h3>🧪 Alt-data slices (G)</h3><p>Source-contract-first local CSV loader, two optional default-disabled slices.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · g-alt-data-first-slice/review.md</div></div>
+      <div class="card"><h3>🏛️ Legacy pyramid API</h3><p>Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
+    </div>
+
+    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, which is fixture-driven (<code>MOCK_DOMINANT_EVIDENCE</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>) and a public-hosting probe (HTTP 200) are now <code>proven</code>. Residual: the visual diff is hash-equality, not pixel-tolerance CI.</div>
+    <p style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
+    <img class="preview" style="height:auto;display:block" src="assets/dashboard-browser-visual.png" alt="Chromium-headless screenshot of the QuantLab dashboard">
+  </section>
+
+  <section>
+    <h2 class="sec">UX Flow</h2>
+    <p class="sub">From data capture to a stakeholder-readable summary.</p>
+    <div class="card">
+      <pre class="mermaid">
+flowchart LR
+  A["daily_snapshot.py\n(PIT capture)"] --> B["vintage loader\navailable_date &le; asof"]
+  B --> C["A0 vectorized\nbacktest engine"]
+  C --> D["OOS-net leaderboard\n(vs baselines)"]
+  D --> E["E-lite registry\n(lineage)"]
+  E --> F["Showcase read API\n/api/showcase"]
+  F --> G["Next.js dashboard\nstatic export"]
+  style A fill:#005EB8,color:#fff
+  style D fill:#97D700,color:#1a2a00
+  style G fill:#04A9FB,color:#022
+      </pre>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Gap Analysis</h2>
+    <p class="sub">Resolved since last check vs still open — no false greens.</p>
+    <div class="gap">
+      <div>
+        <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-12)</h3>
+        <ul class="clean">
+          <li>Python suite grew <b>163 → 190 passed</b>; mypy clean over 50 files; mutation <b>22/22 killed</b> <span class="sev sL">gate</span></li>
+          <li>Frontend <b>20 tests pass</b>, coverage 92.13%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
+          <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
+          <li><b>Public-hosting probe proven</b> HTTP 200 (<code>public-hosting-probe.json</code>) <span class="sev sL">hosting</span></li>
+          <li>First committed <code>docs/</code> manual + review + generation guides <span class="sev sL">docs</span></li>
+          <li>Import-linter contract KEPT (engine/data framework-agnostic) <span class="sev sL">arch</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>⏳ Still open</h3>
+        <ul class="clean">
+          <li>Visual diff is <b>hash-equality</b>, not pixel-tolerance CI with stored baselines <span class="sev sM">Medium</span></li>
+          <li>No live <em>scheduled</em> GitHub Actions run artifact captured yet <span class="sev sM">Medium</span></li>
+          <li>Static export's embedded evidence panel shows stale <code>not_proven</code> text <span class="sev sL">Low</span></li>
+          <li>Live-data backtest deferred until &ge;2 real price assets accumulate <span class="sev sL">Low</span></li>
+          <li>Stooq source blocked — external/source-contract (<code>ISSUE-B3-001</code>) <span class="sev sL">Low</span></li>
+          <li>Full Tier3 MLOps (serving / retraining / drift) deferred by design <span class="sev sL">Low</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Roadmap</h2>
+    <p class="sub">Next milestones, in order.</p>
+    <div class="timeline">
+      <div><b>Now</b> — Manual + review docs published; gates refreshed (190/20/0, mutation 22/22); browser visual + public-hosting probe proven.</div>
+      <div><b>Next</b> — Upgrade visual diff from hash-equality to pixel-tolerance CI with stored baselines; capture a live scheduled-run artifact.</div>
+      <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
+      <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Generated 2026-06-12 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code>, gate transcripts in <code>docs/review/assets/</code> · See <a href="../REVIEW_GENERATION_GUIDE.md" style="color:#04A9FB">REVIEW_GENERATION_GUIDE.md</a>
+</footer>
+
+<script>mermaid.initialize({startOnLoad:true,theme:"base",themeVariables:{primaryColor:"#eef3fa",primaryTextColor:"#3B4559",lineColor:"#005EB8",fontSize:"14px"}});</script>
+</body>
+</html>
