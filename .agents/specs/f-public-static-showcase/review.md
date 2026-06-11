@@ -6,7 +6,7 @@ Implemented · Review PASSED (configured static showcase + visual contract basel
 
 ## Evidence
 
-- `cd frontend && npm test -- --run tests/dashboard.test.tsx tests/public-demo.test.tsx` -> 12 passed.
+- `cd frontend && npm test -- --run tests/dashboard.test.tsx tests/public-demo.test.tsx` -> 14 passed.
 - `cd frontend && npm run visual` -> deterministic static export and visual-contract baseline check passed.
 - `frontend/scripts/export-public-demo.tsx` exports either `frontend/out` or committed `docs/` static artifacts for GitHub Pages branch-source hosting.
 
