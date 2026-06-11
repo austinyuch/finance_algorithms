@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `spec/regime-engine-data-hardening` after PR #7 squash-merged to `main`.
-- **Latest local evidence:** `uv run pytest -q` → **137 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(40 files); `uv run lint-imports` → KEPT.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`.
+- **Current branch lane:** `spec/f-showcase-and-d-return-risk`, branched from `origin/dev`.
+- **Latest evidence:** `uv run pytest -q` → **145 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(44 files); `uv run lint-imports` → KEPT; mutation spot checks **5/5 killed**; F coverage 95%; D2 trace coverage 87.1%.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -19,13 +19,20 @@
   - Conservative writeup: synthetic data proves pipeline correctness only; no alpha claim.
 - **Epic C C-3:** time/regime rebalance selector implemented additively in `quantlab/portfolio/rebalance.py`; A0 engine scheduling now consumes it through CR-A0.
 - **A0/C regime scheduling:** [CR-A0](./a0-backtest-foundation/change-requests/cr-a0-regime-rebalance-scheduling.md) lets the vectorized engine execute C-3 regime-selected dates through serializable `rebalance_policy` labels.
-- **Mutation automation:** [mutation automation report](./a0-backtest-foundation/reports/mutation-automation-report.md) adds `scripts/run_mutation_spot_checks.py`; current suite kills 3/3 configured mutations.
+- **Mutation automation:** [mutation automation report](./a0-backtest-foundation/reports/mutation-automation-report.md) adds `scripts/run_mutation_spot_checks.py`; current suite kills 5/5 configured mutations.
 - **D-3 real-source-format benchmark:** [real-data regime benchmark report](./d-first-regime-model/reports/real-data-regime-benchmark-report.md) adds vintage-loader-based OOS-net baseline comparison with explicit `no_alpha_claim`.
+- **F showcase first slice:** [f-showcase-read-api-dashboard](./f-showcase-read-api-dashboard/) is **Implemented(repo-side read API/dashboard payload) · Review PASSED**.
+  - Added `ShowcaseReadAPI`, dashboard summary builder, and deterministic HTML smoke renderer.
+  - Live-demo readiness is **CONDITIONAL / hybrid** until a real Next.js runtime and browser evidence exist.
+- **D return/risk second model slice:** [d-return-risk-forecast-model](./d-return-risk-forecast-model/) is **Implemented · Review PASSED**.
+  - Added deterministic PIT-safe `ReturnRiskForecaster`, `ForecastAllocationStrategy`, and OOS-net benchmark helper.
+  - Conservative writeup: no alpha claim; Tier3 MLOps remains deferred.
 
 ## Recommended Next Action
 
-1. Run `git diff --check`, stage only this continuation, commit, push `spec/regime-engine-data-hardening`, then open a PR to `main`.
-2. Next implementation slice: likely F showcase read API/dashboard, unless broader D model family work is prioritized.
+1. Commit and push `spec/f-showcase-and-d-return-risk`.
+2. Next valuable implementation lane after this branch: either real Next.js F continuation with browser smoke, or a third D model family if research depth is prioritized.
+3. Keep E/Tier3 deferred until at least 2-3 D model families have produced operational pain worth extracting.
 
 ## Scheduled Ops
 
@@ -35,6 +42,8 @@
 ## Resume Hints
 
 - For D closure truth, read [d-first-regime-model/review.md](./d-first-regime-model/review.md), [writeup.md](./d-first-regime-model/writeup.md), and [reports/implementation-report.md](./d-first-regime-model/reports/implementation-report.md).
+- For D2 closure truth, read [d-return-risk-forecast-model/review.md](./d-return-risk-forecast-model/review.md) and [reports/implementation-report.md](./d-return-risk-forecast-model/reports/implementation-report.md).
+- For F closure truth, read [f-showcase-read-api-dashboard/review.md](./f-showcase-read-api-dashboard/review.md) and [reports/implementation-report.md](./f-showcase-read-api-dashboard/reports/implementation-report.md).
 - For B-3 source status, read [ISSUE_LOG.md](./ISSUE_LOG.md), [b-data-platform/change-requests/cr-b7-source-health.md](./b-data-platform/change-requests/cr-b7-source-health.md), [b-data-platform/change-requests/cr-b8-yahoo-chart-fallback.md](./b-data-platform/change-requests/cr-b8-yahoo-chart-fallback.md), and [b-data-platform/change-requests/cr-b9-stooq-opt-in.md](./b-data-platform/change-requests/cr-b9-stooq-opt-in.md).
 - For C-3 closure truth, read [c-portfolio-core/reports/c3-rebalance-report.md](./c-portfolio-core/reports/c3-rebalance-report.md).
 - For A0 regime scheduling, read [a0-backtest-foundation/change-requests/cr-a0-regime-rebalance-scheduling.md](./a0-backtest-foundation/change-requests/cr-a0-regime-rebalance-scheduling.md).

@@ -5,10 +5,20 @@ from quantlab.models.regime import (
     RegimeFeatureBuilder,
     RegimeSignal,
 )
+from quantlab.models.return_risk import (
+    ForecastAllocationStrategy,
+    ReturnRiskForecast,
+    ReturnRiskForecaster,
+    run_return_risk_forecast_benchmark,
+)
 
 __all__ = [
+    "ForecastAllocationStrategy",
     "FirstRegimeClassifier",
     "RegimeAllocationStrategy",
     "RegimeFeatureBuilder",
+    "ReturnRiskForecast",
+    "ReturnRiskForecaster",
     "RegimeSignal",
+    "run_return_risk_forecast_benchmark",
 ]

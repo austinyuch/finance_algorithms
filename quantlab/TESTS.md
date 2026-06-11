@@ -2,7 +2,7 @@
 
 Spec coverage: A0, A, B, C, D first model plus legacy `invest_algorithms` regression.
 Canonical command: `uv run pytest -q`
-Last refreshed: 2026-06-11 · full suite **137 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(40 files) · `uv run lint-imports` KEPT · A0 mutation spot-check 5/5 killed · mutation automation 3/3 killed
+Last refreshed: 2026-06-11 · full suite **145 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(44 files) · `uv run lint-imports` KEPT · F line coverage 95% · D2 trace line coverage 87.1% · mutation automation 5/5 killed
 
 | Test ID / file | Covers | Spec / REQ / AC | Evidence |
 |---|---|---|---|
@@ -32,6 +32,8 @@ Last refreshed: 2026-06-11 · full suite **137 passed** · `uv run mypy quantlab
 | `test_d_1_regime` | PIT-safe regime signal, missing fallback, macro revision as-of gate, stable labels | d-first-regime-model REQ-D-REGIME-001 / REQ-D-HOOK-001 | 4 pass |
 | `test_d_2_regime_integration` | Regime allocation strategy vs static baseline in OOS-net leaderboard | d-first-regime-model REQ-D-BASELINE-001 / REQ-D-HOOK-001 | 2 pass |
 | `test_d_3_real_data_regime_benchmark` | Vintage-loader real-source-format regime benchmark vs static baseline with no-alpha claim | d-first-regime-model D-3 continuation | 2 pass |
+| `test_d_4_return_risk_forecast` | PIT-safe return/risk forecasts, degraded fallback metadata, PBT long-only weights, OOS-net benchmark smoke | d-return-risk-forecast-model REQ-D-FORECAST-001 / REQ-D-ALLOC-001 / REQ-D-BENCH-001 | 4 pass |
+| `test_f_1_showcase_api` | Showcase read API, dashboard summary, conservative defaults, PBT leaderboard order, deterministic HTML smoke | f-showcase-read-api-dashboard REQ-F-SHOWCASE-001/002/003 | 4 pass |
 | `test_algo_pyramid` | legacy pyramid calculator behavior | legacy `invest_algorithms` | 33 pass |
 
 ## External / Blocked Evidence
@@ -53,4 +55,11 @@ M1 PIT `<=`→`>=`、M2 成本 turnover→0、M3 walk-forward `<`→`<=`、M4 �
 - CR-A0 engine scheduling: bypassing `select_rebalance_dates(...)` was killed by the A0 regime rebalance example and PBT tests.
 - CR-B9 Stooq policy: defaulting Stooq to `["spy.us"]` was killed by `test_stooq_defaults_disabled_after_source_contract_block`.
 - D-3 benchmark: changing `claim_boundary` to `alpha_claim` was killed by the D-3 integration test.
-- `scripts/run_mutation_spot_checks.py`: automated suite killed 3/3 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`).
+- `scripts/run_mutation_spot_checks.py`: automated suite killed 5/5 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`, `showcase-claim-boundary`, `d2-forecast-claim-boundary`).
+- F showcase mutation: changing missing claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_dashboard_summary_conservative_defaults_and_no_mutation`.
+- D2 return/risk mutation: changing strategy metadata claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_forecast_strategy_fallback_metadata_for_degraded_history`.
+
+## Line coverage spot checks
+
+- F showcase: `uv run pytest --cov=quantlab.showcase --cov-report=term-missing tests/quantlab/test_f_1_showcase_api.py` → 95%.
+- D2 return/risk: `pytest-cov` / `coverage run` hit NumPy native import instrumentation error (`cannot load module more than once per process`); fallback stdlib trace command passed and parsed `quantlab.models.return_risk` at 108/124 executable lines → 87.1%.

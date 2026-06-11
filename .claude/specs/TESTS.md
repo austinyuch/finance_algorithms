@@ -16,13 +16,14 @@ uv run lint-imports
 
 | Subsystem / spec | Catalog | Summary | Latest evidence |
 |---|---|---|---|
-| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 137 passed; mypy clean; import-linter KEPT |
-| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 137 passed |
-| `b-data-platform` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, and daily snapshot unit tests | `uv run pytest -q` included in 137 passed |
-| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 137 passed |
-| `d-first-regime-model` | `quantlab/TESTS.md` | D tests for PIT signal, OOS-net baseline integration, and D-3 real-source-format benchmark | `uv run pytest -q` included in 137 passed; mypy clean; import-linter KEPT |
-| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 137 passed |
-| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 137 passed; `uv run lint-imports` KEPT |
+| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 145 passed; mypy clean(44 files); import-linter KEPT |
+| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 145 passed |
+| `b-data-platform` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, and daily snapshot unit tests | `uv run pytest -q` included in 145 passed |
+| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 145 passed |
+| `d-first-regime-model` / `d-return-risk-forecast-model` | `quantlab/TESTS.md` | D tests for PIT signal, OOS-net baseline integration, D-3 real-source-format benchmark, and D2 return/risk forecast model | D2 targeted `uv run pytest -q tests/quantlab/test_d_4_return_risk_forecast.py` → 4 passed; D2 trace line coverage 87.1%; D2 mutation killed |
+| `f-showcase-read-api-dashboard` | `quantlab/TESTS.md` | F showcase read API/dashboard payload tests including PBT order, integration, and HTML smoke | `uv run pytest -q tests/quantlab/test_f_1_showcase_api.py` → 4 passed; line coverage 95%; mutation killed |
+| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 145 passed |
+| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 145 passed; `uv run lint-imports` KEPT |
 
 ## External / Blocked Evidence Register
 
