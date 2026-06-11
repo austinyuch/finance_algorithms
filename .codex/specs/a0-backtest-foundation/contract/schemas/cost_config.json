@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "a0/cost_config.json",
+  "title": "CostConfig",
+  "description": "成本模型參數 (REQ-A0-BT-003)。所有成本參數設為 0 時,net 須等於 gross (AC-A0-03)。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "commission_bps": {"type": "number", "minimum": 0, "description": "交易手續費 (basis points, 雙邊)"},
+    "slippage_bps": {"type": "number", "minimum": 0, "description": "滑價 (basis points)"},
+    "tw_transaction_tax_bps": {"type": "number", "minimum": 0, "description": "台股證交稅 (賣出)"},
+    "us_dividend_withholding_pct": {"type": "number", "minimum": 0, "maximum": 1, "description": "美股股息預扣稅率"},
+    "fx_spread_bps": {"type": "number", "minimum": 0, "description": "USD/TWD 換匯點差"}
+  },
+  "required": ["commission_bps", "slippage_bps", "tw_transaction_tax_bps", "us_dividend_withholding_pct", "fx_spread_bps"]
+}

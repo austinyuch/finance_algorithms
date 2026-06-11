@@ -5,3 +5,13 @@ venv
 __pycache__
 logs/*
 temp_files/*
+
+# cross-agents symlink bridge: claude-md begin
+CLAUDE.md
+# cross-agents symlink bridge: claude-md end
+
+# cross-agents symlink bridge: managed begin
+.claude/skills
+.kiro/skills
+.codex/skills
+# cross-agents symlink bridge: managed end
