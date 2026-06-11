@@ -285,6 +285,33 @@ def test_snapshot_ops_gate_accepts_partial_live_report_when_allowed():
     assert summary["claim_boundary"] == "source_contract_status_only"
 
 
+def test_schedule_report_records_retention_and_latest_pointer(tmp_path):
+    from scripts.snapshot_schedule_report import build_schedule_report, write_schedule_report
+
+    report = {
+        "available_date": "2026-06-11",
+        "dry_run": False,
+        "counts": {"ok": 2, "skip": 1, "fail": 0, "dry": 0},
+        "jobs": [
+            {"source_id": "fred:GOOD", "status": "ok"},
+            {"source_id": "fred:OLD", "status": "skip"},
+            {"source_id": "yahoo:2330.TW", "status": "ok"},
+        ],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+
+    schedule = build_schedule_report(report, frequency="daily")
+    target = write_schedule_report(schedule, tmp_path)
+
+    assert schedule["status"] == "clean"
+    assert schedule["frequency"] == "daily"
+    assert schedule["retention"] == "append_only"
+    assert (tmp_path / "latest-schedule-report.json").read_text(encoding="utf-8") == target.read_text(encoding="utf-8")
+
+
 def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
     from scripts.snapshot_ops_gate import validate_snapshot_report
 
@@ -301,6 +328,22 @@ def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
 
     with pytest.raises(ValueError, match="source_contract_status_only"):
         validate_snapshot_report(report)
+
+
+def test_stooq_source_contract_decision_requires_live_proof():
+    from quantlab.data.source_health import decide_stooq_contract
+
+    blocked = {
+        "claim_boundary": "source_contract_status_only",
+        "stooq": {"status": "blocked", "default_enabled": False},
+    }
+    available = {
+        "claim_boundary": "source_contract_status_only",
+        "stooq": {"status": "available", "default_enabled": True},
+    }
+
+    assert decide_stooq_contract(blocked)["decision"] == "keep_default_disabled"
+    assert decide_stooq_contract(available)["decision"] == "requires_live_close_rows"
 
 
 @given(

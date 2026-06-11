@@ -20,6 +20,7 @@ from quantlab.models.robust_optimization import (
 from quantlab.models.evaluation import (
     ModelFamilyScore,
     build_model_family_evaluation,
+    build_result_store_family_evaluation,
     score_model_family,
 )
 
@@ -36,6 +37,7 @@ __all__ = [
     "RegimeSignal",
     "ModelFamilyScore",
     "build_model_family_evaluation",
+    "build_result_store_family_evaluation",
     "score_model_family",
     "run_return_risk_forecast_benchmark",
     "run_robust_optimization_benchmark",

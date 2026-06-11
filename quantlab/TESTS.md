@@ -1,8 +1,8 @@
 # quantlab — TESTS.md(folder-level test registry)
 
-Spec coverage: A0, A, B, C, D model families/evaluation, E-lite registry durability, F showcase/demo hardening/public static showcase, G alt-data bundle loading, and legacy `invest_algorithms` regression.
+Spec coverage: A0, A, B, C, D model families/evaluation, E-lite registry durability/Tier3 artifact manifest, F showcase/demo hardening/public static showcase with hosted proof, G alt-data bundle loading, and legacy `invest_algorithms` regression.
 Canonical command: `uv run pytest -q`
-Last refreshed: 2026-06-11 · Python full suite **176 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(50 files) · `uv run lint-imports` KEPT · Python mutation spot checks 14/14 killed · changed pure-Python fallback coverage 96% total (`alt_data` 100%, `experiment_registry` 99%, `evaluation` 100%, `snapshot_ops_gate` 85%) · F Next.js tests 14 passed, coverage 97.05%, npm audit 0 vulnerabilities, 6/6 frontend mutations killed, visual export/build/smoke passed
+Last refreshed: 2026-06-11 · Python full suite **181 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(50 files) · `uv run lint-imports` KEPT · Python mutation spot checks 18/18 killed · next-gap fallback trace coverage 100% for changed pure-Python modules (`experiment_registry`, `evaluation`, `source_health`, `snapshot_schedule_report`) · F Next.js tests 18 passed, coverage 94.93%, npm audit 0 vulnerabilities, 7/7 frontend mutations killed, visual export/browser visual/build/smoke/public probe passed
 
 | Test ID / file | Covers | Spec / REQ / AC | Evidence |
 |---|---|---|---|
@@ -22,7 +22,7 @@ Last refreshed: 2026-06-11 · Python full suite **176 passed** · `uv run mypy q
 | `test_b_4_align` | as-of frequency alignment and PIT forward fill | b-data-platform B-4 | 2 pass |
 | `test_b_5_strictness` | `pit_strictness` schema/provider/loader behavior | b-data-platform CR-B5 | 3 pass |
 | `test_b_6_source_health` | source-contract health summary, Stooq blocked/default-disabled posture, PBT latest status preservation | b-data-platform CR-B10 | 3 pass |
-| `test_daily_snapshot` | bitemporal stamping, append-only write, parser wrappers, Yahoo latest-close PBT, Stooq opt-in policy, graceful degradation, machine-readable run report, B snapshot ops gate | data vintage routine / CR-B8 / CR-B9 / CR-B11 / b-snapshot-ops-gate | 19 pass |
+| `test_daily_snapshot` | bitemporal stamping, append-only write, parser wrappers, Yahoo latest-close PBT, Stooq opt-in policy, graceful degradation, machine-readable run report, B snapshot ops gate, schedule report retention, Stooq decision helper | data vintage routine / CR-B8 / CR-B9 / CR-B11 / b-snapshot-ops-gate / next-gaps-1-6-tier3-public | 21 pass |
 | `test_mutation_spot_checks` | mutation runner apply/restore PBT, ambiguity rejection, killed/survived behavior, CLI smoke | A0 mutation automation + B/F/G mutation registry | 7 pass |
 | `test_governance_guards` | import-linter wrapper and spec/runtime interface drift guard | residual hardening | 2 pass |
 | `test_c_1_optimize` | SLSQP max-return-under-vol optimizer and `MeanVarianceStrategy` | c-portfolio-core C-1 AC-C-01/02/03 | 5 pass |
@@ -35,12 +35,12 @@ Last refreshed: 2026-06-11 · Python full suite **176 passed** · `uv run mypy q
 | `test_d_3_real_data_regime_benchmark` | Vintage-loader real-source-format regime benchmark vs static baseline with no-alpha claim | d-first-regime-model D-3 continuation | 2 pass |
 | `test_d_4_return_risk_forecast` | PIT-safe return/risk forecasts, degraded fallback metadata, PBT long-only weights, OOS-net benchmark smoke | d-return-risk-forecast-model REQ-D-FORECAST-001 / REQ-D-ALLOC-001 / REQ-D-BENCH-001 | 4 pass |
 | `test_d_5_robust_optimization` | PIT-safe robust optimizer estimates, downside penalty invariant, degraded fallback metadata, PBT long-only weights, OOS-net benchmark smoke | d-robust-portfolio-optimization-model REQ-D3-ROBUST-001 / REQ-D3-ALLOC-001 / REQ-D3-BENCH-001 | 4 pass |
-| `test_d_6_model_family_evaluation` | D family read-side evaluator, OOS-net-only ranking, visible baseline, no-alpha rejection, PBT sorted order | d-model-family-evaluation | 4 pass |
-| `test_e_1_experiment_registry` | E-lite experiment lineage, config catalog, deterministic dedupe, PBT config roundtrip, no-alpha claim rejection, checksum snapshot, real `LocalResultStore` bridge | e-mlops-tier3-lite REQ-E-LITE-REG-001 / REQ-E-LITE-READ-001 / e-registry-durability-bridge | 7 pass |
+| `test_d_6_model_family_evaluation` | D family read-side evaluator, OOS-net-only ranking, visible baseline, no-alpha rejection, PBT sorted order, `LocalResultStore`-backed family evaluation | d-model-family-evaluation / next-gaps-1-6-tier3-public | 5 pass |
+| `test_e_1_experiment_registry` | E-lite experiment lineage, config catalog, deterministic dedupe, PBT config roundtrip, no-alpha claim rejection, checksum snapshot, real `LocalResultStore` bridge, non-serving Tier3 run manifest, drift skeleton | e-mlops-tier3-lite REQ-E-LITE-REG-001 / REQ-E-LITE-READ-001 / e-registry-durability-bridge / next-gaps-1-6-tier3-public | 9 pass |
 | `test_f_1_showcase_api` | Showcase read API, E-lite registry bridge, dashboard summary, conservative defaults, PBT leaderboard order, deterministic HTML smoke | f-showcase-read-api-dashboard / e-f-registry-dashboard-bridge REQ-F-SHOWCASE-001/002/003 / AC-EF-01 | 5 pass |
 | `test_g_1_alt_data` | G optional alt-data source contracts, second default-disabled source, bundle loader, PIT CSV loader, PBT available-date gate, strict unready rejection | g-alt-data-first-slice / g-alt-data-second-slice AC-G-01/02/03 | 7 pass |
 | `frontend/tests/dashboard.test.tsx` | Real Next.js dashboard component, `/api/showcase` route, E registry section, PBT leaderboard validator, no-alpha/demo/dependency-readiness claim boundaries | f-nextjs-showcase-dashboard / f-demo-hardening / e-f-registry-dashboard-bridge / f-public-demo-readiness | 7 pass |
-| `frontend/tests/public-demo.test.tsx` | GitHub Pages static showcase manifest, configured-not-observed hosting boundary, static visual contract baseline, PBT visual hash drift | f-public-static-showcase | 7 pass |
+| `frontend/tests/public-demo.test.tsx` | GitHub Pages static showcase manifest, configured-not-observed vs proven hosting boundary, static visual contract baseline, browser visual evidence, PBT visual hash drift and non-200 hosting rejection | f-public-static-showcase / next-gaps-1-6-tier3-public | 11 pass |
 | `test_algo_pyramid` | legacy pyramid calculator behavior | legacy `invest_algorithms` | 33 pass |
 
 ## External / Blocked Evidence
@@ -62,7 +62,7 @@ M1 PIT `<=`→`>=`、M2 成本 turnover→0、M3 walk-forward `<`→`<=`、M4 �
 - CR-A0 engine scheduling: bypassing `select_rebalance_dates(...)` was killed by the A0 regime rebalance example and PBT tests.
 - CR-B9 Stooq policy: defaulting Stooq to `["spy.us"]` was killed by `test_stooq_defaults_disabled_after_source_contract_block`.
 - D-3 benchmark: changing `claim_boundary` to `alpha_claim` was killed by the D-3 integration test.
-- `scripts/run_mutation_spot_checks.py`: automated suite killed 14/14 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`, `showcase-claim-boundary`, `d2-forecast-claim-boundary`, `d3-robust-claim-boundary`, `e-registry-claim-boundary`, `b-source-health-claim-boundary`, `snapshot-report-stooq-default`, `showcase-experiment-readiness`, `g-alt-data-pit-gate`, `b-snapshot-ops-stooq-gate`, `e-registry-snapshot-checksum`, `d-model-evaluation-alpha-gate`).
+- `scripts/run_mutation_spot_checks.py`: automated suite killed 18/18 configured mutations (`engine-regime-selector`, `c3-regime-change`, `yahoo-latest-close`, `showcase-claim-boundary`, `d2-forecast-claim-boundary`, `d3-robust-claim-boundary`, `e-registry-claim-boundary`, `b-source-health-claim-boundary`, `snapshot-report-stooq-default`, `showcase-experiment-readiness`, `g-alt-data-pit-gate`, `b-snapshot-ops-stooq-gate`, `e-registry-snapshot-checksum`, `d-model-evaluation-alpha-gate`, `e-tier3-manifest-serving-gate`, `d-result-store-evaluation-source`, `b-schedule-append-only-retention`, `b-stooq-decision-default-disabled`).
 - F showcase mutation: changing missing claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_dashboard_summary_conservative_defaults_and_no_mutation`.
 - D2 return/risk mutation: changing strategy metadata claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_forecast_strategy_fallback_metadata_for_degraded_history`.
 - D3 robust optimizer mutation: changing strategy metadata claim boundary from `no_alpha_claim` to `alpha_claim` was killed by `test_robust_strategy_degraded_history_falls_back_and_preserves_claim_boundary`.
@@ -74,7 +74,11 @@ M1 PIT `<=`→`>=`、M2 成本 turnover→0、M3 walk-forward `<`→`<=`、M4 �
 - B snapshot ops mutation: changing the Stooq gate to require available/default-enabled was killed by `test_snapshot_ops_gate_accepts_partial_live_report_when_allowed`.
 - E registry snapshot mutation: inverting checksum validation was killed by `test_experiment_registry_writes_checksum_snapshot_and_detects_tampering`.
 - D model evaluation mutation: inverting the no-alpha gate was killed by `test_model_family_evaluation_rejects_alpha_claim_and_missing_baseline`.
-- F Next.js mutations: changing fixture claim boundary from `no_alpha_claim` to `alpha_claim`, changing experiment registry claim boundary to `alpha_claim`, changing public hosting from `not_proven` to `proven`, changing dependency audit from `clean` to `moderate_advisory`, changing public-demo hosting status to `proven`, and changing the visual baseline claim boundary to `alpha_claim`, were killed by `frontend/tests/dashboard.test.tsx`, `frontend/tests/public-demo.test.tsx`, and `npm run visual`.
+- E Tier3 manifest mutation: changing `serving_status` from `not_serving` to `serving` was killed by `test_tier3_manifest_and_drift_skeleton_remain_non_serving`.
+- D result-store evaluation mutation: changing the wrapper source from `local_result_store` was killed by `test_model_family_evaluation_can_read_real_result_store`.
+- B schedule retention mutation: changing `append_only` retention was killed by `test_snapshot_schedule_report_preserves_append_only_retention_and_latest_pointer`.
+- B Stooq decision mutation: changing blocked/default-disabled decision from `keep_default_disabled` was killed by `test_stooq_contract_decision_requires_live_rows_before_default_enable`.
+- F Next.js mutations: changing fixture claim boundary from `no_alpha_claim` to `alpha_claim`, changing experiment registry claim boundary to `alpha_claim`, changing public hosting from `not_proven` to `proven`, changing dependency audit from `clean` to `moderate_advisory`, changing public-demo hosting status to `proven`, changing the visual baseline claim boundary to `alpha_claim`, changing the public-hosting classifier to prove non-200 responses, and bypassing browser visual hash validation were killed by `frontend/tests/dashboard.test.tsx`, `frontend/tests/public-demo.test.tsx`, `npm run visual`, and `npm run visual:browser`.
 
 ## Line coverage spot checks
 
@@ -86,4 +90,5 @@ M1 PIT `<=`→`>=`、M2 成本 turnover→0、M3 walk-forward `<`→`<=`、M4 �
 - G alt-data: fallback stdlib trace command passed and parsed `quantlab.data.alt_data` at 63/63 executable lines → 100.0%.
 - B daily snapshot report: fallback stdlib trace command passed and parsed `scripts.daily_snapshot` at 152/152 executable lines → 100.0%.
 - Changed pure-Python modules: `pytest-cov` reproduced the known NumPy native import instrumentation error; fallback `coverage run` by real module names passed at 96% total (`quantlab.data.alt_data` 100%, `quantlab.mlops.experiment_registry` 99%, `quantlab.models.evaluation` 100%, `scripts.snapshot_ops_gate` 85%).
-- F Next.js: `cd frontend && npm run coverage` → 97.05% line coverage; `npm audit --json` → 0 vulnerabilities; `npm run mutation` → 6/6 killed; `npm run visual`, `npm run build`, and `npm run smoke` on `127.0.0.1:3044` passed.
+- Next-gap changed pure-Python modules: `pytest-cov` reproduced the same NumPy native import instrumentation error; fallback stdlib trace command passed and parsed `quantlab.mlops.experiment_registry` 176/176 lines, `quantlab.models.evaluation` 56/56, `quantlab.data.source_health` 53/53, and `scripts.snapshot_schedule_report` 30/30.
+- F Next.js: `cd frontend && npm run coverage` → 94.93% line coverage; `npm audit --json` → 0 vulnerabilities; `npm run mutation` → 7/7 killed; `npm run visual`, `npm run visual:browser`, `npm run probe:public-demo`, `npm run build`, and `npm run smoke` on `127.0.0.1:3044` passed.

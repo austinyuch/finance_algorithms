@@ -13,6 +13,8 @@ uv run lint-imports
 cd frontend && npm test -- --run
 cd frontend && npm run coverage
 cd frontend && npm run visual
+cd frontend && npm run visual:browser
+cd frontend && npm run probe:public-demo
 cd frontend && npm run build
 cd frontend && npm run mutation
 cd frontend && npm run smoke
@@ -22,17 +24,17 @@ cd frontend && npm run smoke
 
 | Subsystem / spec | Catalog | Summary | Latest evidence |
 |---|---|---|---|
-| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 176 passed; mypy clean(50 files); import-linter KEPT |
-| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 176 passed |
-| `b-data-platform` / `b-snapshot-ops-gate` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, source-health registry, daily snapshot unit tests, CR-B11 run-report JSON, and ops report validation | `uv run pytest -q` included in 176 passed; changed pure-Python fallback coverage 96% total; Python mutations killed |
-| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 176 passed |
+| `a0-backtest-foundation` | `quantlab/TESTS.md` | A0 tests + CR-A0 regime scheduling + mutation automation | `uv run pytest -q` included in 181 passed; mypy clean(50 files); import-linter KEPT |
+| `a-tsmc-hedge-slice` | `quantlab/TESTS.md` | 17 Epic A tests | `uv run pytest -q` included in 181 passed |
+| `b-data-platform` / `b-snapshot-ops-gate` | `quantlab/TESTS.md` | B/data tests including Yahoo fallback, Stooq opt-in, source-health registry, daily snapshot unit tests, CR-B11 run-report JSON, ops report validation, schedule report retention, and Stooq source-contract decision helper | `uv run pytest -q` included in 181 passed; next-gap fallback trace coverage 100% for `source_health` and `snapshot_schedule_report`; Python mutations killed |
+| `c-portfolio-core` | `quantlab/TESTS.md` | 17 C tests including C-2 multi-horizon and C-3 rebalance coverage | `uv run pytest -q` included in 181 passed |
 | `d-first-regime-model` / `d-return-risk-forecast-model` | `quantlab/TESTS.md` | D tests for PIT signal, OOS-net baseline integration, D-3 real-source-format benchmark, and D2 return/risk forecast model | D2 targeted `uv run pytest -q tests/quantlab/test_d_4_return_risk_forecast.py` → 4 passed; D2 trace line coverage 87.1%; D2 mutation killed |
-| `d-robust-portfolio-optimization-model` / `d-model-family-evaluation` | `quantlab/TESTS.md` | D3 robust optimizer plus D family OOS-net evaluator | D evaluator targeted 4 passed; changed pure-Python coverage 100%; mutation killed |
-| `e-mlops-tier3-lite` / `e-f-registry-dashboard-bridge` / `e-registry-durability-bridge` | `quantlab/TESTS.md` | E-lite experiment lineage/config registry tests, checksum snapshot, result-store bridge, and F dashboard registry read bridge | E targeted 7 passed; changed pure-Python coverage 99%; mutations killed |
-| `f-showcase-read-api-dashboard` / `f-nextjs-showcase-dashboard` / `f-demo-hardening` / `f-public-demo-readiness` / `f-public-static-showcase` | `quantlab/TESTS.md`; `frontend/tests/dashboard.test.tsx`; `frontend/tests/public-demo.test.tsx` | F Python read API plus real Next.js dashboard route/component tests, static public showcase export, visual contract baseline, integration, and production HTTP smoke | Python F 5 passed; Next.js F 14 passed, 97.05% coverage, npm audit 0 vulnerabilities, 6 frontend mutations killed, visual/build/smoke passed |
+| `d-robust-portfolio-optimization-model` / `d-model-family-evaluation` / `next-gaps-1-6-tier3-public` | `quantlab/TESTS.md` | D3 robust optimizer plus D family OOS-net evaluator and `LocalResultStore` read wrapper | D evaluator targeted 5 passed; next-gap fallback trace coverage 100% for `evaluation`; mutation killed |
+| `e-mlops-tier3-lite` / `e-f-registry-dashboard-bridge` / `e-registry-durability-bridge` / `next-gaps-1-6-tier3-public` | `quantlab/TESTS.md` | E-lite experiment lineage/config registry tests, checksum snapshot, result-store bridge, non-serving Tier3 artifact manifest, drift skeleton, and F dashboard registry read bridge | E targeted 9 passed; next-gap fallback trace coverage 100% for `experiment_registry`; mutations killed |
+| `f-showcase-read-api-dashboard` / `f-nextjs-showcase-dashboard` / `f-demo-hardening` / `f-public-demo-readiness` / `f-public-static-showcase` / `next-gaps-1-6-tier3-public` | `quantlab/TESTS.md`; `frontend/tests/dashboard.test.tsx`; `frontend/tests/public-demo.test.tsx` | F Python read API plus real Next.js dashboard route/component tests, static public showcase export, hosted public Pages proof, browser visual evidence, visual contract baseline, integration, and production HTTP smoke | Python F 5 passed; Next.js F 18 passed, 94.93% coverage, npm audit 0 vulnerabilities, 7 frontend mutations killed, visual/browser visual/build/smoke/public probe passed |
 | `g-alt-data-first-slice` / `g-alt-data-second-slice` | `quantlab/TESTS.md` | Optional alt-data source contracts, second default-disabled contract, bundle loader, and PIT-safe local CSV loader | G targeted tests 7 passed; changed pure-Python coverage 100%; mutation killed |
-| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 176 passed |
-| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 176 passed; `uv run lint-imports` KEPT |
+| legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 181 passed |
+| governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 181 passed; `uv run lint-imports` KEPT |
 
 ## External / Blocked Evidence Register
 
