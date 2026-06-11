@@ -1,0 +1,19 @@
+{
+  "targetUrl": "https://austinyuch.github.io/finance_algorithms/",
+  "artifactKind": "github_pages_static_showcase",
+  "hostingEvidence": {
+    "status": "configured_not_observed",
+    "sourcePath": "docs/",
+    "publishMode": "github_pages_branch_source"
+  },
+  "claimBoundary": "no_alpha_claim",
+  "dashboardClaim": "local_demo_only",
+  "sections": [
+    "leaderboard",
+    "allocation-regime",
+    "rebalance",
+    "experiments",
+    "evidence"
+  ],
+  "dataHash": "e88aad23ddc7a5067083a3a7cd0fd5dffac7bb6140f08d3d6ec6c75419fae34f"
+}

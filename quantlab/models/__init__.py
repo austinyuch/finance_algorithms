@@ -17,6 +17,11 @@ from quantlab.models.robust_optimization import (
     RobustPortfolioModel,
     run_robust_optimization_benchmark,
 )
+from quantlab.models.evaluation import (
+    ModelFamilyScore,
+    build_model_family_evaluation,
+    score_model_family,
+)
 
 __all__ = [
     "ForecastAllocationStrategy",
@@ -29,6 +34,9 @@ __all__ = [
     "RobustOptimizationStrategy",
     "RobustPortfolioModel",
     "RegimeSignal",
+    "ModelFamilyScore",
+    "build_model_family_evaluation",
+    "score_model_family",
     "run_return_risk_forecast_benchmark",
     "run_robust_optimization_benchmark",
 ]
