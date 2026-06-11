@@ -8,7 +8,8 @@
     "start": "next start --hostname 127.0.0.1",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "mutation": "node scripts/run-mutation-checks.mjs"
+    "mutation": "node scripts/run-mutation-checks.mjs",
+    "smoke": "node scripts/public-demo-smoke.mjs"
   },
   "dependencies": {
     "next": "^16.0.10",
@@ -23,5 +24,8 @@
     "fast-check": "^4.4.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   }
 }

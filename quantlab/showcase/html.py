@@ -25,6 +25,15 @@ def render_dashboard_html(summary: Mapping[str, Any]) -> str:
     warnings = "".join(
         f"<li>{escape(str(warning))}</li>" for warning in summary.get("warnings", [])
     )
+    experiments = "".join(
+        "<tr>"
+        f"<td>{escape(str(row.get('model_family', '')))}</td>"
+        f"<td>{escape(str(row.get('strategy_name', '')))}</td>"
+        f"<td>{escape(str(row.get('readiness', 'registry_only')))}</td>"
+        f"<td>{escape(str(row.get('claim_boundary', 'no_alpha_claim')))}</td>"
+        "</tr>"
+        for row in summary.get("experiments", [])
+    )
     return (
         "<main>"
         "<section id=\"leaderboard\"><h2>Leaderboard</h2>"
@@ -36,6 +45,10 @@ def render_dashboard_html(summary: Mapping[str, Any]) -> str:
         f"<ul>{_items(summary.get('allocation', {}))}</ul></section>"
         "<section id=\"rebalance\"><h2>Rebalance</h2>"
         f"<p>{escape(', '.join(str(d) for d in summary.get('rebalance_dates', [])))}</p></section>"
+        "<section id=\"experiments\"><h2>Experiment Registry</h2>"
+        "<table><thead><tr><th>Family</th><th>Strategy</th><th>Readiness</th>"
+        "<th>Claim</th></tr></thead>"
+        f"<tbody>{experiments}</tbody></table></section>"
         "<section id=\"evidence\"><h2>Evidence</h2>"
         f"<p>{escape(str(summary.get('claim_boundary', 'no_alpha_claim')))}</p>"
         f"<ul>{warnings}</ul></section>"

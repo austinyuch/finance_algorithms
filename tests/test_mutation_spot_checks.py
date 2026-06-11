@@ -67,6 +67,9 @@ def test_mutation_runner_list_smoke():
     assert "d3-robust-claim-boundary" in result.stdout
     assert "e-registry-claim-boundary" in result.stdout
     assert "b-source-health-claim-boundary" in result.stdout
+    assert "snapshot-report-stooq-default" in result.stdout
+    assert "showcase-experiment-readiness" in result.stdout
+    assert "g-alt-data-pit-gate" in result.stdout
 
 
 def test_selected_specs_rejects_unknown_name():
@@ -121,3 +124,6 @@ def test_main_list_prints_mutation_names(capsys):
     assert "d3-robust-claim-boundary" in out
     assert "e-registry-claim-boundary" in out
     assert "b-source-health-claim-boundary" in out
+    assert "snapshot-report-stooq-default" in out
+    assert "showcase-experiment-readiness" in out
+    assert "g-alt-data-pit-gate" in out

@@ -9,8 +9,15 @@ const mutations = [
   {
     name: "frontend-claim-boundary",
     path: "lib/showcase-fixture.ts",
-    original: 'claimBoundary: "no_alpha_claim",',
-    mutated: 'claimBoundary: "alpha_claim" as never,',
+    original: 'claimBoundary: "no_alpha_claim",\n  regime:',
+    mutated: 'claimBoundary: "alpha_claim" as never,\n  regime:',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
+  },
+  {
+    name: "frontend-experiment-registry-claim-boundary",
+    path: "lib/showcase-fixture.ts",
+    original: 'claimBoundary: "no_alpha_claim",\n      status: "research_only",',
+    mutated: 'claimBoundary: "alpha_claim" as never,\n      status: "research_only",',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
@@ -18,6 +25,13 @@ const mutations = [
     path: "lib/showcase-fixture.ts",
     original: 'publicHosting: "not_proven",',
     mutated: 'publicHosting: "proven" as never,',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
+  },
+  {
+    name: "frontend-dependency-audit-regression",
+    path: "lib/showcase-fixture.ts",
+    original: 'dependencyAudit: "clean",',
+    mutated: 'dependencyAudit: "moderate_advisory" as never,',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   }
 ];

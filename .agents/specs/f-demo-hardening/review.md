@@ -15,7 +15,7 @@ Overall: **8.9 / 10**.
 
 ## Live-Demo Readiness
 
-**CONDITIONAL.** Local Next.js runtime proof exists; public hosting, visual regression, and dependency hygiene are explicitly not proven.
+**CONDITIONAL.** Local Next.js runtime proof exists; public hosting and visual regression are explicitly not proven. Dependency hygiene is superseded by [f-public-demo-readiness](../f-public-demo-readiness/review.md), which records a clean npm audit.
 
 ## Verification Coverage
 
@@ -27,4 +27,4 @@ Overall: **8.9 / 10**.
 
 ## Residual Risk
 
-`npm audit` still reports moderate advisories through the frontend dependency tree. Do not claim public deployment readiness until dependency hygiene and deployment evidence are resolved.
+Do not claim public deployment readiness until actual hosting evidence and visual regression evidence exist.
