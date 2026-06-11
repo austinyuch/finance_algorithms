@@ -15,9 +15,9 @@
 |---|---|---|---|---|---|---|
 | [a0-backtest-foundation](./a0-backtest-foundation/) | A0 | **Implemented · Review PASSED**(7/7 task, 66 tests, mutation 5/5) | — (greenfield 地基) | (未來)A,B,C,D,E,F,G 全依賴其介面 | — | `spec/a0-backtest-foundation` |
 | [a-tsmc-hedge-slice](./a-tsmc-hedge-slice/) | A | **Implemented · Review PASSED**(6/6 task, 83 tests) | a0-backtest-foundation | a0(history() + metrics 防護,additive) | — | `spec/a-tsmc-hedge-slice` |
-| [b-data-platform](./b-data-platform/) | B | **Implemented(repo-side)· Review PASSED**(B-1/2/4/5;B-3 bulk=真機 handoff) | a0-backtest-foundation | a0(history()/metrics additive;**CR-B5** pit_strictness additive schema) | — (CR-B5 Implemented) | `spec/b-data-platform` |
-| [c-portfolio-core](./c-portfolio-core/) | C | **Implemented(core)· Review PASSED**(C-1/4/5;C-2 多期/C-3 再平衡 planned) | b-data-platform | invest_algorithms/algo_pyramid(C-4 additive adapter,未改其行為) | — | `spec/c-portfolio-core` |
-| _d-ml-models_ | D | Planned | b, c, a0 | — | — | (TBD) |
+| [b-data-platform](./b-data-platform/) | B | **Implemented(repo-side)· Review PASSED**(B-1/2/4/5;B-3 bulk=真機 handoff;2026-06-11 proof partial) | a0-backtest-foundation | a0(history()/metrics additive;**CR-B5** pit_strictness additive schema) | — (CR-B5 Implemented);issue pointer `ISSUE-B3-001` | `spec/b-data-platform` |
+| [c-portfolio-core](./c-portfolio-core/) | C | **Implemented(core+C-2)· Review PASSED**(C-1/2/4/5;C-3 再平衡 planned) | b-data-platform | invest_algorithms/algo_pyramid(C-4 additive adapter,未改其行為); future D regime hook for C-3 | — | `spec/c-portfolio-core` |
+| [d-first-regime-model](./d-first-regime-model/) | D | **Planned · Tasks Ready**(first regime model; no Tier3) | a0-backtest-foundation,b-data-platform,c-portfolio-core | c-portfolio-core(C-3 regime hook,additive future consumer) | — | `spec/d-first-regime-model` |
 | _e-mlops-tier3_ | E | Deferred(R3) | d | — | — | (TBD) |
 | _f-frontend_ | F | Planned | a0(read API) | — | — | (TBD) |
 | _g-alt-data_ | G | Optional | a0 | — | — | (獨立 optional lane) |

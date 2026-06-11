@@ -3,28 +3,36 @@
 > 高階、滾動、可覆寫。跨 spec 當前狀態與恢復點。詳細真相見各 spec artifact。
 
 ## Current State (2026-06-11)
-- **已 merged 進 main:** A0(PR #1)、Epic A(PR #2)、residual hardening(PR #3)、Epic B B-1/B-2(PR #4)。main 全套 **91 passed**、mypy clean(30 檔)、import-linter KEPT。
-- **Active spec:** `c-portfolio-core`(Epic C)— **Implemented(core)· Review PASSED**。lane `spec/c-portfolio-core`(未 push)。
-  - C-1 最佳化器(max return s.t. vol≤cap)/ C-4 金字塔進場 adapter(敘事閉環,接回 algo_pyramid)/ C-5 整合 leaderboard。全套 **105 passed**。C-2 多期/C-3 regime 再平衡 = planned。
-- **Epic B** — Implemented(repo-side)· merged(PR #5)。
-- **Epic B 完成:** B-1 loader / B-2 FRED 價格代理 / B-4 as-of 對齊 / B-5 pit_strictness(**CR-B5** overlay,已 Implemented) / B-6 review。**B-3 bulk = 真機 handoff**(FRED 全史已被 snapshot 涵蓋;Stooq/個股待真機)。verdict 見 [b-data-platform/review.md](./b-data-platform/review.md)。
-- **B-2 已啟用:** daily_snapshot 加 FRED 價格代理,cron 累積真實價格中(繞過 Stooq 404)。
-- **Next action:** push/PR/merge `spec/b-data-platform-cont`;之後可進 **Epic C(組合最佳化)** 或等真機累積真實價格後重跑 Epic A slice。
-- **Residual 狀態:** ✅ import-linter + drift-guard(PR #3)。延後(環境阻擋):MLflow(Py3.13)、mutmut 自動化、三框架真機 GPU。
-- **高階計畫:** [allweather-portfolio-platform/](./allweather-portfolio-platform/)(problem-space + epic-breakdown + 資料治理)。
+
+- **Main local evidence:** `uv run pytest -q` → **108 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(36 files); `uv run lint-imports` → KEPT.
+- **Governance sync completed:** `quantlab/TESTS.md` refreshed as row-level test catalog; `.agents/specs/TESTS.md` added as workspace rollup; `SPECS.md` updated for C-2 and D first-model spec.
+- **Epic B B-3 proof attempt:** `uv run python scripts/daily_snapshot.py` captured partial FRED/NOAA data under `data/vintage/raw/2026-06-11/` but exited 1. All configured Stooq symbols, including `2330.tw`, returned HTTP 404; configured FRED gold proxy returned HTTP 404; several FRED series timed out.
+  - Tracking surface: [ISSUE_LOG.md](./ISSUE_LOG.md) `ISSUE-B3-001`.
+  - Current classification: B remains repo-side Review PASSED; B-3 external/source-contract proof is not closed for Stooq/TSMC.
+- **Epic C:** `c-portfolio-core` is **Implemented(core+C-2) · Review PASSED**.
+  - C-2 added `HorizonConfig` + `MultiHorizonMeanVarianceStrategy`, with 3 tests in `test_c_2_multihorizon`.
+  - C-3 time/regime rebalance remains planned; regime hook depends on Epic D.
+- **Epic D:** [d-first-regime-model](./d-first-regime-model/) is created with requirements/design/tasks. Scope is a deterministic PIT-safe first regime classifier, OOS-net baseline comparison, and future C-3 additive hook. Tier3 MLOps remains deferred.
+
+## Recommended Next Action
+
+1. Start implementation for [d-first-regime-model/tasks.md](./d-first-regime-model/tasks.md) Task 1, unless B-3 source correction is prioritized.
+2. If B-3 source correction is prioritized, promote `ISSUE-B3-001` to a B CR overlay only after selecting replacement source symbols/URLs or source pins that require repo changes.
+3. After D first-model implementation, return to C-3 for time-based rebalance plus optional regime hook consumption.
 
 ## Scheduled Ops
-- **每日 vintage snapshot routine 已上線**:`trig_01G7GG93ELcs2x98GvxDcjdD`(台灣 08:00 / 00:00 UTC),跑 `scripts/daily_snapshot.py` → commit+push `data/vintage/raw/<date>/` 到 main。首次執行 2026-06-10 08:00。
-  - 管理:https://claude.ai/code/routines/trig_01G7GG93ELcs2x98GvxDcjdD
-  - 已 push 到 main:snapshot 腳本 + test(9 綠)+ 治理政策 + program 規劃文件 + 首日 seed 資料(commit 98d47b8)。
-  - 待真機驗證:Stooq symbol/URL(沙箱回 404);FRED 偶發逾時(transient)。
-  - 隔日檢查點:確認 routine 有成功 commit 當日 snapshot;留意失敗源。
+
+- Daily vintage snapshot routine is expected to continue writing append-only files under `data/vintage/raw/<date>/`.
+- Current live proof says routine/source health is partial, not fully proven for Stooq/TSMC.
 
 ## Resume Hints
-- 先讀 [SPECS.md](./SPECS.md) → 本檔 → [a0-backtest-foundation/requirements.md](./a0-backtest-foundation/requirements.md)
-- Program 脈絡:[allweather-portfolio-platform/01-problem-space.md](./allweather-portfolio-platform/01-problem-space.md)(含完整 decision log 與風險 R1/R2/R3)
 
-## Key Locked Decisions(影響所有後續 spec)
+- For governance/test truth, read [quantlab/TESTS.md](../../quantlab/TESTS.md) then [.agents/specs/TESTS.md](./TESTS.md).
+- For B-3 source status, read [ISSUE_LOG.md](./ISSUE_LOG.md) and [b-data-platform/review.md](./b-data-platform/review.md).
+- For next model work, read [d-first-regime-model/requirements.md](./d-first-regime-model/requirements.md), [design.md](./d-first-regime-model/design.md), and [tasks.md](./d-first-regime-model/tasks.md).
+
+## Key Locked Decisions
+
 - 個人自用純紙上;成功=方法論誠實度 + 實驗能力,非 alpha;雙目的(作品集 + lab)→ 兩速結構。
 - 每模型 DoD:A0 產出「可與笨 baseline 並排比較的 OOS 報告」。
 - 三框架(PyTorch/TF/JAX)harness 無感;Tier1+2 進 A0,Tier3(完整 MLOps)延後。
