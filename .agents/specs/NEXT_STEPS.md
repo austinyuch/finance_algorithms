@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `spec/next-gaps-1-6-public-ops`, branched from restored `dev` after PR #12 squash-merged to `main`.
+- **Current branch lane:** no active implementation branch. `spec/next-gaps-1-6-public-ops` was squash-merged through `dev` and `main`.
 - **Latest evidence:** `uv run pytest -q` → **176 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **14/14 killed**; changed pure-Python fallback coverage 96% total (`alt_data` 100%, `experiment_registry` 99%, `evaluation` 100%, `snapshot_ops_gate` 85%); F Next.js tests 14 passed, line coverage 97.05%, `npm audit --json` 0 vulnerabilities, 6/6 frontend mutations killed, `npm run visual`, build, and production smoke passed.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -47,9 +47,9 @@
 
 ## Recommended Next Action
 
-1. Commit/push `spec/next-gaps-1-6-public-ops`.
-2. Open PR from `spec/next-gaps-1-6-public-ops` into `dev`.
-3. After merge to `dev`, use a squash PR from `dev` into `main`.
+1. Reassess the next most valuable gaps/issues/specs from the current `main`/`dev` tree.
+2. If public hosting proof is prioritized next, enable GitHub Pages branch-source settings for `docs/` and verify `https://austinyuch.github.io/finance_algorithms/`.
+3. Keep hosted URL status at `configured_not_observed` until the deployed URL is checked.
 
 ## Scheduled Ops
 
