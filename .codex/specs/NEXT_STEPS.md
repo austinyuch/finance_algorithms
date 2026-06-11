@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `spec/e-lite-source-f-hardening`, branched from `dev` after PR #9 merge.
+- **Current branch lane:** `dev` after PR #10 merge.
 - **Latest evidence:** `uv run pytest -q` → **156 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(48 files); `uv run lint-imports` → KEPT; Python mutation spot checks **8/8 killed**; E-lite trace coverage 97.3%; B source-health trace coverage 97.6%; F Next.js tests 6 passed, line coverage 84.37%, build/smoke/mutation passed.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -38,9 +38,8 @@
 
 ## Recommended Next Action
 
-1. Commit and push `spec/e-lite-source-f-hardening`.
-2. Open PR into `dev`.
-3. Next lane candidate after merge: public deployment/dependency remediation for F, or optional G alt-data.
+1. Next lane candidate: public deployment/dependency remediation for F.
+2. Alternative lane: optional G alt-data once source-contract policy is explicit enough for the new source.
 
 ## Scheduled Ops
 
