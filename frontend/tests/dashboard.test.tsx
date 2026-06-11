@@ -14,8 +14,10 @@ describe("F Next.js showcase dashboard", () => {
     expect(html).toContain("data-section=\"leaderboard\"");
     expect(html).toContain("data-section=\"allocation-regime\"");
     expect(html).toContain("data-section=\"rebalance\"");
+    expect(html).toContain("data-section=\"experiments\"");
     expect(html).toContain("data-section=\"evidence\"");
     expect(html).toContain("no_alpha_claim");
+    expect(html).toContain("registry_only");
     expect(html).toContain("local_runtime_only");
     expect(html).toContain("not_proven");
     expect(html).toContain("local_demo_only");
@@ -28,6 +30,9 @@ describe("F Next.js showcase dashboard", () => {
     expect(response.status).toBe(200);
     expect(() => assertDashboardPayload(payload)).not.toThrow();
     expect(payload.claimBoundary).toBe("no_alpha_claim");
+    expect(payload.experiments[0].readiness).toBe("registry_only");
+    expect(payload.experiments[0].claimBoundary).toBe("no_alpha_claim");
+    expect(payload.demoReadiness.dependencyAudit).toBe("clean");
     expect(payload.demoReadiness.publicHosting).toBe("not_proven");
     expect(payload.demoReadiness.visualRegression).toBe("not_proven");
   });
@@ -48,6 +53,20 @@ describe("F Next.js showcase dashboard", () => {
     };
 
     expect(() => assertDashboardPayload(payload)).toThrow(/public hosting/);
+  });
+
+  it("rejects experiment registry overclaims", () => {
+    const payload = {
+      ...getShowcaseDashboard(),
+      experiments: [
+        {
+          ...getShowcaseDashboard().experiments[0],
+          claimBoundary: "alpha_claim"
+        }
+      ]
+    };
+
+    expect(() => assertDashboardPayload(payload)).toThrow(/experiment registry/);
   });
 
   it("rejects missing demo readiness and visual-regression overclaims", () => {

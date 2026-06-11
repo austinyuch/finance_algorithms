@@ -29,6 +29,18 @@ const dashboard: ShowcaseDashboard = {
       claimBoundary: "no_alpha_claim"
     }
   ],
+  experiments: [
+    {
+      experimentId: "return-risk-demo",
+      modelFamily: "return-risk-forecast",
+      strategyName: "ForecastAllocationStrategy",
+      runIds: ["forecast-run", "baseline-run"],
+      claimBoundary: "no_alpha_claim",
+      status: "research_only",
+      readiness: "registry_only",
+      tags: ["D2", "F", "E-lite"]
+    }
+  ],
   warnings: ["local_runtime_only"],
   evidence: {
     readiness: "local_runtime_only",
@@ -43,7 +55,7 @@ const dashboard: ShowcaseDashboard = {
   demoReadiness: {
     publicHosting: "not_proven",
     visualRegression: "not_proven",
-    dependencyAudit: "moderate_advisory",
+    dependencyAudit: "clean",
     claim: "local_demo_only"
   }
 };

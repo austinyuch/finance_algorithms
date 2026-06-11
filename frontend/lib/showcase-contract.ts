@@ -8,6 +8,17 @@ export interface LeaderboardRow {
   claimBoundary: ClaimBoundary;
 }
 
+export interface ExperimentRegistryRow {
+  experimentId: string;
+  modelFamily: string;
+  strategyName: string;
+  runIds: string[];
+  claimBoundary: ClaimBoundary;
+  status: "research_only";
+  readiness: "registry_only";
+  tags: string[];
+}
+
 export interface ShowcaseDashboard {
   activeRunId: string;
   strategyName: string;
@@ -19,6 +30,7 @@ export interface ShowcaseDashboard {
   allocation: Record<string, number>;
   rebalanceDates: string[];
   leaderboard: LeaderboardRow[];
+  experiments: ExperimentRegistryRow[];
   warnings: string[];
   evidence: {
     readiness: "local_runtime_only";
@@ -27,7 +39,7 @@ export interface ShowcaseDashboard {
   demoReadiness: {
     publicHosting: "not_proven";
     visualRegression: "not_proven";
-    dependencyAudit: "moderate_advisory";
+    dependencyAudit: "clean";
     claim: "local_demo_only";
   };
 }
@@ -58,6 +70,19 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   if (!isLeaderboardSorted(value.leaderboard as LeaderboardRow[])) {
     throw new Error("leaderboard must be sorted by descending OOS-net Sharpe");
   }
+  if (!Array.isArray(value.experiments)) {
+    throw new Error("experiment registry must be an array");
+  }
+  for (const row of value.experiments) {
+    if (
+      !isRecord(row) ||
+      row.claimBoundary !== "no_alpha_claim" ||
+      row.status !== "research_only" ||
+      row.readiness !== "registry_only"
+    ) {
+      throw new Error("experiment registry rows must remain research_only registry_only no_alpha_claim");
+    }
+  }
   if (!isRecord(value.evidence) || value.evidence.readiness !== "local_runtime_only") {
     throw new Error("dashboard evidence must be local_runtime_only");
   }
@@ -69,5 +94,8 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   }
   if (value.demoReadiness.visualRegression !== "not_proven") {
     throw new Error("visual regression must remain not_proven until screenshot evidence exists");
+  }
+  if (value.demoReadiness.dependencyAudit !== "clean") {
+    throw new Error("dependency audit must remain clean after remediation");
   }
 }

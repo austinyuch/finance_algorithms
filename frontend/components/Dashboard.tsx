@@ -71,6 +71,33 @@ export function Dashboard({ data }: { data: ShowcaseDashboard }) {
         </ol>
       </section>
 
+      <section className="panel experiments-panel" data-section="experiments">
+        <div className="panel-heading">
+          <h2>Experiment Registry</h2>
+          <p>{data.experiments.length} research entries</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Strategy</th>
+              <th>Readiness</th>
+              <th>Claim</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.experiments.map((row) => (
+              <tr key={row.experimentId}>
+                <td>{row.modelFamily}</td>
+                <td>{row.strategyName}</td>
+                <td>{row.readiness}</td>
+                <td>{row.claimBoundary}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
       <section className="panel evidence-panel" data-section="evidence">
         <div className="panel-heading">
           <h2>Evidence</h2>

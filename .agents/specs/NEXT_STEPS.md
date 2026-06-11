@@ -4,8 +4,8 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `dev` after PR #10 merge.
-- **Latest evidence:** `uv run pytest -q` → **156 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(48 files); `uv run lint-imports` → KEPT; Python mutation spot checks **8/8 killed**; E-lite trace coverage 97.3%; B source-health trace coverage 97.6%; F Next.js tests 6 passed, line coverage 84.37%, build/smoke/mutation passed.
+- **Current branch lane:** `spec/next-gaps-4-3-1-2-5`, branched from `dev`.
+- **Latest evidence:** `uv run pytest -q` → **163 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(49 files); `uv run lint-imports` → KEPT; Python mutation spot checks **11/11 killed**; F showcase/E bridge trace coverage 95%; G alt-data trace coverage 100.0%; B daily snapshot trace coverage 100.0%; F Next.js tests 7 passed, line coverage 82.5%, `npm audit --json` 0 vulnerabilities, 4/4 frontend mutations killed, build and production smoke passed.
 - **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
@@ -35,11 +35,16 @@
 - **E Tier3 readiness / E-lite:** [e-mlops-tier3-readiness.md](./e-mlops-tier3-readiness.md) moved E to planning-ready; [e-mlops-tier3-lite](./e-mlops-tier3-lite/) is **Implemented · Review PASSED** for registry-only experiment lineage.
 - **B source-health follow-up:** [CR-B10](./b-data-platform/change-requests/cr-b10-source-health-registry.md) is **Implemented(repo-side)**; source status summaries are explicit and do not re-enable blocked Stooq defaults.
 - **F demo hardening:** [f-demo-hardening](./f-demo-hardening/) is **Implemented · Review PASSED**; dashboard now exposes `local_demo_only`, `not_proven` public hosting/visual regression, and dependency audit posture.
+- **B snapshot reliability / CR-B11:** [CR-B11](./b-data-platform/change-requests/cr-b11-snapshot-run-report.md) is **Implemented(repo-side) · Review PASSED**; `scripts/daily_snapshot.py --report-json` emits machine-readable counts, per-source failures, and source-health posture while keeping Stooq blocked/default-disabled.
+- **E/F registry dashboard bridge:** [e-f-registry-dashboard-bridge](./e-f-registry-dashboard-bridge/) is **Implemented · Review PASSED**; F read API and Next.js dashboard display E-lite registry entries as `research_only` / `registry_only` / `no_alpha_claim`.
+- **F public demo readiness:** [f-public-demo-readiness](./f-public-demo-readiness/) is **Implemented · Review PASSED** for local production-demo readiness; PostCSS advisory is remediated through npm override, audit is clean, and `npm run smoke` validates `/` plus `/api/showcase`. Public hosting and visual regression remain `not_proven`.
+- **G alt-data first slice:** [g-alt-data-first-slice](./g-alt-data-first-slice/) is **Implemented · Review PASSED**; optional local CSV loader requires source authority/pin, is default-disabled, and enforces `available_date <= asof`.
 
 ## Recommended Next Action
 
-1. Next lane candidate: public deployment/dependency remediation for F.
-2. Alternative lane: optional G alt-data once source-contract policy is explicit enough for the new source.
+1. Commit/push `spec/next-gaps-4-3-1-2-5`.
+2. Open PR from `spec/next-gaps-4-3-1-2-5` into `dev`.
+3. After merge to `dev`, open the requested squash PR from `dev` into `main`.
 
 ## Scheduled Ops
 
@@ -56,6 +61,10 @@
 - For A0 regime scheduling, read [a0-backtest-foundation/change-requests/cr-a0-regime-rebalance-scheduling.md](./a0-backtest-foundation/change-requests/cr-a0-regime-rebalance-scheduling.md).
 - For mutation automation, read [a0-backtest-foundation/reports/mutation-automation-report.md](./a0-backtest-foundation/reports/mutation-automation-report.md).
 - For D-3 benchmark truth, read [d-first-regime-model/reports/real-data-regime-benchmark-report.md](./d-first-regime-model/reports/real-data-regime-benchmark-report.md).
+- For B CR-B11, read [b-data-platform/change-requests/cr-b11-snapshot-run-report.md](./b-data-platform/change-requests/cr-b11-snapshot-run-report.md).
+- For E/F bridge, read [e-f-registry-dashboard-bridge/review.md](./e-f-registry-dashboard-bridge/review.md).
+- For F public-demo local readiness, read [f-public-demo-readiness/review.md](./f-public-demo-readiness/review.md).
+- For G alt-data, read [g-alt-data-first-slice/review.md](./g-alt-data-first-slice/review.md).
 - For test truth, read [quantlab/TESTS.md](../../quantlab/TESTS.md) then [.agents/specs/TESTS.md](./TESTS.md).
 
 ## Key Locked Decisions

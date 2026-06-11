@@ -88,6 +88,40 @@ def test_dashboard_summary_conservative_defaults_and_no_mutation(tmp_path):
     assert summary["warnings"] == ["missing_regime_metadata"]
 
 
+def test_showcase_api_exposes_e_lite_registry_without_tier3_overclaim(tmp_path):
+    from quantlab.mlops import ExperimentRegistry
+    from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary
+
+    store, rid_a, _ = _store(tmp_path)
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register(
+        "return-risk-forecast",
+        "ForecastAllocationStrategy",
+        {"lookback": 12, "vol_cap": 0.3},
+        run_ids=[rid_a],
+        metrics={"oos_net_sharpe": 0.8},
+        tags=["D2", "F"],
+    )
+    api = ShowcaseReadAPI(store, experiment_registry=registry)
+
+    experiments = api.experiments()
+    summary = build_dashboard_summary(api.run_detail(rid_a), api.leaderboard(),
+                                      experiments=experiments)
+
+    assert experiments == [{
+        "experiment_id": entry.experiment_id,
+        "model_family": "return-risk-forecast",
+        "strategy_name": "ForecastAllocationStrategy",
+        "run_ids": [rid_a],
+        "claim_boundary": "no_alpha_claim",
+        "status": "research_only",
+        "readiness": "registry_only",
+        "tags": ["D2", "F"],
+    }]
+    assert summary["experiments"] == experiments
+    assert summary["warnings"] == []
+
+
 @settings(max_examples=50, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(scores=st.lists(st.floats(min_value=-5, max_value=5, allow_nan=False,
                                  allow_infinity=False), min_size=1, max_size=12))

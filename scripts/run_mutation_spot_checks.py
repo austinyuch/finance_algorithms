@@ -93,6 +93,30 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_b_6_source_health.py::test_source_health_summary_marks_stooq_blocked_without_reenabling_defaults"),
     ),
+    MutationSpec(
+        name="snapshot-report-stooq-default",
+        path="scripts/daily_snapshot.py",
+        original='registry.record("stooq", "*", status="blocked", default_enabled=False,',
+        mutated='registry.record("stooq", "*", status="available", default_enabled=True,',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_main_writes_machine_readable_report_for_dry_run"),
+    ),
+    MutationSpec(
+        name="showcase-experiment-readiness",
+        path="quantlab/showcase/api.py",
+        original='"readiness": entry.readiness,',
+        mutated='"readiness": "tier3_ready",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_f_1_showcase_api.py::test_showcase_api_exposes_e_lite_registry_without_tier3_overclaim"),
+    ),
+    MutationSpec(
+        name="g-alt-data-pit-gate",
+        path="quantlab/data/alt_data.py",
+        original="if available_date > asof:",
+        mutated="if available_date < asof:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_g_1_alt_data.py::test_pbt_alt_data_loader_never_returns_future_available_rows"),
+    ),
 )
 
 

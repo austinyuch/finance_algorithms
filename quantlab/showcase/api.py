@@ -31,8 +31,9 @@ def _leaderboard_row(row: Mapping[str, Any], record: Mapping[str, Any] | None = 
 class ShowcaseReadAPI:
     """Read-only facade for dashboard consumers."""
 
-    def __init__(self, store: Any) -> None:
+    def __init__(self, store: Any, *, experiment_registry: Any | None = None) -> None:
         self._store = store
+        self._experiment_registry = experiment_registry
 
     def leaderboard(self) -> list[dict[str, Any]]:
         rows = []
@@ -43,6 +44,24 @@ class ShowcaseReadAPI:
 
     def run_detail(self, run_id: str) -> dict[str, Any]:
         return dict(self._store.get(run_id))
+
+    def experiments(self) -> list[dict[str, Any]]:
+        if self._experiment_registry is None:
+            return []
+        rows = []
+        for entry in self._experiment_registry.list():
+            rows.append({
+                "experiment_id": entry.experiment_id,
+                "model_family": entry.model_family,
+                "strategy_name": entry.strategy_name,
+                "run_ids": list(entry.run_ids),
+                "claim_boundary": entry.claim_boundary,
+                "status": entry.status,
+                "readiness": entry.readiness,
+                "tags": list(entry.tags),
+            })
+        return sorted(rows, key=lambda row: (row["model_family"], row["strategy_name"],
+                                             row["experiment_id"]))
 
 
 def _regime_summary(record: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]:
@@ -64,8 +83,12 @@ def _allocation(record: Mapping[str, Any]) -> dict[str, float]:
     return {str(k): float(v) for k, v in weights.items()}
 
 
-def build_dashboard_summary(run_record: Mapping[str, Any],
-                            leaderboard: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def build_dashboard_summary(
+    run_record: Mapping[str, Any],
+    leaderboard: Sequence[Mapping[str, Any]],
+    *,
+    experiments: Sequence[Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Build a deterministic dashboard payload without mutating source records."""
     record = deepcopy(dict(run_record))
     regime, warnings = _regime_summary(record)
@@ -79,5 +102,6 @@ def build_dashboard_summary(run_record: Mapping[str, Any],
         "rebalance_dates": list(record.get("rebalance_dates") or []),
         "oos_net_metrics": metric,
         "leaderboard": [dict(row) for row in leaderboard],
+        "experiments": [dict(row) for row in (experiments or [])],
         "warnings": warnings,
     }
