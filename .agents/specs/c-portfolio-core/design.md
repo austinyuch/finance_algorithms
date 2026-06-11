@@ -9,9 +9,8 @@ quantlab/portfolio/
   optimize.py    optimize_max_return_under_vol(mu, cov, vol_cap, w_max)  ← scipy SLSQP
   strategy.py    MeanVarianceStrategy(相容 A0 Strategy Protocol)
   multihorizon.py MultiHorizonMeanVarianceStrategy + HorizonConfig          [C-MULTI]
+  rebalance.py   time + regime rebalance selectors                          [C-REBAL]
   pyramid.py     組合預算 → algo_pyramid 進場 adapter                      [C-PYRAMID]
-(後續)
-  rebalance.py   再平衡觸發(時間 + regime)            [C-REBAL]
 ```
 
 資料流(C-1):
@@ -54,6 +53,22 @@ PIT data ─history(asof)→ 報酬 → μ(年化平均)、Σ(年化共變異)
 - 若整體或單一 horizon 歷史不足,該 horizon 以等權回退,避免短樣本產生過度集中。
 - C-2 不引入 regime 判斷;regime hook 仍屬 C-3 / Epic D 邊界。
 
+## 3.6 再平衡 selector 設計(REQ-C-REBAL-001)
+
+`time_rebalance_dates(dates, frequency)`:
+- 支援 `monthly` / `quarterly` / `semiannual` 與 `None`。
+- 對已排序的候選日期選出時間頻率到期日;不修改 A0 engine 排程。
+
+`select_rebalance_dates(dates, regime_labels, frequency)`:
+- fail-closed:日期與 label 數量不同時丟 `ValueError`。
+- 第一個觀測日必定入選,避免沒有初始配置。
+- 指定時間頻率到期日入選。
+- regime label 與前一期不同時入選。
+
+`select_regime_rebalance_dates(dates, classifier, data, frequency)`:
+- 僅依賴 D signal surface:`classifier.predict(asof,data).label`。
+- portfolio 層不 import torch/tf/jax,不綁定任何特定模型框架。
+
 ## 4. Lightweight FMEA
 
 | Risk ID | Failure Mode | Effect | Control | Task |
@@ -64,6 +79,8 @@ PIT data ─history(asof)→ 報酬 → μ(年化平均)、Σ(年化共變異)
 | FMEA-C-04 | 用未來資料估 μ/Σ | lookahead | 只用 `history(asof)`,A0 PIT 守門 | C-1 |
 | FMEA-C-05 | 多期權重混合後未正規化 | 槓桿或現金暴露失真 | final clip + normalize;測試 sum=1/long-only | C-2 |
 | FMEA-C-06 | 短 horizon 樣本不足仍最佳化 | 極端配置 / 假穩定 | per-horizon `min_obs` 不足回等權 | C-2 |
+| FMEA-C-07 | regime 改變未觸發或同 regime 誤觸發 | 漏調倉或過度交易 | PBT ordered-subset/change-capture invariants + mutation spot-check | C-3 |
+| FMEA-C-08 | C-3 selector 偷改 A0 engine 排程 | 行為範圍外擴 | portfolio-only pure helpers;review 明示 engine-level scheduling future work | C-3 |
 
 ## 5. REQ → Design / Test
 | REQ | Design | Test |
@@ -71,3 +88,4 @@ PIT data ─history(asof)→ 報酬 → μ(年化平均)、Σ(年化共變異)
 | OPT-001 | §2 | test_c_1(AC-C-01/02) |
 | STRAT-001 | §3 | test_c_1(AC-C-03) |
 | MULTI-001 | §3.5 | test_c_2(AC-C-04/05) |
+| REBAL-001 | §3.6 | test_c_3(AC-C-06/07) |

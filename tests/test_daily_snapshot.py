@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 import pytest
+from hypothesis import HealthCheck, given, settings, strategies as st
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "daily_snapshot.py"
 
@@ -97,6 +98,47 @@ def test_fetch_stooq_parses_event_date(monkeypatch):
     assert rec["is_approximate"] is False
 
 
+def test_fetch_yahoo_chart_parses_event_date(monkeypatch):
+    payload = json.dumps({
+        "chart": {"result": [{
+            "timestamp": [1780963200, 1781049600],
+            "indicators": {"quote": [{"close": [1000.0, 1010.5]}]},
+        }], "error": None}
+    })
+    monkeypatch.setattr(ds.requests, "get", lambda *a, **k: FakeResp(payload))
+    rec = ds.fetch_yahoo_chart("2330.TW", "2026-06-11")
+    assert rec["source"] == "yahoo:2330.TW"
+    assert rec["event_date"] == "2026-06-10"
+    assert rec["is_approximate"] is False
+
+
+@given(
+    ts=st.lists(st.integers(min_value=1_600_000_000, max_value=1_900_000_000), min_size=1, max_size=8),
+    close=st.lists(st.one_of(st.none(), st.floats(min_value=1.0, max_value=10_000.0,
+                                                  allow_nan=False, allow_infinity=False)),
+                   min_size=1, max_size=8),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_yahoo_latest_event_date_matches_last_valid_close(monkeypatch, ts, close):
+    n = min(len(ts), len(close))
+    ts = ts[:n]
+    close = close[:n]
+    if not any(v is not None for v in close):
+        close[-1] = 123.0
+    payload = json.dumps({
+        "chart": {"result": [{
+            "timestamp": ts,
+            "indicators": {"quote": [{"close": close}]},
+        }], "error": None}
+    })
+    monkeypatch.setattr(ds.requests, "get", lambda *a, **k: FakeResp(payload))
+
+    rec = ds.fetch_yahoo_chart("SPY", "2026-06-11")
+    valid = [(t, c) for t, c in zip(ts, close) if c is not None]
+    expected = ds.dt.datetime.fromtimestamp(valid[-1][0], ds.dt.timezone.utc).strftime("%Y-%m-%d")
+    assert rec["event_date"] == expected
+
+
 def test_fetch_noaa_wraps_text(monkeypatch):
     monkeypatch.setattr(ds.requests, "get", lambda *a, **k: FakeResp("SEAS YR ...oni..."))
     rec = ds.fetch_noaa_oni("2026-06-09")
@@ -118,6 +160,7 @@ def test_main_degrades_gracefully(monkeypatch, tmp_path, capsys):
     # 縮減到 2 個 FRED 源,其中一個會炸
     monkeypatch.setattr(ds, "FRED_SERIES", ["GOOD", "BAD"])
     monkeypatch.setattr(ds, "STOOQ_SYMBOLS", [])
+    monkeypatch.setattr(ds, "YAHOO_SYMBOLS", [])
     monkeypatch.setattr(ds, "NOAA_ONI_URL", "http://example/none")
 
     def fake_get(url, *a, **k):
@@ -137,3 +180,7 @@ def test_main_degrades_gracefully(monkeypatch, tmp_path, capsys):
     assert any("GOOD" in n for n in written)        # 成功源已寫出
     assert not any("BAD" in n for n in written)     # 失敗源未寫出
     assert rc == 1                                  # 有失敗 → 非 0
+
+
+def test_snapshot_includes_yahoo_tsmc_and_twse_sources():
+    assert {"2330.TW", "^TWII"} <= set(ds.YAHOO_SYMBOLS)

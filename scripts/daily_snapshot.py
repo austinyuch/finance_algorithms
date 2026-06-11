@@ -63,6 +63,14 @@ STOOQ_SYMBOLS = [
     "usdtwd",                                           # 美元台幣
 ]
 
+# Yahoo chart fallback(免金鑰 JSON)。Stooq 在本環境穩定 404 時仍可捕捉 TSMC/TWSE。
+YAHOO_SYMBOLS = [
+    "SPY", "AGG", "TLT", "GLD", "DBC",
+    "BTC-USD",
+    "2330.TW", "^TWII",
+    "TWD=X",
+]
+
 # NOAA Oceanic Niño Index(El Niño/ENSO),純文字。
 NOAA_ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
 
@@ -115,6 +123,29 @@ def fetch_stooq(symbol: str, available_date: str) -> dict[str, Any]:
     return _record(f"stooq:{symbol}", available_date, text, event_date=event_date)
 
 
+def _latest_yahoo_event_date(raw: str) -> str | None:
+    data = json.loads(raw)
+    result = (data.get("chart", {}).get("result") or [None])[0]
+    if not result:
+        return None
+    timestamps = result.get("timestamp") or []
+    quotes = result.get("indicators", {}).get("quote") or []
+    closes = quotes[0].get("close", []) if quotes else []
+    valid = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]
+    if not valid:
+        return None
+    return dt.datetime.fromtimestamp(int(valid[-1][0]), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def fetch_yahoo_chart(symbol: str, available_date: str) -> dict[str, Any]:
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=1d"
+    r = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": "Mozilla/5.0"})
+    r.raise_for_status()
+    text = r.text.strip()
+    return _record(f"yahoo:{symbol}", available_date, text,
+                   event_date=_latest_yahoo_event_date(text))
+
+
 def fetch_noaa_oni(available_date: str) -> dict[str, Any]:
     r = requests.get(NOAA_ONI_URL, timeout=TIMEOUT)
     r.raise_for_status()
@@ -132,6 +163,7 @@ def main() -> int:
     jobs: list[tuple[str, Any]] = []
     jobs += [(f"fred:{s}", lambda s=s: fetch_fred(s, available_date)) for s in FRED_SERIES]
     jobs += [(f"stooq:{s}", lambda s=s: fetch_stooq(s, available_date)) for s in STOOQ_SYMBOLS]
+    jobs += [(f"yahoo:{s}", lambda s=s: fetch_yahoo_chart(s, available_date)) for s in YAHOO_SYMBOLS]
     jobs += [("noaa:oni", lambda: fetch_noaa_oni(available_date))]
 
     print(f"[snapshot] available_date={available_date}  out={out_dir}  jobs={len(jobs)}"

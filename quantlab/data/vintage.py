@@ -54,6 +54,30 @@ def _parse_stooq(source: str, available_date: str, raw: str) -> list[dict]:
     return out
 
 
+def _parse_yahoo(source: str, available_date: str, raw: str) -> list[dict]:
+    symbol = source.split(":", 1)[1]
+    data = json.loads(raw)
+    result = (data.get("chart", {}).get("result") or [None])[0]
+    if not result:
+        return []
+    timestamps = result.get("timestamp") or []
+    quotes = result.get("indicators", {}).get("quote") or []
+    closes = quotes[0].get("close", []) if quotes else []
+    out = []
+    for ts, close in zip(timestamps, closes):
+        if close is None:
+            continue
+        try:
+            value = float(close)
+        except (TypeError, ValueError):
+            continue
+        out.append({"symbol": symbol,
+                    "event_date": pd.Timestamp.fromtimestamp(int(ts), tz="UTC").tz_localize(None),
+                    "available_date": pd.Timestamp(available_date),
+                    "close": value})
+    return out
+
+
 def build_provider_from_vintage(vintage_root: str | Path,
                                 fred_price_series: set | None = None,
                                 strict: bool = False) -> InMemoryPITDataProvider:
@@ -89,6 +113,9 @@ def build_provider_from_vintage(vintage_root: str | Path,
                                            "is_approximate": approx})
             elif source.startswith("stooq:"):
                 for r in _parse_stooq(source, available, raw):
+                    price_rows.append({**r, "is_approximate": approx})
+            elif source.startswith("yahoo:"):
+                for r in _parse_yahoo(source, available, raw):
                     price_rows.append({**r, "is_approximate": approx})
             # noaa / 其他:不解析
 
