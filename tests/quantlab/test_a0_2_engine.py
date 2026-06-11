@@ -44,6 +44,37 @@ def _base_config(mode="gross", costs_zero=True):
     }
 
 
+def _monthly_engine_data(n_months=6):
+    from quantlab.data.provider import InMemoryPITDataProvider
+
+    dates = pd.date_range("2020-01-31", periods=n_months, freq="ME")
+    prices = pd.DataFrame(
+        [
+            {"symbol": "X", "event_date": d, "available_date": d, "close": 100.0 + i}
+            for i, d in enumerate(dates)
+        ]
+    )
+    listings = pd.DataFrame([{"symbol": "X", "list_date": pd.Timestamp("2019-01-01"), "delist_date": pd.NaT}])
+    macro = pd.DataFrame(columns=["series", "event_date", "available_date", "value"])
+    return InMemoryPITDataProvider(prices, listings, macro), dates
+
+
+class _RecordingStrategy:
+    def __init__(self) -> None:
+        self.calls: list[pd.Timestamp] = []
+
+    def fit(self, train=None, **kwargs):
+        return None
+
+    def generate_signal(self, asof, data):
+        self.calls.append(pd.Timestamp(asof))
+        return {"X": 1.0}
+
+    @property
+    def metadata(self):
+        return {"name": "RecordingStrategy", "framework": "none"}
+
+
 def _full_metric(result):
     fulls = [m for m in result["metrics"] if m["segment"] == "full"]
     assert fulls, "結果必須含 full segment 指標"
@@ -141,3 +172,88 @@ def test_event_driven_not_implemented():
     cfg["engine"] = "event_driven"
     with pytest.raises(NotImplementedError):
         VectorizedEngine().run(BuyAndHold(["X"]), _toy_engine_data(), cfg)
+
+
+def test_regime_rebalance_policy_filters_engine_schedule():
+    from quantlab.engine import VectorizedEngine
+
+    data, dates = _monthly_engine_data(6)
+    labels = {
+        str(dates[0].date()): "risk_on",
+        str(dates[1].date()): "risk_on",
+        str(dates[2].date()): "risk_on",
+        str(dates[3].date()): "defensive",
+        str(dates[4].date()): "defensive",
+        str(dates[5].date()): "risk_on",
+    }
+    cfg = {
+        "start": str(dates[0].date()),
+        "end": str(dates[-1].date()),
+        "rebalance": "monthly",
+        "fill": "same_close",
+        "mode": "gross",
+        "cost_config": {},
+        "seed": 0,
+        "data_version": "toy-regime",
+        "rebalance_policy": {"kind": "regime", "frequency": "quarterly", "labels": labels},
+    }
+    strategy = _RecordingStrategy()
+
+    VectorizedEngine().run(strategy, data, cfg)
+
+    assert strategy.calls == [dates[0], dates[2], dates[3], dates[5]]
+
+
+@settings(max_examples=40)
+@given(labels=st.lists(st.sampled_from(["risk_on", "defensive", "unknown"]), min_size=2, max_size=18))
+def test_pbt_regime_rebalance_policy_matches_portfolio_selector(labels):
+    from quantlab.engine import VectorizedEngine
+    from quantlab.portfolio import select_rebalance_dates
+
+    data, dates = _monthly_engine_data(len(labels))
+    label_map = {str(d.date()): label for d, label in zip(dates, labels)}
+    cfg = {
+        "start": str(dates[0].date()),
+        "end": str(dates[-1].date()),
+        "rebalance": "monthly",
+        "fill": "same_close",
+        "mode": "gross",
+        "cost_config": {},
+        "seed": 0,
+        "data_version": "toy-regime",
+        "rebalance_policy": {"kind": "regime", "frequency": None, "labels": label_map},
+    }
+    strategy = _RecordingStrategy()
+
+    VectorizedEngine().run(strategy, data, cfg)
+
+    assert strategy.calls == select_rebalance_dates(dates, labels, frequency=None)
+
+
+def test_regime_rebalance_policy_integration_can_be_logged(tmp_path):
+    from quantlab.runner import run_and_log
+    from quantlab.tracking import LocalResultStore
+
+    data, dates = _monthly_engine_data(6)
+    label_map = {str(d.date()): "risk_on" for d in dates}
+    label_map[str(dates[3].date())] = "defensive"
+    cfg = {
+        "start": str(dates[0].date()),
+        "end": str(dates[-1].date()),
+        "rebalance": "monthly",
+        "fill": "same_close",
+        "mode": "net",
+        "cost_config": {"commission_bps": 0, "slippage_bps": 0, "tw_transaction_tax_bps": 0,
+                        "us_dividend_withholding_pct": 0, "fx_spread_bps": 0},
+        "seed": 0,
+        "data_version": "toy-regime",
+        "walk_forward": {"train_window_months": 1, "test_window_months": 1, "step_months": 1},
+        "rebalance_policy": {"kind": "regime", "frequency": "quarterly", "labels": label_map},
+    }
+    strategy = _RecordingStrategy()
+    store = LocalResultStore(tmp_path / "runs.sqlite")
+
+    run_id, result = run_and_log(strategy, data, cfg, store)
+
+    assert store.get(run_id)["config"]["rebalance_policy"]["kind"] == "regime"
+    assert result["rebalance_dates"] == [str(d.date()) for d in strategy.calls]

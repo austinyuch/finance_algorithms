@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "a0/performance_metrics.json",
+  "title": "PerformanceMetrics",
+  "description": "回測績效指標 (REQ-A0-BT-005)。須明確標示 gross/net 與 OOS 區段 (NFR-A0-HONEST-001)。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cumulative_return": {"type": "number"},
+    "annualized_return": {"type": "number"},
+    "annualized_vol": {"type": "number", "minimum": 0},
+    "max_drawdown": {"type": "number", "maximum": 0, "description": "最大回撤 (<=0)"},
+    "sharpe": {"type": "number"},
+    "turnover": {"type": "number", "minimum": 0},
+    "basis": {"type": "string", "enum": ["gross", "net"], "description": "成本基礎"},
+    "segment": {"type": "string", "enum": ["in_sample", "out_of_sample", "full"], "description": "區段;leaderboard 比較須用 out_of_sample"}
+  },
+  "required": ["cumulative_return", "annualized_return", "annualized_vol", "max_drawdown", "sharpe", "turnover", "basis", "segment"]
+}

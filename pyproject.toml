@@ -3,7 +3,7 @@ name = "invest-algorithms"
 version = "0.1.0"
 description = "Investment pyramid (arithmetic/geometric) algorithms API"
 authors = [{ name = "YuehChengChang", email = "ycchang.pmp@gmail.com" }]
-readme = "readme.md"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.3",
