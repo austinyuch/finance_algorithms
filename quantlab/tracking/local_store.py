@@ -58,3 +58,18 @@ class LocalResultStore:
         ).fetchall()
         return [{"run_id": r[0], "strategy_name": r[1], "oos_net_sharpe": r[2],
                  "is_baseline": bool(r[3])} for r in rows]
+
+    def close(self) -> None:
+        self._conn.close()
+
+    def __enter__(self) -> "LocalResultStore":
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:
+            pass

@@ -53,6 +53,30 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_daily_snapshot.py::test_pbt_yahoo_latest_event_date_matches_last_valid_close"),
     ),
+    MutationSpec(
+        name="showcase-claim-boundary",
+        path="quantlab/showcase/api.py",
+        original='return str(metadata.get("claim_boundary") or "no_alpha_claim")',
+        mutated='return str(metadata.get("claim_boundary") or "alpha_claim")',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_f_1_showcase_api.py::test_dashboard_summary_conservative_defaults_and_no_mutation"),
+    ),
+    MutationSpec(
+        name="d2-forecast-claim-boundary",
+        path="quantlab/models/return_risk.py",
+        original='"claim_boundary": "no_alpha_claim",\n            "weights": dict(self._last_weights),',
+        mutated='"claim_boundary": "alpha_claim",\n            "weights": dict(self._last_weights),',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_d_4_return_risk_forecast.py::test_forecast_strategy_fallback_metadata_for_degraded_history"),
+    ),
+    MutationSpec(
+        name="d3-robust-claim-boundary",
+        path="quantlab/models/robust_optimization.py",
+        original='"claim_boundary": "no_alpha_claim",\n            "weights": dict(self._last_weights),',
+        mutated='"claim_boundary": "alpha_claim",\n            "weights": dict(self._last_weights),',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_d_5_robust_optimization.py::test_robust_strategy_degraded_history_falls_back_and_preserves_claim_boundary"),
+    ),
 )
 
 

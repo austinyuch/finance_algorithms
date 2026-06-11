@@ -62,6 +62,9 @@ def test_mutation_runner_list_smoke():
 
     assert "engine-regime-selector" in result.stdout
     assert "yahoo-latest-close" in result.stdout
+    assert "showcase-claim-boundary" in result.stdout
+    assert "d2-forecast-claim-boundary" in result.stdout
+    assert "d3-robust-claim-boundary" in result.stdout
 
 
 def test_selected_specs_rejects_unknown_name():
@@ -111,3 +114,6 @@ def test_main_list_prints_mutation_names(capsys):
     assert main(["--list"]) == 0
     out = capsys.readouterr().out
     assert "engine-regime-selector" in out
+    assert "showcase-claim-boundary" in out
+    assert "d2-forecast-claim-boundary" in out
+    assert "d3-robust-claim-boundary" in out
