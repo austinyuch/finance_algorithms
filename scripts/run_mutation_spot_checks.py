@@ -117,6 +117,30 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_g_1_alt_data.py::test_pbt_alt_data_loader_never_returns_future_available_rows"),
     ),
+    MutationSpec(
+        name="b-snapshot-ops-stooq-gate",
+        path="scripts/snapshot_ops_gate.py",
+        original='stooq.get("status") != "blocked" or stooq.get("default_enabled") is not False',
+        mutated='stooq.get("status") != "available" or stooq.get("default_enabled") is not True',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_snapshot_ops_gate_accepts_partial_live_report_when_allowed"),
+    ),
+    MutationSpec(
+        name="e-registry-snapshot-checksum",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if artifact.get("checksum") != _checksum(entries):',
+        mutated='if artifact.get("checksum") == _checksum(entries):',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_experiment_registry_writes_checksum_snapshot_and_detects_tampering"),
+    ),
+    MutationSpec(
+        name="d-model-evaluation-alpha-gate",
+        path="quantlab/models/evaluation.py",
+        original='if _claim_boundary(record) != "no_alpha_claim":',
+        mutated='if _claim_boundary(record) == "no_alpha_claim":',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_d_6_model_family_evaluation.py::test_model_family_evaluation_rejects_alpha_claim_and_missing_baseline"),
+    ),
 )
 
 

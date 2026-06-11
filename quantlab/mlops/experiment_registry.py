@@ -31,6 +31,14 @@ def _canonical_json(value: Mapping[str, Any]) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _json_native(value: Any) -> Any:
+    return json.loads(json.dumps(value, ensure_ascii=False, sort_keys=True))
+
+
+def _checksum(entries: Sequence[Mapping[str, Any]]) -> str:
+    return hashlib.sha256(_canonical_json({"entries": _json_native(list(entries))}).encode("utf-8")).hexdigest()
+
+
 def _experiment_id(model_family: str, strategy_name: str, config: Mapping[str, Any]) -> str:
     payload = _canonical_json({
         "model_family": model_family.strip(),
@@ -95,3 +103,81 @@ class ExperimentRegistry:
             if entry.experiment_id == experiment_id:
                 return entry
         return None
+
+    def snapshot_artifact(self) -> dict[str, Any]:
+        entries = [asdict(entry) for entry in self.list()]
+        return {
+            "artifact_kind": "experiment_registry_snapshot",
+            "claim_boundary": "no_alpha_claim",
+            "readiness": "registry_only",
+            "entries": entries,
+            "checksum": _checksum(entries),
+        }
+
+    def write_snapshot(self, path: str | Path) -> dict[str, Any]:
+        artifact = self.snapshot_artifact()
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(artifact, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+                          encoding="utf-8")
+        return artifact
+
+
+def validate_registry_snapshot(artifact: Mapping[str, Any]) -> None:
+    if artifact.get("artifact_kind") != "experiment_registry_snapshot":
+        raise ValueError("unknown registry snapshot artifact")
+    if artifact.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("registry snapshot must preserve no_alpha_claim")
+    if artifact.get("readiness") != "registry_only":
+        raise ValueError("registry snapshot must remain registry_only")
+    entries = artifact.get("entries")
+    if not isinstance(entries, list):
+        raise ValueError("registry snapshot entries must be a list")
+    for entry in entries:
+        if not isinstance(entry, Mapping) or entry.get("claim_boundary") != "no_alpha_claim":
+            raise ValueError("registry snapshot entry must preserve no_alpha_claim")
+    if artifact.get("checksum") != _checksum(entries):
+        raise ValueError("registry snapshot checksum mismatch")
+
+
+def load_registry_snapshot(path: str | Path) -> list[ExperimentEntry]:
+    artifact = json.loads(Path(path).read_text(encoding="utf-8"))
+    validate_registry_snapshot(artifact)
+    return [ExperimentEntry(**entry) for entry in artifact["entries"]]
+
+
+def _oos_net_metrics(record: Mapping[str, Any]) -> dict[str, float]:
+    for metric in record.get("metrics", []):
+        if metric.get("segment") == "out_of_sample" and metric.get("basis") == "net":
+            return {str(key): float(value) for key, value in metric.items()
+                    if isinstance(value, (int, float)) and key not in {"segment", "basis"}}
+    raise ValueError("run record missing out_of_sample net metrics")
+
+
+def register_result_store_runs(
+    registry: ExperimentRegistry,
+    store: Any,
+    *,
+    model_family: str,
+    strategy_name: str,
+    config: Mapping[str, Any],
+    run_ids: Sequence[str],
+    tags: Sequence[str] | None = None,
+) -> ExperimentEntry:
+    if not run_ids:
+        raise ValueError("run_ids are required")
+    records = [store.get(str(run_id)) for run_id in run_ids]
+    for record in records:
+        metadata = record.get("strategy_metadata") or {}
+        if metadata.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
+            raise ValueError("result-store bridge only accepts no_alpha_claim runs")
+    primary_metrics = _oos_net_metrics(records[0])
+    return registry.register(
+        model_family,
+        strategy_name,
+        config,
+        run_ids=run_ids,
+        metrics=primary_metrics,
+        claim_boundary="no_alpha_claim",
+        tags=tags,
+    )

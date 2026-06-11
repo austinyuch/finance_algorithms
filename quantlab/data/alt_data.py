@@ -8,7 +8,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Iterable, Literal, Mapping
 
 SourceContractStatus = Literal["available", "blocked", "degraded", "unknown"]
 
@@ -52,6 +52,26 @@ class AltDataObservation:
     claim_boundary: str
 
 
+ALT_DATA_CONTRACT_CATALOG: tuple[AltDataSourceContract, ...] = (
+    AltDataSourceContract(
+        source="policy_uncertainty",
+        dataset="news_index",
+        authority_url="https://example.test/policy-index",
+        pin="v2026-01",
+        default_enabled=False,
+        status="unknown",
+    ),
+    AltDataSourceContract(
+        source="central_bank_communication",
+        dataset="statement_tone",
+        authority_url="https://example.test/central-bank-statements",
+        pin="v2026-01",
+        default_enabled=False,
+        status="unknown",
+    ),
+)
+
+
 def _parse_bool(raw: str) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "y"}
 
@@ -82,3 +102,32 @@ def load_alt_data_csv(
                 claim_boundary=contract.claim_boundary,
             ))
     return rows
+
+
+def contract_catalog_by_key(
+    contracts: Iterable[AltDataSourceContract] = ALT_DATA_CONTRACT_CATALOG,
+) -> dict[tuple[str, str], AltDataSourceContract]:
+    catalog: dict[tuple[str, str], AltDataSourceContract] = {}
+    for contract in contracts:
+        key = (contract.source, contract.dataset)
+        if key in catalog:
+            raise ValueError(f"duplicate alt-data contract {key}")
+        catalog[key] = contract
+    return catalog
+
+
+def load_alt_data_bundle(
+    files_by_key: Mapping[tuple[str, str], str | Path],
+    contracts: Iterable[AltDataSourceContract],
+    *,
+    asof: str,
+    strict: bool = True,
+) -> list[AltDataObservation]:
+    catalog = contract_catalog_by_key(contracts)
+    observations: list[AltDataObservation] = []
+    for key, path in files_by_key.items():
+        contract = catalog.get(key)
+        if contract is None:
+            raise ValueError(f"missing alt-data source contract for {key}")
+        observations.extend(load_alt_data_csv(path, contract, asof=asof, strict=strict))
+    return sorted(observations, key=lambda row: (row.source, row.dataset, row.event_date, row.available_date))

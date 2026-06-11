@@ -33,6 +33,20 @@ const mutations = [
     original: 'dependencyAudit: "clean",',
     mutated: 'dependencyAudit: "moderate_advisory" as never,',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
+  },
+  {
+    name: "frontend-public-demo-hosting-overclaim",
+    path: "lib/public-demo.ts",
+    original: 'status: "configured_not_observed",\n      sourcePath:',
+    mutated: 'status: "proven" as never,\n      sourcePath:',
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
+  },
+  {
+    name: "frontend-visual-baseline-alpha-claim",
+    path: "visual-baselines/showcase.visual.json",
+    original: '"claimBoundary": "no_alpha_claim",',
+    mutated: '"claimBoundary": "alpha_claim",',
+    command: ["npm", "run", "visual"]
   }
 ];
 
