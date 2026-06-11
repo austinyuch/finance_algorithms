@@ -115,3 +115,75 @@ def test_alt_data_loader_rejects_unready_source_contract(tmp_path):
 
     with pytest.raises(ValueError, match="source contract is not ready"):
         load_alt_data_csv(csv_path, contract, asof="2026-01-05", strict=True)
+
+
+def test_alt_data_catalog_contains_second_default_disabled_source_contract():
+    from quantlab.data.alt_data import ALT_DATA_CONTRACT_CATALOG, contract_catalog_by_key
+
+    catalog = contract_catalog_by_key()
+
+    assert ("policy_uncertainty", "news_index") in catalog
+    assert ("central_bank_communication", "statement_tone") in catalog
+    assert len(ALT_DATA_CONTRACT_CATALOG) >= 2
+    assert all(contract.default_enabled is False for contract in ALT_DATA_CONTRACT_CATALOG)
+    assert all(contract.claim_boundary == "source_contract_status_only" for contract in ALT_DATA_CONTRACT_CATALOG)
+
+
+def test_alt_data_bundle_loads_second_slice_without_cross_source_lookahead(tmp_path):
+    from quantlab.data.alt_data import AltDataSourceContract, load_alt_data_bundle
+
+    policy = tmp_path / "policy.csv"
+    tone = tmp_path / "tone.csv"
+    _write_csv(policy)
+    tone.write_text(
+        "event_date,available_date,value,is_approximate\n"
+        "2026-01-01,2026-01-02,-0.25,false\n"
+        "2026-01-02,2026-01-09,0.50,false\n",
+        encoding="utf-8",
+    )
+    contracts = [
+        AltDataSourceContract(
+            source="policy_uncertainty",
+            dataset="news_index",
+            authority_url="https://example.test/policy-index",
+            pin="v2026-01",
+            status="available",
+        ),
+        AltDataSourceContract(
+            source="central_bank_communication",
+            dataset="statement_tone",
+            authority_url="https://example.test/central-bank-statements",
+            pin="v2026-01",
+            status="available",
+        ),
+    ]
+
+    rows = load_alt_data_bundle(
+        {
+            ("policy_uncertainty", "news_index"): policy,
+            ("central_bank_communication", "statement_tone"): tone,
+        },
+        contracts,
+        asof="2026-01-05",
+    )
+
+    assert [(row.source, row.event_date, row.available_date) for row in rows] == [
+        ("central_bank_communication", "2026-01-01", "2026-01-02"),
+        ("policy_uncertainty", "2026-01-01", "2026-01-03"),
+    ]
+    assert all(row.available_date <= "2026-01-05" for row in rows)
+
+
+def test_alt_data_bundle_rejects_missing_source_contract(tmp_path):
+    from quantlab.data.alt_data import load_alt_data_bundle
+
+    csv_path = tmp_path / "unknown.csv"
+    _write_csv(csv_path)
+
+    with pytest.raises(ValueError, match="missing alt-data source contract"):
+        load_alt_data_bundle(
+            {("unknown", "dataset"): csv_path},
+            [],
+            asof="2026-01-05",
+            strict=False,
+        )

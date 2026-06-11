@@ -70,3 +70,76 @@ def test_experiment_registry_rejects_alpha_claim(tmp_path):
 
     with pytest.raises(ValueError, match="no_alpha_claim"):
         registry.register("bad", "BadStrategy", {}, claim_boundary="alpha_claim")
+
+
+def test_experiment_registry_writes_checksum_snapshot_and_detects_tampering(tmp_path):
+    from dataclasses import asdict
+
+    from quantlab.mlops import ExperimentRegistry, load_registry_snapshot, validate_registry_snapshot
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk-forecast", "ForecastAllocationStrategy", {"lookback": 12})
+
+    artifact = registry.write_snapshot(tmp_path / "snapshot.json")
+    loaded = load_registry_snapshot(tmp_path / "snapshot.json")
+
+    assert loaded == [entry]
+    assert artifact["claim_boundary"] == "no_alpha_claim"
+    assert artifact["readiness"] == "registry_only"
+
+    tampered = {**artifact, "entries": [{**asdict(entry), "claim_boundary": "alpha_claim"}]}
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        validate_registry_snapshot(tampered)
+
+
+def test_register_result_store_runs_uses_real_oos_net_metrics(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, register_result_store_runs
+    from quantlab.tracking import LocalResultStore
+
+    store = LocalResultStore(tmp_path / "runs.sqlite")
+    run_id = store.log({
+        "strategy_name": "ForecastAllocationStrategy",
+        "metrics": [
+            {"segment": "in_sample", "basis": "net", "sharpe": 99.0},
+            {"segment": "out_of_sample", "basis": "net", "sharpe": 1.23, "max_drawdown": -0.08},
+        ],
+        "strategy_metadata": {"claim_boundary": "no_alpha_claim"},
+    })
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+
+    entry = register_result_store_runs(
+        registry,
+        store,
+        model_family="return-risk-forecast",
+        strategy_name="ForecastAllocationStrategy",
+        config={"lookback": 12},
+        run_ids=[run_id],
+        tags=["real-run"],
+    )
+
+    assert entry.run_ids == [run_id]
+    assert entry.metrics == {"sharpe": 1.23, "max_drawdown": -0.08}
+    assert entry.tags == ["real-run"]
+    assert entry.claim_boundary == "no_alpha_claim"
+
+
+def test_register_result_store_runs_rejects_missing_oos_net_metrics(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, register_result_store_runs
+    from quantlab.tracking import LocalResultStore
+
+    store = LocalResultStore(tmp_path / "runs.sqlite")
+    run_id = store.log({
+        "strategy_name": "BadStrategy",
+        "metrics": [{"segment": "in_sample", "basis": "net", "sharpe": 99.0}],
+        "strategy_metadata": {"claim_boundary": "no_alpha_claim"},
+    })
+
+    with pytest.raises(ValueError, match="out_of_sample net metrics"):
+        register_result_store_runs(
+            ExperimentRegistry(tmp_path / "experiments.jsonl"),
+            store,
+            model_family="bad",
+            strategy_name="BadStrategy",
+            config={},
+            run_ids=[run_id],
+        )

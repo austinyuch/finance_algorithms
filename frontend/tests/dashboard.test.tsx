@@ -41,6 +41,25 @@ describe("F Next.js showcase dashboard", () => {
     const payload = { ...getShowcaseDashboard(), claimBoundary: "alpha_claim" };
 
     expect(() => assertDashboardPayload(payload)).toThrow(/no_alpha_claim/);
+    expect(() => assertDashboardPayload(null)).toThrow(/object/);
+    expect(() => assertDashboardPayload({ ...getShowcaseDashboard(), leaderboard: "bad" })).toThrow(/leaderboard/);
+    expect(() =>
+      assertDashboardPayload({
+        ...getShowcaseDashboard(),
+        leaderboard: [
+          {
+            ...getShowcaseDashboard().leaderboard[0],
+            claimBoundary: "alpha_claim"
+          }
+        ]
+      })
+    ).toThrow(/leaderboard rows/);
+    expect(() =>
+      assertDashboardPayload({
+        ...getShowcaseDashboard(),
+        leaderboard: [...getShowcaseDashboard().leaderboard].reverse()
+      })
+    ).toThrow(/sorted/);
   });
 
   it("rejects overclaimed public demo readiness", () => {
@@ -67,6 +86,13 @@ describe("F Next.js showcase dashboard", () => {
     };
 
     expect(() => assertDashboardPayload(payload)).toThrow(/experiment registry/);
+    expect(() => assertDashboardPayload({ ...getShowcaseDashboard(), experiments: "bad" })).toThrow(/experiment/);
+    expect(() =>
+      assertDashboardPayload({
+        ...getShowcaseDashboard(),
+        evidence: { readiness: "tier3_ready", tests: [] }
+      })
+    ).toThrow(/local_runtime_only/);
   });
 
   it("rejects missing demo readiness and visual-regression overclaims", () => {

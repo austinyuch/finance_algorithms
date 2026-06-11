@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** `spec/next-gaps-4-3-1-2-5`, branched from `dev`.
-- **Latest evidence:** `uv run pytest -q` → **163 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(49 files); `uv run lint-imports` → KEPT; Python mutation spot checks **11/11 killed**; F showcase/E bridge trace coverage 95%; G alt-data trace coverage 100.0%; B daily snapshot trace coverage 100.0%; F Next.js tests 7 passed, line coverage 82.5%, `npm audit --json` 0 vulnerabilities, 4/4 frontend mutations killed, build and production smoke passed.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`.
+- **Current branch lane:** `spec/next-gaps-1-6-public-ops`, branched from restored `dev` after PR #12 squash-merged to `main`.
+- **Latest evidence:** `uv run pytest -q` → **176 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **14/14 killed**; changed pure-Python fallback coverage 96% total (`alt_data` 100%, `experiment_registry` 99%, `evaluation` 100%, `snapshot_ops_gate` 85%); F Next.js tests 14 passed, line coverage 97.05%, `npm audit --json` 0 vulnerabilities, 6/6 frontend mutations killed, `npm run visual`, build, and production smoke passed.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -39,12 +39,17 @@
 - **E/F registry dashboard bridge:** [e-f-registry-dashboard-bridge](./e-f-registry-dashboard-bridge/) is **Implemented · Review PASSED**; F read API and Next.js dashboard display E-lite registry entries as `research_only` / `registry_only` / `no_alpha_claim`.
 - **F public demo readiness:** [f-public-demo-readiness](./f-public-demo-readiness/) is **Implemented · Review PASSED** for local production-demo readiness; PostCSS advisory is remediated through npm override, audit is clean, and `npm run smoke` validates `/` plus `/api/showcase`. Public hosting and visual regression remain `not_proven`.
 - **G alt-data first slice:** [g-alt-data-first-slice](./g-alt-data-first-slice/) is **Implemented · Review PASSED**; optional local CSV loader requires source authority/pin, is default-disabled, and enforces `available_date <= asof`.
+- **F public static showcase:** [f-public-static-showcase](./f-public-static-showcase/) is **Implemented · Review PASSED**; GitHub Pages static `docs/` artifact path is configured, `frontend/out` export is reproducible, and visual contract baseline is pinned. Hosted URL availability remains `configured_not_observed` until Pages source settings/deployment proof.
+- **B snapshot ops gate:** [b-snapshot-ops-gate](./b-snapshot-ops-gate/) is **Implemented · Review PASSED**; machine-readable reports are validated for count consistency, Stooq blocked/default-disabled posture, and explicit partial-failure handling.
+- **G alt-data second slice:** [g-alt-data-second-slice](./g-alt-data-second-slice/) is **Implemented · Review PASSED**; second optional default-disabled source contract and bundle PIT loader are in place.
+- **E registry durability bridge:** [e-registry-durability-bridge](./e-registry-durability-bridge/) is **Implemented · Review PASSED**; registry snapshots have checksums and `LocalResultStore` bridge consumes real OOS-net run records.
+- **D model-family evaluation:** [d-model-family-evaluation](./d-model-family-evaluation/) is **Implemented · Review PASSED**; D family comparison ranks OOS-net only, keeps baseline visible, and rejects alpha-claim records.
 
 ## Recommended Next Action
 
-1. Commit/push `spec/next-gaps-4-3-1-2-5`.
-2. Open PR from `spec/next-gaps-4-3-1-2-5` into `dev`.
-3. After merge to `dev`, open the requested squash PR from `dev` into `main`.
+1. Commit/push `spec/next-gaps-1-6-public-ops`.
+2. Open PR from `spec/next-gaps-1-6-public-ops` into `dev`.
+3. After merge to `dev`, use a squash PR from `dev` into `main`.
 
 ## Scheduled Ops
 

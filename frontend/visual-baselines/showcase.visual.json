@@ -1,0 +1,18 @@
+{
+  "baselineKind": "static_visual_contract",
+  "claimBoundary": "no_alpha_claim",
+  "publicHosting": "configured_not_observed",
+  "htmlHash": "add3b8f45d1e47a38f11f442cc576638f8b8fc374facdaae779b58cd02c5a202",
+  "sections": [
+    "leaderboard",
+    "allocation-regime",
+    "rebalance",
+    "experiments",
+    "evidence"
+  ],
+  "viewportContracts": [
+    "desktop-1440x900",
+    "tablet-768x1024",
+    "mobile-390x844"
+  ]
+}

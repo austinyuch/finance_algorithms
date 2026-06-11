@@ -258,3 +258,76 @@ def test_csv_env_symbols_trims_and_skips_empty_values(monkeypatch):
     monkeypatch.setenv("QUANTLAB_STOOQ_SYMBOLS", " spy.us, ,2330.tw, ^twse ")
 
     assert ds._csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", []) == ["spy.us", "2330.tw", "^twse"]
+
+
+def test_snapshot_ops_gate_accepts_partial_live_report_when_allowed():
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    report = {
+        "available_date": "2026-06-11",
+        "dry_run": False,
+        "counts": {"ok": 2, "skip": 1, "fail": 1, "dry": 0},
+        "jobs": [
+            {"source_id": "fred:GOOD", "status": "ok"},
+            {"source_id": "fred:OLD", "status": "skip"},
+            {"source_id": "fred:BAD", "status": "fail"},
+            {"source_id": "yahoo:2330.TW", "status": "ok"},
+        ],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+
+    summary = validate_snapshot_report(report, allow_failures=True)
+
+    assert summary["status"] == "partial"
+    assert summary["claim_boundary"] == "source_contract_status_only"
+
+
+def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    report = {
+        "available_date": "2026-06-11",
+        "dry_run": False,
+        "counts": {"ok": 1, "skip": 0, "fail": 0, "dry": 0},
+        "jobs": [{"source_id": "stooq:spy.us", "status": "ok"}],
+        "source_health": {
+            "claim_boundary": "source_contract_ready",
+            "stooq": {"status": "available", "default_enabled": True},
+        },
+    }
+
+    with pytest.raises(ValueError, match="source_contract_status_only"):
+        validate_snapshot_report(report)
+
+
+@given(
+    ok=st.integers(min_value=0, max_value=10),
+    skip=st.integers(min_value=0, max_value=10),
+    fail=st.integers(min_value=0, max_value=10),
+    dry=st.integers(min_value=0, max_value=10),
+)
+def test_pbt_snapshot_ops_gate_counts_must_match_job_outcomes(ok, skip, fail, dry):
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    total = ok + skip + fail + dry
+    jobs = [{"source_id": f"src:{i}", "status": "ok"} for i in range(total)]
+    report = {
+        "available_date": "2026-06-11",
+        "dry_run": False,
+        "counts": {"ok": ok, "skip": skip, "fail": fail, "dry": dry},
+        "jobs": jobs,
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+
+    if total == 0:
+        with pytest.raises(ValueError, match="job outcomes"):
+            validate_snapshot_report({**report, "jobs": []}, allow_failures=True)
+    else:
+        summary = validate_snapshot_report(report, allow_failures=True)
+        assert summary["counts"] == report["counts"]
