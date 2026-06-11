@@ -1,8 +1,8 @@
 # quantlab — TESTS.md(folder-level test registry)
 
-Spec coverage: A0, A, B, C plus legacy `invest_algorithms` regression.
+Spec coverage: A0, A, B, C, D first model plus legacy `invest_algorithms` regression.
 Canonical command: `uv run pytest -q`
-Last refreshed: 2026-06-11 · full suite **108 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(36 files) · `uv run lint-imports` KEPT · A0 mutation spot-check 5/5 killed
+Last refreshed: 2026-06-11 · full suite **114 passed** · `uv run mypy quantlab/ --ignore-missing-imports` clean(38 files) · `uv run lint-imports` KEPT · A0 mutation spot-check 5/5 killed
 
 | Test ID / file | Covers | Spec / REQ / AC | Evidence |
 |---|---|---|---|
@@ -27,11 +27,13 @@ Last refreshed: 2026-06-11 · full suite **108 passed** · `uv run mypy quantlab
 | `test_c_2_multihorizon` | `MultiHorizonMeanVarianceStrategy`, horizon blending, PIT/reproducible fallback | c-portfolio-core C-2 AC-C-04/05 | 3 pass |
 | `test_c_4_pyramid` | portfolio budget to legacy pyramid entry adapter | c-portfolio-core C-4 | 2 pass |
 | `test_c_5_integration` | C strategy leaderboard integration and reproducibility | c-portfolio-core C-5 | 2 pass |
+| `test_d_1_regime` | PIT-safe regime signal, missing fallback, macro revision as-of gate, stable labels | d-first-regime-model REQ-D-REGIME-001 / REQ-D-HOOK-001 | 4 pass |
+| `test_d_2_regime_integration` | Regime allocation strategy vs static baseline in OOS-net leaderboard | d-first-regime-model REQ-D-BASELINE-001 / REQ-D-HOOK-001 | 2 pass |
 | `test_algo_pyramid` | legacy pyramid calculator behavior | legacy `invest_algorithms` | 33 pass |
 
 ## External / Blocked Evidence
 
-- B-3 live proof attempt on 2026-06-11: `uv run python scripts/daily_snapshot.py` captured six files under `data/vintage/raw/2026-06-11/` (`fred_FEDFUNDS`, `fred_CPIAUCSL`, `fred_GDPC1`, `fred_UNRATE`, `fred_SP500`, `noaa_oni`) and exited 1 after 16 source failures. All configured Stooq symbols, including `2330.tw`, returned HTTP 404; configured FRED gold proxy returned HTTP 404; several FRED series timed out. Tracked in `.agents/specs/ISSUE_LOG.md` as `ISSUE-B3-001`.
+- B-3 live proof attempt on 2026-06-11: `uv run python scripts/daily_snapshot.py` captured six files under `data/vintage/raw/2026-06-11/` (`fred_FEDFUNDS`, `fred_CPIAUCSL`, `fred_GDPC1`, `fred_UNRATE`, `fred_SP500`, `noaa_oni`) and exited 1 after 16 source failures. All configured Stooq symbols, including `2330.tw`, returned HTTP 404; configured FRED gold proxy returned HTTP 404; several FRED series timed out. Tracked in `.agents/specs/ISSUE_LOG.md` as `ISSUE-B3-001`; invalid FRED gold default addressed by CR-B7, Stooq/TSMC remains external/source-contract blocked.
 
 ## Mutation spot-check(A0-6,manual)
 

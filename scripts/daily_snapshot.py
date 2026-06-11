@@ -42,17 +42,17 @@ OUT_ROOT = REPO_ROOT / "data" / "vintage" / "raw"
 TIMEOUT = 20
 
 # FRED 序列(fredgraph CSV,免金鑰)。每日抓當前值 = 向前自建 vintage。
-# 含總經 + 價格代理(SP500/那指/黃金/油/台幣匯率)— FRED 在沙箱可用,繞過 Stooq 404。
+# 含總經 + 價格代理(SP500/那指/銅/油/台幣匯率)— FRED 在沙箱可用,繞過 Stooq 404。
 # 載入時哪些當「價格資產」由 vintage loader 的 fred_price_series 決定(見 quantlab/data/vintage.py)。
 FRED_SERIES = [
     # 總經
     "FEDFUNDS", "CPIAUCSL", "GDPC1", "DGS10", "DGS2", "T10Y2Y", "UNRATE",
     # 價格代理(可當資產回測)
-    "SP500", "NASDAQCOM", "GOLDAMGBD228NLBM", "DCOILWTICO", "DEXTAUS",
+    "SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS",
 ]
 
 # 預設把哪些 FRED series 當價格資產(供 loader 參考;此處僅文件化清單)
-FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "GOLDAMGBD228NLBM", "DCOILWTICO", "DEXTAUS"]
+FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"]
 
 # Stooq 報價(免金鑰 CSV)。symbol 格式見 stooq.com;.us=美股, .tw=台股, ^=指數。
 # 全天候資產類別 proxy + TSMC + 匯率。使用者可自行增減。

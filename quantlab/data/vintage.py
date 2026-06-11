@@ -60,7 +60,7 @@ def build_provider_from_vintage(vintage_root: str | Path,
     """vintage JSON → A0 PIT provider。
 
     fred_price_series:指定哪些 FRED series 當「價格資產」載入(symbol=series、close=value),
-    其餘 FRED series 仍為 macro。用以繞過 Stooq,以 FRED 的股指/黃金/油/匯率序列當價格。
+    其餘 FRED series 仍為 macro。用以繞過 Stooq,以 FRED 的股指/商品/油/匯率序列當價格。
     strict(CR-B5):排除 is_approximate=true 列(每筆 is_approximate 來自 vintage JSON)。
     """
     price_set = set(fred_price_series or ())

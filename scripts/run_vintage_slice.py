@@ -19,7 +19,7 @@ from quantlab.strategies import StaticWeights
 from quantlab.tracking import LocalResultStore
 
 VINTAGE_ROOT = Path(__file__).resolve().parents[1] / "data" / "vintage" / "raw"
-PRICE_PROXIES = {"SP500", "NASDAQCOM", "GOLDAMGBD228NLBM", "DCOILWTICO", "DEXTAUS"}
+PRICE_PROXIES = {"SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"}
 
 
 def main() -> int:
