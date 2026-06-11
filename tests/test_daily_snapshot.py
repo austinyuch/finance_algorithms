@@ -328,6 +328,9 @@ def test_pbt_snapshot_ops_gate_counts_must_match_job_outcomes(ok, skip, fail, dr
     if total == 0:
         with pytest.raises(ValueError, match="job outcomes"):
             validate_snapshot_report({**report, "jobs": []}, allow_failures=True)
+    elif ok + skip + dry == 0:
+        with pytest.raises(ValueError, match="no successful"):
+            validate_snapshot_report(report, allow_failures=True)
     else:
         summary = validate_snapshot_report(report, allow_failures=True)
         assert summary["counts"] == report["counts"]
