@@ -79,6 +79,18 @@ def test_selected_specs_rejects_unknown_name():
         selected_specs(["missing"])
 
 
+def test_purge_python_bytecode_removes_pycache(tmp_path):
+    from scripts.run_mutation_spot_checks import purge_python_bytecode
+
+    cache = tmp_path / "pkg" / "__pycache__"
+    cache.mkdir(parents=True)
+    (cache / "module.cpython-313.pyc").write_bytes(b"stale")
+
+    purge_python_bytecode(tmp_path)
+
+    assert not cache.exists()
+
+
 def test_run_mutation_returns_true_when_test_command_fails_and_restores(tmp_path):
     from scripts.run_mutation_spot_checks import MutationSpec, run_mutation
 

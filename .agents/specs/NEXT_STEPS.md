@@ -4,9 +4,9 @@
 
 ## Current State (2026-06-11)
 
-- **Current branch lane:** no active implementation branch. `spec/next-gaps-1-6-tier3-public` was squash-merged to `main` as PR #19 and is being synced into `dev`.
-- **Latest evidence:** `uv run pytest -q` → **181 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **18/18 killed**; next-gap fallback trace coverage 100% for changed pure-Python modules (`experiment_registry`, `evaluation`, `source_health`, `snapshot_schedule_report`); F Next.js tests 18 passed, line coverage 94.93%, `npm audit --json` 0 vulnerabilities, 7/7 frontend mutations killed, `npm run visual`, `npm run visual:browser`, `npm run probe:public-demo`, build, and production smoke passed.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`; PR #19 squash-merged to `main` as `59c8884`.
+- **Current branch lane:** `spec/ops-visual-drift-artifacts` is implemented locally and ready for review/PR from `dev` baseline. `spec/next-gaps-1-6-tier3-public` was squash-merged to `main` as PR #19 (`59c8884`) and synced into `dev` as `e1b081c`.
+- **Latest evidence:** `uv run pytest -q` → **190 passed**; `uv run mypy quantlab/ --ignore-missing-imports` → clean(50 files); `uv run lint-imports` → KEPT; Python mutation spot checks **22/22 killed**; ops-visual-drift fallback trace coverage 100% for changed pure-Python modules (`experiment_registry`, `evaluation`, `source_health`, `snapshot_schedule_report`, `run_mutation_spot_checks`, `daily_snapshot`); schedule smoke produced `snapshot_schedule_run_proof` with `evidence_tier=smoke`; F Next.js tests 20 passed, line coverage 92.13%, `npm audit --json` 0 vulnerabilities, 8/8 frontend mutations killed, `npm run visual`, `npm run visual:browser`, `npm run probe:public-demo`, build, and production smoke passed.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`; PR #19 squash-merged to `main` as `59c8884` and merged into `dev` as `e1b081c`.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -51,12 +51,18 @@
   - B scheduled ops: append-only schedule report helper and latest pointer are unit-tested.
   - D evaluation: family evaluator can consume real `LocalResultStore` records.
   - B Stooq: source-contract decision helper keeps blocked/default-disabled posture until live close rows are proven.
+- **Ops/visual/drift artifacts lane:** [ops-visual-drift-artifacts](./ops-visual-drift-artifacts/) is **Implemented · Review PASSED** locally.
+  - B scheduled ops proof: workflow config and proof builder record workflow/trigger/command/exit status, smoke/live tier, and append-only retention.
+  - F visual diff: browser visual evidence now emits thresholded diff status while preserving screenshot hash proof.
+  - E drift assessment: metric-delta drift report is assessed-not-automated, with `serving_status=not_serving` and `retraining_status=not_configured`.
+  - B source-contract reopen: Stooq remains default-disabled; live close rows only allow `eligible_for_opt_in_review`.
+  - D artifact expansion: model-family evaluation can be wrapped in checksumed JSON with row-count and OOS-net authority validation.
 
 ## Recommended Next Action
 
-1. Start the next isolated lane for B scheduled real ops proof, F visual diff thresholding, E drift monitoring first slice, B external source-contract decision, and D artifact evaluation expansion.
-2. Keep browser screenshot hash proof as first proof only until a pixel-diff threshold workflow exists.
-3. Keep E Tier3 at artifact-manifest-only until serving, retraining, and drift monitoring have separate live evidence.
+1. Commit/push `spec/ops-visual-drift-artifacts` and open a PR to `dev`.
+2. Next highest-value gap: replace hash-equality visual diff with real pixel-diff tolerance and stored baseline artifacts from CI.
+3. Keep E Tier3 at artifact-manifest-only until serving, retraining, and automated drift monitoring have separate live evidence.
 
 ## Scheduled Ops
 

@@ -205,6 +205,62 @@ def build_drift_report_skeleton(
     }
 
 
+def build_drift_assessment_report(
+    entry: ExperimentEntry,
+    *,
+    reference_metrics: Mapping[str, float],
+    current_metrics: Mapping[str, float],
+    threshold: float,
+    observed_at: str,
+) -> dict[str, Any]:
+    if entry.claim_boundary != "no_alpha_claim":
+        raise ValueError("drift assessment only accepts no_alpha_claim entries")
+    if threshold <= 0:
+        raise ValueError("drift threshold must be positive")
+    if not observed_at.strip():
+        raise ValueError("drift assessment requires observed_at")
+    keys = sorted(set(reference_metrics) & set(current_metrics))
+    if not keys:
+        raise ValueError("drift assessment requires overlapping metrics")
+    deltas = {
+        key: float(current_metrics[key]) - float(reference_metrics[key])
+        for key in keys
+    }
+    status = "drift_detected" if any(abs(delta) > threshold + 1e-12 for delta in deltas.values()) else "stable"
+    return {
+        "artifact_kind": "drift_assessment_report",
+        "claim_boundary": "no_alpha_claim",
+        "experiment_id": entry.experiment_id,
+        "model_family": entry.model_family,
+        "monitoring_status": "assessed_not_automated",
+        "serving_status": "not_serving",
+        "retraining_status": "not_configured",
+        "observed_at": observed_at,
+        "threshold": float(threshold),
+        "status": status,
+        "reference_metrics": {str(key): float(value) for key, value in reference_metrics.items()},
+        "current_metrics": {str(key): float(value) for key, value in current_metrics.items()},
+        "metric_deltas": deltas,
+    }
+
+
+def validate_drift_assessment_report(report: Mapping[str, Any]) -> None:
+    if report.get("artifact_kind") != "drift_assessment_report":
+        raise ValueError("unknown drift assessment artifact")
+    if report.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("drift assessment must preserve no_alpha_claim")
+    if report.get("monitoring_status") != "assessed_not_automated":
+        raise ValueError("drift assessment must remain assessed_not_automated")
+    if report.get("serving_status") != "not_serving":
+        raise ValueError("drift assessment must not claim serving")
+    if report.get("retraining_status") != "not_configured":
+        raise ValueError("drift assessment must not claim retraining")
+    if not isinstance(report.get("metric_deltas"), Mapping) or not report["metric_deltas"]:
+        raise ValueError("drift assessment requires metric_deltas")
+    if report.get("status") not in {"stable", "drift_detected"}:
+        raise ValueError("unknown drift assessment status")
+
+
 def _oos_net_metrics(record: Mapping[str, Any]) -> dict[str, float]:
     for metric in record.get("metrics", []):
         if metric.get("segment") == "out_of_sample" and metric.get("basis") == "net":

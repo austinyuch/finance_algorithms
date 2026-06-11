@@ -7,6 +7,8 @@ the original file is restored before the next check.
 from __future__ import annotations
 
 import argparse
+import importlib
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -144,8 +146,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="e-tier3-manifest-serving-gate",
         path="quantlab/mlops/experiment_registry.py",
-        original='"serving_status": "not_serving",',
-        mutated='"serving_status": "serving",',
+        original='"serving_status": "not_serving",\n        "retraining_status": "not_configured",\n        "drift_monitoring_status": "skeleton_only",',
+        mutated='"serving_status": "serving",\n        "retraining_status": "not_configured",\n        "drift_monitoring_status": "skeleton_only",',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_manifest_and_drift_skeleton_remain_non_serving"),
     ),
@@ -160,8 +162,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="b-schedule-append-only-retention",
         path="scripts/snapshot_schedule_report.py",
-        original='"retention": "append_only",',
-        mutated='"retention": "overwrite_allowed",',
+        original='"retention": "append_only",\n        "latest_pointer": "latest-schedule-report.json",',
+        mutated='"retention": "overwrite_allowed",\n        "latest_pointer": "latest-schedule-report.json",',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_daily_snapshot.py::test_schedule_report_records_retention_and_latest_pointer"),
     ),
@@ -172,6 +174,38 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         mutated='"decision": "requires_live_close_rows",',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_daily_snapshot.py::test_stooq_source_contract_decision_requires_live_proof"),
+    ),
+    MutationSpec(
+        name="b-schedule-proof-exit-status",
+        path="scripts/snapshot_schedule_report.py",
+        original='status = "degraded" if exit_code != 0 else str(schedule.get("status") or "unknown")',
+        mutated='status = str(schedule.get("status") or "unknown")',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_schedule_run_proof_records_smoke_tier_and_degraded_exit"),
+    ),
+    MutationSpec(
+        name="e-drift-threshold-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='abs(delta) > threshold + 1e-12',
+        mutated='abs(delta) < threshold + 1e-12',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_drift_assessment_report_detects_metric_drift_without_serving_claim"),
+    ),
+    MutationSpec(
+        name="b-stooq-live-close-positive",
+        path="quantlab/data/source_health.py",
+        original="if not isinstance(close, (int, float)) or close <= 0:",
+        mutated="if not isinstance(close, (int, float)) or close < 0:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_pbt_stooq_reopen_evidence_rejects_missing_positive_close"),
+    ),
+    MutationSpec(
+        name="d-evaluation-artifact-checksum",
+        path="quantlab/models/evaluation.py",
+        original='if artifact.get("checksum") != expected:',
+        mutated='if artifact.get("checksum") == expected:',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_d_6_model_family_evaluation.py::test_model_family_evaluation_artifact_is_checksumed_and_written"),
     ),
 )
 
@@ -190,6 +224,12 @@ def restore_mutation(token: MutationToken) -> None:
     token.path.write_text(token.original_text, encoding="utf-8")
 
 
+def purge_python_bytecode(root: Path) -> None:
+    importlib.invalidate_caches()
+    for cache_dir in root.rglob("__pycache__"):
+        shutil.rmtree(cache_dir, ignore_errors=True)
+
+
 def selected_specs(names: Sequence[str]) -> list[MutationSpec]:
     if not names:
         return list(MUTATIONS)
@@ -203,6 +243,7 @@ def selected_specs(names: Sequence[str]) -> list[MutationSpec]:
 
 def run_mutation(root: Path, spec: MutationSpec) -> bool:
     token = apply_mutation(root, spec)
+    purge_python_bytecode(root)
     try:
         result = subprocess.run(spec.test_command, cwd=root)
         killed = result.returncode != 0
@@ -211,6 +252,7 @@ def run_mutation(root: Path, spec: MutationSpec) -> bool:
         return killed
     finally:
         restore_mutation(token)
+        purge_python_bytecode(root)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
