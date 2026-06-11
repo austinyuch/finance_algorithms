@@ -184,3 +184,13 @@ def test_main_degrades_gracefully(monkeypatch, tmp_path, capsys):
 
 def test_snapshot_includes_yahoo_tsmc_and_twse_sources():
     assert {"2330.TW", "^TWII"} <= set(ds.YAHOO_SYMBOLS)
+
+
+def test_stooq_defaults_disabled_after_source_contract_block():
+    assert ds.STOOQ_SYMBOLS == []
+
+
+def test_csv_env_symbols_trims_and_skips_empty_values(monkeypatch):
+    monkeypatch.setenv("QUANTLAB_STOOQ_SYMBOLS", " spy.us, ,2330.tw, ^twse ")
+
+    assert ds._csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", []) == ["spy.us", "2330.tw", "^twse"]

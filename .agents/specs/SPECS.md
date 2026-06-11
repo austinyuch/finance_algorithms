@@ -13,11 +13,11 @@
 
 | Spec | Epic | Lifecycle | Depends On | Impacts | Open CRs | Lane |
 |---|---|---|---|---|---|---|
-| [a0-backtest-foundation](./a0-backtest-foundation/) | A0 | **Implemented · Review PASSED**(7/7 task, 66 tests, mutation 5/5) | — (greenfield 地基) | (未來)A,B,C,D,E,F,G 全依賴其介面 | — | `spec/a0-backtest-foundation` |
+| [a0-backtest-foundation](./a0-backtest-foundation/) | A0 | **Implemented · Review PASSED**(7/7 task;CR-A0 regime scheduling;mutation automation) | — (greenfield 地基) | (未來)A,B,C,D,E,F,G 全依賴其介面;C-3/D regime scheduling | — (CR-A0 Implemented) | `spec/a0-backtest-foundation` |
 | [a-tsmc-hedge-slice](./a-tsmc-hedge-slice/) | A | **Implemented · Review PASSED**(6/6 task, 83 tests) | a0-backtest-foundation | a0(history() + metrics 防護,additive) | — | `spec/a-tsmc-hedge-slice` |
-| [b-data-platform](./b-data-platform/) | B | **Implemented(repo-side)· Review PASSED**(B-1/2/4/5;B-3 bulk=真機 handoff;2026-06-11 proof partial;CR-B7 FRED proxy + CR-B8 Yahoo fallback) | a0-backtest-foundation | a0(history()/metrics additive;**CR-B5** pit_strictness additive schema); snapshot source defaults(CR-B7/CR-B8) | — (CR-B5/CR-B7/CR-B8 Implemented);residual `ISSUE-B3-001` for Stooq path only | `spec/b-data-platform` |
+| [b-data-platform](./b-data-platform/) | B | **Implemented(repo-side)· Review PASSED**(B-1/2/4/5;B-3 bulk=真機 handoff;CR-B7/B8/B9 source policy) | a0-backtest-foundation | a0(history()/metrics additive;**CR-B5** pit_strictness additive schema); snapshot source defaults(CR-B7/CR-B8/CR-B9) | — (CR-B5/CR-B7/CR-B8/CR-B9 Implemented);residual `ISSUE-B3-001` for Stooq availability only | `spec/b-data-platform` |
 | [c-portfolio-core](./c-portfolio-core/) | C | **Implemented(core+C-2+C-3)· Review PASSED**(C-1/2/3/4/5) | b-data-platform,d-first-regime-model(C-3 hook) | invest_algorithms/algo_pyramid(C-4 additive adapter,未改其行為); D regime signal consumed by C-3 selector | — | `spec/c-portfolio-core` |
-| [d-first-regime-model](./d-first-regime-model/) | D | **Implemented(first slice)· Review PASSED**(6 tests; OOS-net baseline; no Tier3) | a0-backtest-foundation,b-data-platform,c-portfolio-core | c-portfolio-core(C-3 regime hook consumed additively) | — | `spec/d-first-regime-model` |
+| [d-first-regime-model](./d-first-regime-model/) | D | **Implemented(first slice + D-3 real-source-format benchmark)· Review PASSED**(OOS-net baselines; no alpha claim; no Tier3) | a0-backtest-foundation,b-data-platform,c-portfolio-core | c-portfolio-core(C-3 regime hook consumed additively); A0 regime scheduling | — | `spec/d-first-regime-model` |
 | _e-mlops-tier3_ | E | Deferred(R3) | d | — | — | (TBD) |
 | _f-frontend_ | F | Planned | a0(read API) | — | — | (TBD) |
 | _g-alt-data_ | G | Optional | a0 | — | — | (獨立 optional lane) |

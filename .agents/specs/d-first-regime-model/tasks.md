@@ -34,3 +34,14 @@
   - [x] 3.3 Review gate: run `uv run pytest -q`, `uv run mypy quantlab/ --ignore-missing-imports`, and `uv run lint-imports`.
     - _Requirement: [Implements REQ-D-REGIME-001, REQ-D-BASELINE-001, REQ-D-HOOK-001]_
     - _Eval: final review can cite fresh command output._
+
+- [x] 4. D-3 real-source-format benchmark continuation
+  - [x] 4.1 RED: add vintage-loader benchmark tests with PBT as-of-gated date selection and OOS baseline logging.
+    - _Requirement: [Extends REQ-D-BASELINE-001, REQ-D-HOOK-001]_
+    - _Eval: `uv run pytest -q tests/quantlab/test_d_3_real_data_regime_benchmark.py` initially fails._
+  - [x] 4.2 GREEN: add `quantlab/models/regime_benchmark.py` to run regime vs static baseline using A0 PIT provider data.
+    - _Requirement: [Extends REQ-D-BASELINE-001]_
+    - _Eval: targeted D-3 tests pass._
+  - [x] 4.3 REFACTOR: keep benchmark helper small, explicit about `no_alpha_claim`, and measured by line coverage/mutation.
+    - _Requirement: [Extends REQ-D-BASELINE-001]_
+    - _Eval: D-3 helper line coverage 92%; claim-boundary mutation killed._

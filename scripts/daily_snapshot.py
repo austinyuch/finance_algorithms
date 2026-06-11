@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -54,14 +55,16 @@ FRED_SERIES = [
 # 預設把哪些 FRED series 當價格資產(供 loader 參考;此處僅文件化清單)
 FRED_PRICE_PROXIES = ["SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"]
 
-# Stooq 報價(免金鑰 CSV)。symbol 格式見 stooq.com;.us=美股, .tw=台股, ^=指數。
-# 全天候資產類別 proxy + TSMC + 匯率。使用者可自行增減。
-STOOQ_SYMBOLS = [
-    "spy.us", "agg.us", "tlt.us", "gld.us", "dbc.us",  # 股/債/長債/金/商品
-    "btc.v",                                            # 加密(若不可用會被跳過)
-    "2330.tw", "^twse",                                 # 台積電 + 台股加權
-    "usdtwd",                                           # 美元台幣
-]
+def _csv_env_symbols(name: str, default: list[str]) -> list[str]:
+    raw = os.environ.get(name)
+    if raw is None:
+        return list(default)
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+# Stooq 報價(免金鑰 CSV)。2026-06-11 本環境重複 404,故預設停用以免 daily
+# snapshot 假性失敗;若要重試,設定 QUANTLAB_STOOQ_SYMBOLS="spy.us,2330.tw"。
+STOOQ_SYMBOLS = _csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", [])
 
 # Yahoo chart fallback(免金鑰 JSON)。Stooq 在本環境穩定 404 時仍可捕捉 TSMC/TWSE。
 YAHOO_SYMBOLS = [

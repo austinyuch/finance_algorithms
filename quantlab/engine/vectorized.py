@@ -15,6 +15,7 @@ import pandas as pd
 from quantlab.costs import trading_cost
 from quantlab.engine.metrics import compute_metrics
 from quantlab.engine.walkforward import walk_forward_splits
+from quantlab.portfolio import select_rebalance_dates
 
 _FREQ = {"monthly": ("ME", 12.0), "quarterly": ("QE", 4.0), "semiannual": ("2QE", 2.0)}
 
@@ -27,7 +28,8 @@ class VectorizedEngine:
         freq, ppy = _FREQ[config["rebalance"]]
         mode = config.get("mode", "gross")
         cost_config = config.get("cost_config") or {}
-        rebal = pd.date_range(config["start"], config["end"], freq=freq).tolist()
+        candidates = pd.date_range(config["start"], config["end"], freq=freq).tolist()
+        rebal = self._rebalance_dates(candidates, data, config)
 
         # 訓練:把訓練窗交給 strategy.fit(buy-and-hold 為 no-op);此處以全期 fit 一次。
         strategy.fit(None)
@@ -39,8 +41,8 @@ class VectorizedEngine:
         metrics += self._walk_forward_metrics(returns, turnovers, rebal, config, ppy, mode)
 
         return {"run_id": "", "strategy_name": str(strategy.metadata.get("name", "?")),
-                "strategy_metadata": dict(strategy.metadata), "config": dict(config),
-                "metrics": metrics}
+                "strategy_metadata": dict(strategy.metadata), "config": self._result_config(config),
+                "rebalance_dates": [str(d.date()) for d in rebal], "metrics": metrics}
 
     # --- internals ---
 
@@ -50,6 +52,51 @@ class VectorizedEngine:
         if df.empty or symbol not in df.index:
             return None
         return float(df.loc[symbol, "close"])
+
+    @staticmethod
+    def _result_config(config: Mapping[str, Any]) -> dict:
+        out = dict(config)
+        policy = out.get("rebalance_policy")
+        if isinstance(policy, Mapping) and "classifier" in policy:
+            clean_policy = dict(policy)
+            classifier = clean_policy.pop("classifier")
+            clean_policy["classifier"] = getattr(classifier, "__class__", type(classifier)).__name__
+            out["rebalance_policy"] = clean_policy
+        return out
+
+    def _rebalance_dates(self, candidates: list[pd.Timestamp], data: Any,
+                         config: Mapping[str, Any]) -> list[pd.Timestamp]:
+        policy = config.get("rebalance_policy")
+        if not policy:
+            return candidates
+        if not isinstance(policy, Mapping):
+            raise ValueError("rebalance_policy must be a mapping")
+        if policy.get("kind") != "regime":
+            raise ValueError(f"unsupported rebalance_policy kind: {policy.get('kind')}")
+
+        frequency = policy.get("frequency", config["rebalance"])
+        labels = self._policy_labels(candidates, data, policy)
+        return select_rebalance_dates(candidates, labels, frequency=frequency)
+
+    @staticmethod
+    def _policy_labels(candidates: list[pd.Timestamp], data: Any,
+                       policy: Mapping[str, Any]) -> list[str]:
+        if "labels" in policy:
+            labels = policy["labels"]
+            if not isinstance(labels, Mapping):
+                raise ValueError("rebalance_policy.labels must be a mapping")
+            out = []
+            for date in candidates:
+                key = str(date.date())
+                if key not in labels:
+                    raise ValueError(f"missing regime label for {key}")
+                out.append(str(labels[key]))
+            return out
+
+        classifier = policy.get("classifier")
+        if classifier is None:
+            raise ValueError("regime rebalance_policy requires labels or classifier")
+        return [str(classifier.predict(asof, data).label) for asof in candidates]
 
     def _simulate(self, strategy: Any, data: Any, rebal: list, cost_config: Mapping[str, Any],
                   mode: str) -> tuple[pd.Series, pd.Series]:

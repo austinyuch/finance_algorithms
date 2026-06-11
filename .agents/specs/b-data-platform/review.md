@@ -1,7 +1,7 @@
 # Review — Epic B:真實資料平台(PIT 接入)
 
 > SDD Phase 5。verdict authority。
-> 驗證:`uv run pytest -q` → **96 passed**;mypy clean(31 檔);import-linter KEPT;drift-guard 綠。
+> 驗證:`uv run pytest -q` → **137 passed**;mypy clean(40 files);import-linter KEPT;drift-guard 綠。
 
 ## Verdict:**PASSED(repo-side)**;B-3 bulk fetch 為 external/real-machine handoff
 
@@ -27,10 +27,11 @@ repo 端的資料平台能力完成且有測試:vintage 橋接、FRED 價格代�
 
 ## CR 收斂
 - **CR-B5(pit_strictness)→ Implemented**(additive schema overlay on a0;re-codegen + 全型別檢查通過,無漂移)。SPECS.md Open CR 收斂。
+- **CR-B7/CR-B8/CR-B9 source policy → Implemented**:invalid FRED gold proxy removed, Yahoo fallback added, and Stooq made opt-in after repeated 404s.
 
 ## Residual / 刻意降級
 - is_approximate lag 估算(無 vintage 源的 pre-collection 歷史)為前瞻能力,目前資料皆 `is_approximate=false`;待 bulk backfill 時落實 lag 表(政策 Decision 3）。
-- Stooq/個股 bulk fetch:real-machine(上述 handoff)。
+- Stooq/個股 bulk fetch:real-machine(上述 handoff);Stooq default source disabled until a working contract is selected.
 
 ## 交棒
 真實價格累積後,Epic A slice 可由 `build_provider_from_vintage(..., fred_price_series=...)` 換真實 provider 重跑。Epic C(組合最佳化)可在此資料平台上接續。
