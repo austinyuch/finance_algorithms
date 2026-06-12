@@ -207,6 +207,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_d_6_model_family_evaluation.py::test_model_family_evaluation_artifact_is_checksumed_and_written"),
     ),
+    MutationSpec(
+        name="root-torch-default-dependency",
+        path="pyproject.toml",
+        original='    "statsmodels>=0.14.6",\n    "uvicorn[standard]>=0.49.0",',
+        mutated='    "statsmodels>=0.14.6",\n    "torch>=2.12.0",\n    "uvicorn[standard]>=0.49.0",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_dependency_security.py::test_default_project_dependencies_exclude_torch"),
+    ),
 )
 
 

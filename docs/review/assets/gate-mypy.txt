@@ -1,3 +1,1 @@
-Uninstalled 1 package in 0.55ms
-Installed 1 package in 2ms
-Success: no issues found in 50 source files
+Success: no issues found in 51 source files
