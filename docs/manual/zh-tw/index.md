@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 216 passed, 1 skipped
+uv run pytest -q             # 健檢：預期 221 passed
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -182,7 +182,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **216 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **53** 檔且 clean；mutation spot checks **36/36 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 CR-B12 scoped source-health overclaim 防護。
+- 測試套件目前為 **221 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **53** 檔且 clean；mutation spot checks **37/37 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 CR-B12 scoped source-health overclaim 防護。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。

@@ -120,3 +120,15 @@ def test_next_steps_reflects_post_merge_e_gate_state():
     assert "PR #55" in text
     assert "PR #56" in text
     assert "not_ready" in text
+
+
+def test_next_steps_reflects_post_merge_live_write_smoke_state():
+    """NEXT_STEPS should reflect CR-B12 after both dev and main promotions."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "Current branch lane:** none after `e-tier3-readiness-proof-cli` promotion" not in text
+    assert "PR #61" in text
+    assert "PR #62" in text
+    assert "CR-B12 scoped live write smoke promoted to `dev`" in text
+    assert "and to `main` via PR #62" in text
+    assert "Current branch lane:** none after CR-B12 promotion" in text
