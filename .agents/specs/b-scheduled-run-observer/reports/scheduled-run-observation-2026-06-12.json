@@ -1,0 +1,24 @@
+{
+  "artifact_kind": "scheduled_run_observation",
+  "claim_boundary": "manual_dispatch_is_not_cron",
+  "evidence_tier": "external_pending",
+  "latest_failed_schedule": null,
+  "latest_manual_success": {
+    "conclusion": "success",
+    "createdAt": "2026-06-12T00:47:01Z",
+    "databaseId": 27387041974,
+    "displayTitle": "daily-snapshot",
+    "event": "workflow_dispatch",
+    "headBranch": "spec/b-live-scheduled-snapshot-proof",
+    "status": "completed",
+    "updatedAt": "2026-06-12T00:47:39Z",
+    "url": "https://github.com/austinyuch/finance_algorithms/actions/runs/27387041974"
+  },
+  "latest_schedule_attempt": null,
+  "latest_schedule_success": null,
+  "next_action": "wait for or inspect a completed GitHub Actions event=schedule run",
+  "observed_run_count": 2,
+  "schedule_run_count": 0,
+  "status": "pending",
+  "workflow": "daily-snapshot.yml"
+}

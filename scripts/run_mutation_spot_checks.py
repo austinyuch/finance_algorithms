@@ -223,6 +223,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_torch_alert_state"),
     ),
+    MutationSpec(
+        name="b-scheduled-observer-manual-pending",
+        path="scripts/scheduled_run_observer.py",
+        original='status = "proven" if latest_schedule_success is not None else "pending"',
+        mutated='status = "proven"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_scheduled_run_observer_keeps_manual_dispatch_as_pending"),
+    ),
 )
 
 
