@@ -45,9 +45,9 @@ const dashboard: ShowcaseDashboard = {
   evidence: {
     readiness: "local_runtime_only",
     tests: [
-      "156 passed",
-      "mutation 8/8 killed",
-      "F Next.js coverage 84.37%",
+      "190 passed",
+      "mutation 9/9 killed",
+      "F Next.js coverage 91.42%",
       "E-lite coverage 97.3%",
       "B source-health coverage 97.6%"
     ]

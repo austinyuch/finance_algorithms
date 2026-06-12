@@ -1,0 +1,9 @@
+Uninstalled 1 package in 0.50ms
+Installed 1 package in 1ms
+vintage root : /home/ac/projects/finance_algorithms/data/vintage/raw
+macro series : 4  ['CPIAUCSL', 'FEDFUNDS', 'GDPC1', 'UNRATE']
+price assets : 1  ['SP500']
+
+[readiness] 真實價格資產不足(<2)→ 跳過回測。
+price proxies 從下一次 snapshot(已加入 FRED_SERIES)開始累積;
+待累積足夠歷史後,本腳本即可在真實資料上跑配置回測。

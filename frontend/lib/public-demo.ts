@@ -54,10 +54,25 @@ export interface BrowserVisualDiffEvidence {
   status: "passed" | "failed";
   baselineHash: string;
   currentHash: string;
+  mismatchedPixels: number;
+  totalPixels: number;
   mismatchRatio: number;
   maxMismatchRatio: number;
   viewport: string;
   source: "chromium-headless";
+}
+
+export interface PixelMismatchInput {
+  baseline: Uint8Array;
+  current: Uint8Array;
+  width: number;
+  height: number;
+}
+
+export interface PixelMismatchResult {
+  mismatchedPixels: number;
+  totalPixels: number;
+  mismatchRatio: number;
 }
 
 function sha256(text: string): string {
@@ -145,6 +160,8 @@ export function buildBrowserVisualEvidence(input: {
 export function buildBrowserVisualDiffEvidence(input: {
   baseline: BrowserVisualEvidence;
   current: BrowserVisualEvidence;
+  mismatchedPixels: number;
+  totalPixels: number;
   mismatchRatio: number;
   maxMismatchRatio: number;
 }): BrowserVisualDiffEvidence {
@@ -167,16 +184,54 @@ export function buildBrowserVisualDiffEvidence(input: {
   ) {
     throw new Error("browser visual diff mismatch ratio must be within [0,1]");
   }
+  if (!Number.isInteger(input.mismatchedPixels) || !Number.isInteger(input.totalPixels)) {
+    throw new Error("browser visual diff pixel counts must be integers");
+  }
+  if (input.totalPixels <= 0 || input.mismatchedPixels < 0 || input.mismatchedPixels > input.totalPixels) {
+    throw new Error("browser visual diff pixel counts are inconsistent");
+  }
   return {
     artifactKind: "browser_visual_diff",
     claimBoundary: "no_alpha_claim",
     status: input.mismatchRatio <= input.maxMismatchRatio ? "passed" : "failed",
     baselineHash: input.baseline.screenshotHash,
     currentHash: input.current.screenshotHash,
+    mismatchedPixels: input.mismatchedPixels,
+    totalPixels: input.totalPixels,
     mismatchRatio: input.mismatchRatio,
     maxMismatchRatio: input.maxMismatchRatio,
     viewport: input.current.viewport,
     source: input.current.source,
+  };
+}
+
+export function computePixelMismatchRatio(input: PixelMismatchInput): PixelMismatchResult {
+  const { baseline, current, width, height } = input;
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
+    throw new Error("browser visual pixel comparison requires positive integer dimensions");
+  }
+  const totalPixels = width * height;
+  const expectedBytes = totalPixels * 4;
+  if (baseline.length !== expectedBytes || current.length !== expectedBytes) {
+    throw new Error("browser visual pixel comparison buffer size does not match dimensions");
+  }
+
+  let mismatchedPixels = 0;
+  for (let offset = 0; offset < expectedBytes; offset += 4) {
+    if (
+      baseline[offset] !== current[offset] ||
+      baseline[offset + 1] !== current[offset + 1] ||
+      baseline[offset + 2] !== current[offset + 2] ||
+      baseline[offset + 3] !== current[offset + 3]
+    ) {
+      mismatchedPixels += 1;
+    }
+  }
+
+  return {
+    mismatchedPixels,
+    totalPixels,
+    mismatchRatio: mismatchedPixels / totalPixels,
   };
 }
 

@@ -1,0 +1,15 @@
+{
+  "artifactKind": "browser_visual_diff",
+  "claimBoundary": "no_alpha_claim",
+  "status": "passed",
+  "baselineHash": "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
+  "currentHash": "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
+  "baselineImageHash": "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
+  "currentImageHash": "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
+  "mismatchedPixels": 0,
+  "totalPixels": 1296000,
+  "mismatchRatio": 0,
+  "maxMismatchRatio": 0.001,
+  "viewport": "desktop-1440x900",
+  "source": "chromium-headless"
+}

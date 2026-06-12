@@ -45,6 +45,26 @@ cd invest_algorithms
 uv run uvicorn api:app --host 127.0.0.1 --port 2224
 ```
 
+## Generated Documentation
+
+Stakeholder-facing docs live under `docs/` and are regenerated from the specs
+plus refreshed gate evidence. Keep readiness claims copied from
+`.agents/specs/**/review.md` (never derived from task counts):
+
+- **User manual** — `docs/manual/{en,zh-tw}/index.{md,html}`. Regeneration steps:
+  [`docs/MANUAL_GENERATION_GUIDE.md`](docs/MANUAL_GENERATION_GUIDE.md).
+- **Executive review** — `docs/review/index.html`. Regeneration steps:
+  [`docs/REVIEW_GENERATION_GUIDE.md`](docs/REVIEW_GENERATION_GUIDE.md).
+- **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
+  [`docs/EVIDENCE_METADATA_CONTRACT.md`](docs/EVIDENCE_METADATA_CONTRACT.md),
+  [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](docs/DEMO_RISK_WARNING_TAXONOMY.md).
+- **Traceability bridge** — [`.agents/specs/RTM.md`](.agents/specs/RTM.md)
+  (verification context only, not a readiness authority).
+
+Live, port-bound services for evidence capture must go through
+`local-infra-registry-governance`; CLI demos and the committed static export
+need no port allocation and are the default evidence path.
+
 ## Architecture Rules
 
 - `quantlab.engine` and `quantlab.data` must not import `torch`, `tensorflow`, `jax`, or `flax`.

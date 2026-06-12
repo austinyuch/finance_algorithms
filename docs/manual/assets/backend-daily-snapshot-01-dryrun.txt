@@ -1,0 +1,26 @@
+Uninstalled 1 package in 0.37ms
+Installed 1 package in 2ms
+[snapshot] available_date=2026-06-11  out=/home/ac/projects/finance_algorithms/data/vintage/raw/2026-06-11  jobs=22  (DRY-RUN)
+  DRY  fred_FEDFUNDS
+  DRY  fred_CPIAUCSL
+  DRY  fred_GDPC1
+  DRY  fred_DGS10
+  DRY  fred_DGS2
+  DRY  fred_T10Y2Y
+  DRY  fred_UNRATE
+  DRY  fred_SP500
+  DRY  fred_NASDAQCOM
+  DRY  fred_PCOPPUSDM
+  DRY  fred_DCOILWTICO
+  DRY  fred_DEXTAUS
+  DRY  yahoo_SPY
+  DRY  yahoo_AGG
+  DRY  yahoo_TLT
+  DRY  yahoo_GLD
+  DRY  yahoo_DBC
+  DRY  yahoo_BTC-USD
+  DRY  yahoo_2330.TW
+  DRY  yahoo_idx_TWII
+  DRY  yahoo_TWD=X
+  DRY  noaa_oni
+[snapshot] done. ok=0 skip=0 fail=0

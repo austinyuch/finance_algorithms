@@ -1,0 +1,13 @@
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  23 passed (23)
+   Start at  08:38:25
+   Duration  164ms (transform 58ms, setup 0ms, import 119ms, tests 41ms, environment 0ms)
+

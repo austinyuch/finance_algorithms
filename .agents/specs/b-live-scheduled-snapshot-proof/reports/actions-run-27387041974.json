@@ -1,0 +1,31 @@
+{
+  "run": {
+    "databaseId": 27387041974,
+    "url": "https://github.com/austinyuch/finance_algorithms/actions/runs/27387041974",
+    "event": "workflow_dispatch",
+    "headBranch": "spec/b-live-scheduled-snapshot-proof",
+    "headSha": "73cd817a7ad5eba0b7b8ae237e56a7ae6ca49a93",
+    "status": "completed",
+    "conclusion": "success",
+    "createdAt": "2026-06-12T00:47:01Z",
+    "updatedAt": "2026-06-12T00:47:39Z"
+  },
+  "job": {
+    "databaseId": 80936220269,
+    "name": "dry-run-schedule-proof",
+    "status": "completed",
+    "conclusion": "success",
+    "startedAt": "2026-06-12T00:47:05Z",
+    "completedAt": "2026-06-12T00:47:38Z"
+  },
+  "artifact": {
+    "name": "snapshot-schedule-proof",
+    "files": [
+      "snapshot-report.json",
+      "latest-schedule-report.json",
+      "snapshot-schedule-run-proof.json",
+      "snapshot-schedule-2026-06-12.json"
+    ]
+  },
+  "claim_boundary": "workflow_dispatch_smoke_proof_not_cron"
+}

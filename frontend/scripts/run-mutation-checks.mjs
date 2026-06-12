@@ -61,6 +61,13 @@ const mutations = [
     original: 'status: input.mismatchRatio <= input.maxMismatchRatio ? "passed" : "failed",',
     mutated: 'status: input.mismatchRatio <= input.maxMismatchRatio ? "failed" : "passed",',
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "visual diff status"]
+  },
+  {
+    name: "frontend-browser-pixel-mismatch-count",
+    path: "lib/public-demo.ts",
+    original: "mismatchedPixels += 1;",
+    mutated: "mismatchedPixels += 0;",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "pixel mismatch ratio"]
   }
 ];
 
