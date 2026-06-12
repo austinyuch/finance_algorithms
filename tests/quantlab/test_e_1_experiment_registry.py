@@ -175,6 +175,59 @@ def test_tier3_manifest_and_drift_skeleton_remain_non_serving(tmp_path):
     assert drift["action"] == "manual_review_required"
 
 
+def test_tier3_readiness_gate_fails_closed_for_artifact_only_manifest(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    registry.register("robust-portfolio", "RobustOptimizationStrategy", {"vol_cap": 0.2})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+
+    gate = build_tier3_readiness_gate(manifest)
+
+    assert gate["artifact_kind"] == "tier3_readiness_gate"
+    assert gate["readiness"] == "not_ready"
+    assert gate["missing_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+    assert gate["claim_boundary"] == "no_alpha_claim"
+
+
+def test_tier3_readiness_gate_requires_all_live_evidence(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, build_tier3_readiness_gate, build_tier3_run_manifest
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+
+    partial = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence={"status": "proven", "url": "http://127.0.0.1:9000/health"},
+        retraining_evidence={"status": "proven", "run_id": "train-1"},
+    )
+    ready = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence={"status": "proven", "url": "http://127.0.0.1:9000/health"},
+        retraining_evidence={"status": "proven", "run_id": "train-1"},
+        automated_drift_monitoring_evidence={"status": "proven", "monitor_id": "drift-1"},
+    )
+
+    assert partial["readiness"] == "not_ready"
+    assert partial["missing_evidence"] == ["automated_drift_monitoring_evidence"]
+    assert ready["readiness"] == "tier3_ready"
+    assert ready["missing_evidence"] == []
+    assert ready["required_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+
+
 def test_drift_assessment_report_detects_metric_drift_without_serving_claim(tmp_path):
     from quantlab.mlops import (
         ExperimentRegistry,
