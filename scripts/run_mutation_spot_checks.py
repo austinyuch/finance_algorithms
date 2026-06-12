@@ -192,6 +192,22 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_automated_drift_monitoring_local_evidence_does_not_make_tier3_ready"),
     ),
     MutationSpec(
+        name="e-production-serving-endpoint-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(normalized):',
+        mutated='if parsed.scheme == "https" and parsed.netloc and not _is_local_identity(normalized):',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+    ),
+    MutationSpec(
+        name="e-production-retraining-status-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if str(payload.get("status") or "").lower() != "completed":',
+        mutated='if str(payload.get("status") or "").lower() == "completed":',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+    ),
+    MutationSpec(
         name="d-result-store-evaluation-source",
         path="quantlab/models/evaluation.py",
         original='"source": "local_result_store"',
