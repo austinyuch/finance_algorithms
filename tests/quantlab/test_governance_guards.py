@@ -105,6 +105,7 @@ def test_next_steps_reflects_post_merge_e_gate_state():
     assert "Current branch lane:** `spec/e-tier3-serving-evidence`" not in text
     assert "Current branch lane:** `spec/e-tier3-retraining-evidence`" not in text
     assert "Current branch lane:** `spec/e-tier3-production-evidence-gate`" not in text
+    assert "Current branch lane:** `spec/e-tier3-readiness-proof-cli`" not in text
     assert "PR #35" in text
     assert "PR #36" in text
     assert "PR #39" in text
@@ -113,4 +114,6 @@ def test_next_steps_reflects_post_merge_e_gate_state():
     assert "PR #45" in text
     assert "PR #48" in text
     assert "PR #49" in text
+    assert "PR #55" in text
+    assert "PR #56" in text
     assert "not_ready" in text
