@@ -6,13 +6,13 @@
 
 ## Trigger
 
-CR-B14 was promoted to both integration branches, but the rolling memo still identified CR-B13 as the latest promotion. That would send the next agent to a stale resume point and omit PR #65/#66 from current governance evidence.
+CR-B14 was promoted to both integration branches, but the rolling memo still identified CR-B13 as the latest promotion. That would send the next agent to a stale resume point and omit PR #65/#66 from current governance evidence. The older "`none after CR-X promotion`" current-lane pattern also creates a self-staling loop after every future squash promotion.
 
 ## Scope
 
-1. Update `NEXT_STEPS.md` so the current branch lane is explicitly none after CR-B14 promotion.
-2. Record PR #65 (`dev`, `05485cc`) and PR #66 (`main`, `c1e1591`) as CR-B14 promotion evidence.
-3. Add a governance guard so the memo cannot regress CR-B14 to "implemented locally; open PRs".
+1. Update `NEXT_STEPS.md` so the current branch lane is stable `none` and does not encode the latest CR number.
+2. Record PR #65 (`dev`, `05485cc`) and PR #66 (`main`, `c1e1591`) as CR-B14 promotion evidence in the merged ledger.
+3. Add a governance guard so the memo cannot regress CR-B14 to "implemented locally; open PRs" and cannot reintroduce a CR-numbered current lane.
 4. Add a mutation spot-check for stale CR-B14 promotion wording.
 
 ## Boundary
