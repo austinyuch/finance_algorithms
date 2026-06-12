@@ -27,8 +27,8 @@ Closed current-state governance drift after Torch dependency isolation merged to
 - GREEN: `uv run pytest -q tests/quantlab/test_governance_guards.py` -> 4 passed.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only governance-stale-next-steps-alert` -> KILLED.
 - Targeted regression: `uv run pytest -q tests/test_mutation_spot_checks.py tests/quantlab/test_governance_guards.py` -> 12 passed.
-- Full Python suite: `uv run pytest -q` -> 190 passed, 1 skipped.
-- Type check: `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports` -> success, 51 files.
+- Full Python suite: `uv run pytest -q` -> 214 passed, 1 skipped.
+- Type check: `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py --ignore-missing-imports` -> success, 53 files.
 - Import architecture: `uv run lint-imports` -> KEPT.
 - Frontend unit: `cd frontend && npm test -- --run` -> 23 passed.
 - Static/browser visual: `cd frontend && npm run export:public-demo:docs && npm run visual && npm run visual:browser` -> PASS; latest browser diff `505 / 1,296,000`, `mismatchRatio=0.0003896604938271605`, threshold `0.001`.
@@ -36,5 +36,5 @@ Closed current-state governance drift after Torch dependency isolation merged to
 
 ## Residuals
 
-- Autonomous GitHub Actions cron proof remains pending. Current available Actions evidence is still `workflow_dispatch`, not `event=schedule`.
+- Autonomous GitHub Actions cron dry-run proof is now observed via run `27392471359` (`event=schedule`, conclusion `success`); live append-only writes remain separate.
 - E Tier3 remains artifact-manifest-only; no serving/retraining/automated drift-monitoring claim was added.

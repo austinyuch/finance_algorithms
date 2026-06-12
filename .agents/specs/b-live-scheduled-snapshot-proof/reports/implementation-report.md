@@ -2,7 +2,7 @@
 
 ## Scope
 
-Fixed the GitHub Actions `daily-snapshot` proof workflow and captured a real external workflow-dispatch artifact.
+Fixed the GitHub Actions `daily-snapshot` proof workflow and captured real external workflow-dispatch and autonomous scheduled dry-run artifacts.
 
 ## Changes
 
@@ -11,6 +11,7 @@ Fixed the GitHub Actions `daily-snapshot` proof workflow and captured a real ext
 - Added a workflow regression guard in `tests/test_daily_snapshot.py`.
 - Captured failed run `27386918387` as root-cause evidence.
 - Captured successful run `27387041974` and its `snapshot-schedule-proof` artifact metadata.
+- Captured successful autonomous run `27392471359` (`event=schedule`) and its `snapshot-schedule-proof` artifact metadata.
 
 ## TDD Evidence
 
@@ -24,7 +25,8 @@ Fixed the GitHub Actions `daily-snapshot` proof workflow and captured a real ext
 - `uv run pytest -q tests/test_daily_snapshot.py` -> 24 passed.
 - Failed external run before fix: `27386918387`, conclusion `failure`.
 - Fixed external run after push: `27387041974`, conclusion `success`, event `workflow_dispatch`, artifact `snapshot-schedule-proof` downloaded and inspected.
+- Autonomous cron run: `27392471359`, conclusion `success`, event `schedule`, artifact `snapshot-schedule-proof` downloaded and inspected; proof JSON records `trigger=schedule`, `exit_code=0`, `counts.dry=22`, and `retention=append_only`.
 
 ## Claim Boundary
 
-This proves the workflow can run in GitHub Actions and produce append-only dry-run schedule proof under `workflow_dispatch`. It does not prove the autonomous cron schedule has fired; that remains a separate residual until an event=`schedule` run is observed.
+This proves the workflow can run in GitHub Actions and produce append-only dry-run schedule proof under both manual dispatch and autonomous cron. It does not prove live append-only writes or external source availability.

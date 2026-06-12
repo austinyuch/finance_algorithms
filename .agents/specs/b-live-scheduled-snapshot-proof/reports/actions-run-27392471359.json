@@ -1,0 +1,33 @@
+{
+  "run": {
+    "databaseId": 27392471359,
+    "url": "https://github.com/austinyuch/finance_algorithms/actions/runs/27392471359",
+    "event": "schedule",
+    "headBranch": "main",
+    "headSha": "2dd12cc2746701d62e11b9055273290b528f7429",
+    "status": "completed",
+    "conclusion": "success",
+    "createdAt": "2026-06-12T03:25:39Z",
+    "updatedAt": "2026-06-12T03:25:56Z"
+  },
+  "job": {
+    "databaseId": 80952768711,
+    "name": "dry-run-schedule-proof",
+    "status": "completed",
+    "conclusion": "success",
+    "startedAt": "2026-06-12T03:25:41Z",
+    "completedAt": "2026-06-12T03:25:55Z"
+  },
+  "artifact": {
+    "id": 7582393455,
+    "name": "snapshot-schedule-proof",
+    "sha256": "a2699a2ae7b24175364ce448633f789a03cd5557da2470b091ad7652409ffe61",
+    "files": [
+      "snapshot-report.json",
+      "latest-schedule-report.json",
+      "snapshot-schedule-run-proof.json",
+      "snapshot-schedule-2026-06-12.json"
+    ]
+  },
+  "claim_boundary": "schedule_dry_run_smoke_proof_not_live_write"
+}
