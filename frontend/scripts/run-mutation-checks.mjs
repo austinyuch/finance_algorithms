@@ -35,11 +35,32 @@ const mutations = [
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
+    name: "frontend-dashboard-stale-gate-evidence",
+    path: "lib/showcase-fixture.ts",
+    original: '"frontend mutation 12/12 killed"',
+    mutated: '"mutation 9/9 killed"',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
+  },
+  {
     name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
-    original: "if (probe.httpStatus === 200)",
-    mutated: "if (probe.httpStatus !== 200)",
+    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
+    mutated: "probe.httpStatus !== 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
+  },
+  {
+    name: "frontend-public-demo-hosting-hash-gate",
+    path: "lib/public-demo.ts",
+    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
+    mutated: "probe.httpStatus === 200 && hashStatus !== \"missing\" && manifestContractStatus === \"matched\"",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "deployed data hashes"]
+  },
+  {
+    name: "frontend-public-demo-hosting-manifest-contract-gate",
+    path: "lib/public-demo.ts",
+    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\")",
+    mutated: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "weakens claim metadata"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",
