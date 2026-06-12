@@ -636,6 +636,37 @@ def test_production_evidence_requires_traceable_external_proof_uri(tmp_path):
         })
 
 
+@given(
+    proof_id=st.sampled_from([
+        "file:///tmp/serving-proof.json",
+        "s3://quant-prod/proofs/serving.json",
+        "github-actions://finance_algorithms/actions/runs/123",
+        "http://ci.example.com/actions/runs/123",
+        "https:ci.example.com/actions/runs/123",
+    ])
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_production_external_proof_id_requires_https_url(tmp_path, proof_id):
+    from quantlab.mlops import ExperimentRegistry, build_production_serving_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register(
+        "return-risk",
+        "ForecastAllocationStrategy",
+        {"lookback": 12},
+    )
+
+    with pytest.raises(ValueError, match="external_proof_id"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/models/return-risk",
+            health={"status": "ok"},
+            sample_request={"features": {"momentum": 0.6}},
+            prediction={"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6}},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id=proof_id,
+        )
+
+
 def test_tier3_gate_rejects_spoofed_production_serving_map(tmp_path):
     from quantlab.mlops import (
         ExperimentRegistry,

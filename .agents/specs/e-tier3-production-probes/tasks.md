@@ -22,11 +22,12 @@
   - [x] 4.1 Verify governed production triplet can satisfy the Tier3 gate while malformed artifacts fail validators.
   - [x] 4.2 Add mutation targets for production endpoint and retraining status gates.
   - [x] 4.2a RED/GREEN/REFACTOR: harden `external_proof_id` from non-empty
-    string to traceable non-local URI for serving, retraining, drift, and
+    string to traceable external HTTPS URL for serving, retraining, drift, and
     validators.
     - _Eval: `test_production_evidence_requires_traceable_external_proof_uri`
-      failed before the URI gate, then passed; `e-production-external-proof-uri-gate`
+      failed before the URI gate, then passed; `test_pbt_production_external_proof_id_requires_https_url`
+      failed before the HTTPS-only gate, then passed; `e-production-external-proof-uri-gate`
       mutation killed._
   - [x] 4.3 Refresh `quantlab/TESTS.md`, `.agents/specs/TESTS.md`, `RTM.md`, `SPECS.md`, `NEXT_STEPS.md`, correctness checklist, and feature catalog from upstream evidence.
   - [x] 4.4 Run full pytest, mypy, import-linter, focused line coverage, mutation, and smoke gates.
-    - _Eval: 210 passed, 1 skipped; E coverage 27 passed at 100%; production serving/retraining mutations killed; mypy clean; import-linter KEPT._
+    - _Eval: 256 passed; E coverage 30 passed at 99%; production serving/retraining/proof-URL mutations killed; mypy clean; import-linter KEPT._

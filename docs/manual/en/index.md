@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 255 passed
+uv run pytest -q             # sanity: expect 256 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -188,7 +188,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **255 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **57** files; mutation spot checks are **72/72 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/audit transcript, import-linter count/formalization drift, and governance registry row-count drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
+- Test suite is now **256 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **57** files; mutation spot checks are **72/72 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/audit transcript, import-linter count/formalization drift, and governance registry row-count drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after CR-FPS-006 the regenerated local result-store payload has a new `dataHash`, so branch-local deployment parity is intentionally `configured_not_observed` until Pages serves the refreshed artifact.

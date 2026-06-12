@@ -215,7 +215,7 @@ def _write_current_evidence_root(root: Path) -> None:
     (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
     (root / "docs").mkdir(exist_ok=True)
     (root / "docs/review/assets/gate-pytest.txt").write_text(
-        "255 passed in 20.00s\n",
+        "256 passed in 20.00s\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
@@ -264,7 +264,7 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
     assert artifact["evidence"]["tests"] == [
-        "255 passed",
+        "256 passed",
         "frontend tests 33 passed",
         "Python mutation 72/72 killed",
         "frontend mutation 16/16 killed",

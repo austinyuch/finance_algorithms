@@ -483,8 +483,8 @@ def _require_external_proof_id(value: str) -> str:
     if not proof_id:
         raise ValueError("production evidence requires external_proof_id")
     parsed = urlparse(proof_id)
-    if not parsed.scheme or _is_local_identity(proof_id):
-        raise ValueError("production evidence requires external_proof_id to be a traceable external URI")
+    if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id):
+        raise ValueError("production evidence requires external_proof_id to be a traceable external HTTPS URL")
     return proof_id
 
 

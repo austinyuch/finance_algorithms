@@ -9,7 +9,7 @@ This slice adds governed constructors for production-tier E evidence. The existi
 - Unit tests cover happy path and fail-closed rejection for serving, retraining, and drift monitoring evidence.
 - PBT covers non-production serving endpoint rejection across localhost and non-HTTPS variants.
 - Mutation tests cover the production endpoint gate, production retraining status gate,
-  and traceable external proof URI gate.
+  and traceable external HTTPS proof URL gate.
 - No live production endpoint is required for repo closure; live external execution remains a separate runtime proof.
 
 ## Repo-side Closure vs External Execution Boundary
@@ -23,7 +23,7 @@ This slice adds governed constructors for production-tier E evidence. The existi
 | Component | Responsibility |
 |---|---|
 | `_is_production_uri` | Reject local, in-process, and non-HTTPS endpoint identities. |
-| `_require_external_proof_id` | Require a traceable non-local external URI on production artifacts. |
+| `_require_external_proof_id` | Require a traceable external HTTPS URL on production artifacts. |
 | `build_production_serving_evidence` / validator | Normalize serving health/prediction proof and reject local endpoints or alpha claims. |
 | `build_production_retraining_evidence` / validator | Normalize production retraining run proof and reject local runners, incomplete runs, alpha claims, or missing OOS-net metrics. |
 | `build_production_automated_drift_monitoring_evidence` / validator | Normalize production drift monitor proof and reject local monitors, unsupported statuses, alpha claims, or missing deltas. |
@@ -33,14 +33,14 @@ This slice adds governed constructors for production-tier E evidence. The existi
 | Risk ID | Failure Mode | Effect | Current Control | Planned Response | Task Trace |
 |---|---|---|---|---|---|
 | FMEA-E-PROD-001 | Localhost endpoint marked production | Tier3 false green | Current gate checks tier only | Reject localhost/in-process/non-HTTPS identities | Task 1 |
-| FMEA-E-PROD-002 | Local retraining output marked production | Production retraining overclaim | Local smoke tier exists | Require external orchestrator, traceable proof URI, completed run, artifact URI, OOS-net metrics | Task 2 |
-| FMEA-E-PROD-003 | Assessed/local drift report marked production monitor | Drift monitoring overclaim | Local automated smoke tier exists | Require external monitor identity, traceable proof URI, supported status, metric deltas | Task 3 |
+| FMEA-E-PROD-002 | Local retraining output marked production | Production retraining overclaim | Local smoke tier exists | Require external orchestrator, traceable HTTPS proof URL, completed run, artifact URI, OOS-net metrics | Task 2 |
+| FMEA-E-PROD-003 | Assessed/local drift report marked production monitor | Drift monitoring overclaim | Local automated smoke tier exists | Require external monitor identity, traceable HTTPS proof URL, supported status, metric deltas | Task 3 |
 | FMEA-E-PROD-004 | Hand-written map or plain ticket ID bypasses validation | Review consumes unchecked evidence | Gate accepts structural production maps | Add validators and tests for wrong kind/target/tier/proof URI | Task 4 |
 
 ## Risk Response and Mitigation Plan
 
 - Prevent: production builders reject local identities, alpha claims, and plain
-  proof IDs that are not traceable external URIs.
+  proof IDs that are not traceable external HTTPS URLs.
 - Detect: validators reject malformed or hand-written artifacts.
 - Contain: absence of external proof leaves Tier3 `not_ready`; local smoke remains local-smoke only.
 

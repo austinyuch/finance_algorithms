@@ -14,7 +14,7 @@
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "255 passed",
+      "256 passed",
       "frontend tests 33 passed",
       "Python mutation 72/72 killed",
       "frontend mutation 16/16 killed",

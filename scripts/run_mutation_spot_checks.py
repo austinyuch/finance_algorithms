@@ -291,10 +291,10 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="e-production-external-proof-uri-gate",
         path="quantlab/mlops/experiment_registry.py",
-        original="if not parsed.scheme or _is_local_identity(proof_id):",
-        mutated="if False and (not parsed.scheme or _is_local_identity(proof_id)):",
+        original='if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id):',
+        mutated='if False and (parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id)):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_requires_traceable_external_proof_uri"),
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_external_proof_id_requires_https_url"),
     ),
     MutationSpec(
         name="e-tier3-cli-serving-validator",
@@ -555,7 +555,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"255 passed"',
+        original='"256 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -563,7 +563,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"255 passed"',
+        original='"256 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -571,7 +571,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="255 passed",
+        original="256 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
