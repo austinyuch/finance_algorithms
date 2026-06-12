@@ -43,8 +43,8 @@ Frontend visual evidence = a real chromium-headless screenshot
 (`frontend/out/browser-visual.png`, `npm run visual:browser`, status `proven`)
 plus the committed static export, the repo-baseline pixel diff
 (`browser-visual-diff.json`), and the public-hosting probe
-(`npm run probe:public-demo` → HTTP 200 plus deployed manifest contract metadata;
-branch-local `dataHash` parity remains pending until Pages deploys refreshed static artifacts). The review embeds the
+(`npm run probe:public-demo` → HTTP 200 plus deployed manifest contract metadata
+and deployed `dataHash` parity). The review embeds the
 screenshot as `live_screenshot` and discloses the remaining ops residual:
 autonomous `event=schedule` dry-run proof exists as run `27392471359`, and CR-B12 proves scoped live-write mechanics. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
