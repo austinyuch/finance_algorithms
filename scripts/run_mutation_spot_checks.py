@@ -328,6 +328,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b13_state"),
     ),
     MutationSpec(
+        name="governance-stale-cr-b14-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="CR-B14 post CR-B13 governance sync promoted to `dev` via PR #65 (`05485cc`) and to `main` via PR #66 (`c1e1591`).",
+        mutated="CR-B14 post CR-B13 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b14_state"),
+    ),
+    MutationSpec(
         name="b-scheduled-observer-manual-pending",
         path="scripts/scheduled_run_observer.py",
         original='status = "proven" if latest_schedule_success is not None else "pending"',

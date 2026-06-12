@@ -135,12 +135,24 @@ def test_next_steps_reflects_post_merge_live_write_smoke_state():
 
 
 def test_next_steps_reflects_post_merge_cr_b13_state():
-    """NEXT_STEPS should reflect the CR-B13 governance sync promotion."""
+    """NEXT_STEPS should retain CR-B13 promotion proof without making it current."""
     text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
 
     assert "CR-B13 post live-write governance sync is implemented locally" not in text
-    assert "Current branch lane:** none after CR-B13 promotion" in text
+    assert "Current branch lane:** none after CR-B13 promotion" not in text
     assert "CR-B13 post live-write governance sync promoted to `dev` via PR #63" in text
     assert "and to `main` via PR #64" in text
     assert "8c5b3f1" in text
     assert "aea683f" in text
+
+
+def test_next_steps_reflects_post_merge_cr_b14_state():
+    """NEXT_STEPS should reflect the CR-B14 governance sync promotion."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "CR-B14 post CR-B13 governance sync is implemented locally" not in text
+    assert "Current branch lane:** none after CR-B14 promotion" in text
+    assert "CR-B14 post CR-B13 governance sync promoted to `dev` via PR #65" in text
+    assert "and to `main` via PR #66" in text
+    assert "05485cc" in text
+    assert "c1e1591" in text
