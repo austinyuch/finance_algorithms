@@ -225,6 +225,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
             "Python mutation 70/70",
             "mutation spot checks 70/70",
             "mutation spot-checks are **70/70",
+            "71/71 configured",
+            "71/71 Python mutation",
+            "Python mutation 71/71",
+            "mutation spot checks 71/71",
+            "mutation spot-checks are **71/71",
             "6/6 configured",
         "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
@@ -385,10 +390,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "254 passed" in pytest_gate
-    assert "254 passed" in manual_guide
-    assert "254 passed" in review_guide
-    assert "Python suite now <b>254 passed</b>" in review_html
+    assert "255 passed" in pytest_gate
+    assert "255 passed" in manual_guide
+    assert "255 passed" in review_guide
+    assert "Python suite now <b>255 passed</b>" in review_html
     assert "Tests  33 passed (33)" in frontend_gate
     assert "Frontend <b>33 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html

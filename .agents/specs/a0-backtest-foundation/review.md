@@ -28,7 +28,7 @@ A0 的核心保證(point-in-time 正確、可重現、框架無感、平行確�
 1. **MLflow backend 延後**:Python 3.13 依賴衝突(protobuf 5 / setuptools 81 / mlflow 回退 1.27.0)。現用零依賴 SQLite `LocalResultStore`,走同 `ResultStore` Protocol;MLflow 待乾淨環境接入(含 `mlflow ui` 視覺化)。
 2. **三框架環境**:`quantlab/envs/` 為環境宣告;各 lane 實際安裝與 GPU 驗證屬真機/容器,未在單一開發 venv 進行。
 3. **成本模型 first-slice**:僅周轉型(手續費/滑價/台股證交稅);配息預扣、換匯點差為事件型,toy 無觸發,待 Epic B 接真實配息/匯率補上。
-4. **Mutation 自動化**:mutmut 3.x sandbox 與本 layout 不相容;repo-local `scripts/run_mutation_spot_checks.py` 已成為跨 spec governance runner,目前 71/71 configured mutations killed。完整 mutmut score 仍非本 slice 目標。
+4. **Mutation 自動化**:mutmut 3.x sandbox 與本 layout 不相容;repo-local `scripts/run_mutation_spot_checks.py` 已成為跨 spec governance runner,目前 72/72 configured mutations killed。完整 mutmut score 仍非本 slice 目標。
 5. **import-linter / AST 雙層框架隔離**:框架隔離已由 `test_a0_0` AST 測試與 `uv run lint-imports` 契約共同守住;目前 import-linter KEPT over 75 files / 186 dependencies。
 6. **spec contract/interfaces.py ↔ quantlab/contracts/interfaces.py**:已由 `test_contract_interfaces_no_drift` 守住,避免 Protocol surface 靜默漂移。
 

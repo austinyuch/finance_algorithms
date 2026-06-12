@@ -79,6 +79,7 @@ def test_mutation_runner_list_smoke():
     assert "e-automated-drift-status-gate" in result.stdout
     assert "e-production-serving-endpoint-gate" in result.stdout
     assert "e-production-retraining-status-gate" in result.stdout
+    assert "e-production-external-proof-uri-gate" in result.stdout
     assert "e-tier3-cli-serving-validator" in result.stdout
     assert "b-source-health-claim-boundary" in result.stdout
     assert "snapshot-report-stooq-default" in result.stdout
@@ -193,6 +194,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "e-automated-drift-status-gate" in out
     assert "e-production-serving-endpoint-gate" in out
     assert "e-production-retraining-status-gate" in out
+    assert "e-production-external-proof-uri-gate" in out
     assert "e-tier3-cli-serving-validator" in out
     assert "b-source-health-claim-boundary" in out
     assert "snapshot-report-stooq-default" in out

@@ -515,7 +515,7 @@ def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
         sample_request={"features": {"momentum": 0.6}},
         prediction={"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6, "B": 0.4}},
         observed_at="2026-06-12T05:00:00Z",
-        external_proof_id="serving-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
     )
     retraining = build_production_retraining_evidence(
         entry,
@@ -528,7 +528,7 @@ def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
             "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
         },
         observed_at="2026-06-12T05:10:00Z",
-        external_proof_id="retrain-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
     )
     drift = build_production_automated_drift_monitoring_evidence(
         entry,
@@ -540,7 +540,7 @@ def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
             "threshold": 0.05,
         },
         observed_at="2026-06-12T05:20:00Z",
-        external_proof_id="drift-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
     )
 
     validate_production_serving_evidence(serving)
@@ -564,6 +564,76 @@ def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
         "retraining_evidence": gate["retraining_evidence_digest"],
         "automated_drift_monitoring_evidence": gate["automated_drift_monitoring_evidence_digest"],
     }
+
+
+def test_production_evidence_requires_traceable_external_proof_uri(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_production_automated_drift_monitoring_evidence,
+        build_production_retraining_evidence,
+        build_production_serving_evidence,
+        validate_production_serving_evidence,
+    )
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register(
+        "return-risk",
+        "ForecastAllocationStrategy",
+        {"lookback": 12},
+    )
+
+    with pytest.raises(ValueError, match="external_proof_id"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/models/return-risk",
+            health={"status": "ok"},
+            sample_request={"features": {"momentum": 0.6}},
+            prediction={"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6}},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+    with pytest.raises(ValueError, match="external_proof_id"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/return-risk/train-prod-123.json",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="external_proof_id"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={
+                "status": "stable",
+                "claim_boundary": "no_alpha_claim",
+                "metric_deltas": {"oos_net_sharpe": 0.02},
+            },
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+
+    with pytest.raises(ValueError, match="external_proof_id"):
+        validate_production_serving_evidence({
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "serving_status": "production_serving",
+            "endpoint": "https://quant.example.com/model",
+            "external_proof_id": "serving-run-123",
+            "health": {"status": "ok"},
+            "experiment_id": entry.experiment_id,
+            "observed_at": "2026-06-12T05:00:00Z",
+            "request_digest": "abc",
+            "prediction_digest": "def",
+        })
 
 
 def test_tier3_gate_rejects_spoofed_production_serving_map(tmp_path):
@@ -596,7 +666,7 @@ def test_tier3_gate_rejects_spoofed_production_serving_map(tmp_path):
             "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
         },
         observed_at="2026-06-12T05:10:00Z",
-        external_proof_id="retrain-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
     )
     drift = build_production_automated_drift_monitoring_evidence(
         entry,
@@ -608,7 +678,7 @@ def test_tier3_gate_rejects_spoofed_production_serving_map(tmp_path):
             "threshold": 0.05,
         },
         observed_at="2026-06-12T05:20:00Z",
-        external_proof_id="drift-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
     )
 
     gate = build_tier3_readiness_gate(
@@ -640,7 +710,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
             sample_request={"x": 1},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
 
     with pytest.raises(ValueError, match="no_alpha_claim"):
@@ -651,7 +721,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
             sample_request={"x": 1},
             prediction={"claim_boundary": "alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
 
     with pytest.raises(ValueError, match="no_alpha_claim"):
@@ -662,7 +732,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
             sample_request={"x": 1},
             prediction={"ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
 
     with pytest.raises(ValueError, match="external orchestrator"):
@@ -677,7 +747,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
 
     with pytest.raises(ValueError, match="completed"):
@@ -692,7 +762,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
 
     with pytest.raises(ValueError, match="external monitor"):
@@ -705,7 +775,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
                 "metric_deltas": {"x": 0.1},
             },
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
 
     with pytest.raises(ValueError, match="stable or drift_detected"):
@@ -718,7 +788,7 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
                 "metric_deltas": {"x": 0.1},
             },
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
 
 
@@ -740,7 +810,7 @@ def test_pbt_production_serving_rejects_local_endpoint_identities(tmp_path, host
             sample_request={"x": 1},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
 
 
@@ -1123,7 +1193,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             sample_request={"x": 1},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
     with pytest.raises(ValueError, match="observed_at"):
         build_production_serving_evidence(
@@ -1133,7 +1203,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             sample_request={"x": 1},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at=" ",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
     with pytest.raises(ValueError, match="sample_request"):
         build_production_serving_evidence(
@@ -1143,7 +1213,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             sample_request={},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
     with pytest.raises(ValueError, match="healthy"):
         build_production_serving_evidence(
@@ -1153,7 +1223,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             sample_request={"x": 1},
             prediction={"claim_boundary": "no_alpha_claim", "ok": True},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
     with pytest.raises(ValueError, match="prediction"):
         build_production_serving_evidence(
@@ -1163,7 +1233,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             sample_request={"x": 1},
             prediction={},
             observed_at="2026-06-12T05:00:00Z",
-            external_proof_id="serving-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
         )
     for evidence in [
         {"artifact_kind": "bad"},
@@ -1207,7 +1277,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "status": "proven",
             "serving_status": "production_serving",
             "endpoint": "https://quant.example.com/model",
-            "external_proof_id": "serving-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
             "health": {"status": "degraded"},
         },
         {
@@ -1218,7 +1288,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "status": "proven",
             "serving_status": "production_serving",
             "endpoint": "https://quant.example.com/model",
-            "external_proof_id": "serving-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
             "health": {"status": "ok"},
         },
     ]:
@@ -1231,7 +1301,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             orchestrator="github-actions://finance_algorithms/retrain",
             result={"status": "completed"},
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="observed_at"):
         build_production_retraining_evidence(
@@ -1239,7 +1309,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             orchestrator="github-actions://finance_algorithms/retrain",
             result={"status": "completed"},
             observed_at=" ",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="result"):
         build_production_retraining_evidence(
@@ -1247,7 +1317,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             orchestrator="github-actions://finance_algorithms/retrain",
             result={},
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_production_retraining_evidence(
@@ -1261,7 +1331,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_production_retraining_evidence(
@@ -1274,7 +1344,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="run_id"):
         build_production_retraining_evidence(
@@ -1287,7 +1357,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="artifact_uri"):
         build_production_retraining_evidence(
@@ -1301,7 +1371,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
                 "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     with pytest.raises(ValueError, match="out_of_sample net metrics"):
         build_production_retraining_evidence(
@@ -1315,7 +1385,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
                 "metrics": [{"segment": "in_sample", "basis": "net", "sharpe": 99.0}],
             },
             observed_at="2026-06-12T05:10:00Z",
-            external_proof_id="retrain-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
         )
     for evidence in [
         {"artifact_kind": "bad"},
@@ -1359,7 +1429,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "status": "proven",
             "retraining_status": "production_retraining",
             "orchestrator": "github-actions://finance_algorithms/retrain",
-            "external_proof_id": "retrain-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
             "oos_net_metrics": {},
         },
         {
@@ -1370,7 +1440,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "status": "proven",
             "retraining_status": "production_retraining",
             "orchestrator": "github-actions://finance_algorithms/retrain",
-            "external_proof_id": "retrain-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
             "oos_net_metrics": {"sharpe": 1.0},
         },
     ]:
@@ -1383,7 +1453,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={"status": "stable"},
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     with pytest.raises(ValueError, match="observed_at"):
         build_production_automated_drift_monitoring_evidence(
@@ -1391,7 +1461,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={"status": "stable"},
             observed_at=" ",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     with pytest.raises(ValueError, match="result"):
         build_production_automated_drift_monitoring_evidence(
@@ -1399,7 +1469,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={},
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     with pytest.raises(ValueError, match="metric_deltas"):
         build_production_automated_drift_monitoring_evidence(
@@ -1407,7 +1477,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={"status": "stable", "claim_boundary": "no_alpha_claim", "metric_deltas": {}},
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_production_automated_drift_monitoring_evidence(
@@ -1415,7 +1485,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={"status": "stable", "claim_boundary": "alpha_claim", "metric_deltas": {"x": 0.1}},
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_production_automated_drift_monitoring_evidence(
@@ -1423,7 +1493,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             monitor="https://quant.example.com/monitors/return-risk",
             result={"status": "stable", "metric_deltas": {"x": 0.1}},
             observed_at="2026-06-12T05:20:00Z",
-            external_proof_id="drift-run-123",
+            external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
         )
     for evidence in [
         {"artifact_kind": "bad"},
@@ -1482,7 +1552,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "monitoring_status": "production_automated_monitoring",
             "drift_status": "stable",
             "monitor": "https://quant.example.com/monitors/return-risk",
-            "external_proof_id": "drift-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
             "metric_deltas": {},
         },
         {
@@ -1494,7 +1564,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "monitoring_status": "production_automated_monitoring",
             "drift_status": "stable",
             "monitor": "https://quant.example.com/monitors/return-risk",
-            "external_proof_id": "drift-run-123",
+            "external_proof_id": "https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
             "metric_deltas": {"x": 0.1},
         },
     ]:

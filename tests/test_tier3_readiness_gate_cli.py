@@ -48,7 +48,7 @@ def _production_payloads(tmp_path: Path) -> tuple[dict, dict, dict, dict]:
         sample_request={"features": {"momentum": 0.6}},
         prediction={"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6, "B": 0.4}},
         observed_at="2026-06-12T06:00:00Z",
-        external_proof_id="serving-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#serving",
     )
     retraining = build_production_retraining_evidence(
         entry,
@@ -61,7 +61,7 @@ def _production_payloads(tmp_path: Path) -> tuple[dict, dict, dict, dict]:
             "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
         },
         observed_at="2026-06-12T06:10:00Z",
-        external_proof_id="retrain-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#retraining",
     )
     drift = build_production_automated_drift_monitoring_evidence(
         entry,
@@ -73,7 +73,7 @@ def _production_payloads(tmp_path: Path) -> tuple[dict, dict, dict, dict]:
             "threshold": 0.05,
         },
         observed_at="2026-06-12T06:20:00Z",
-        external_proof_id="drift-run-123",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/123#drift",
     )
     return manifest, serving, retraining, drift
 

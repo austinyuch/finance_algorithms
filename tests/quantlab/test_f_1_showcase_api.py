@@ -215,7 +215,7 @@ def _write_current_evidence_root(root: Path) -> None:
     (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
     (root / "docs").mkdir(exist_ok=True)
     (root / "docs/review/assets/gate-pytest.txt").write_text(
-        "254 passed in 20.00s\n",
+        "255 passed in 20.00s\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
@@ -227,7 +227,7 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
-        "Current evidence is **71/71 configured/killed**.\n",
+        "Current evidence is **72/72 configured/killed**.\n",
         encoding="utf-8",
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
@@ -264,9 +264,9 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
     assert artifact["evidence"]["tests"] == [
-        "254 passed",
+        "255 passed",
         "frontend tests 33 passed",
-        "Python mutation 71/71 killed",
+        "Python mutation 72/72 killed",
         "frontend mutation 16/16 killed",
         "F Next.js coverage 91.05%",
         "frontend audit 0 vulnerabilities",
