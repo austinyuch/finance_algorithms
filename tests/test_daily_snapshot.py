@@ -363,6 +363,8 @@ def test_daily_snapshot_workflow_records_report_and_schedule_contract():
     assert "cron:" in workflow
     assert "scripts/daily_snapshot.py --dry-run --report-json" in workflow
     assert "scripts/snapshot_schedule_report.py" in workflow
+    assert "github.run_started_at" not in workflow
+    assert "date -u +%Y-%m-%dT%H:%M:%SZ" in workflow
 
 
 def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
