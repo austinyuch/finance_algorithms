@@ -215,11 +215,11 @@ def _write_current_evidence_root(root: Path) -> None:
     (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
     (root / "docs").mkdir(exist_ok=True)
     (root / "docs/review/assets/gate-pytest.txt").write_text(
-        "253 passed in 20.00s\n",
+        "254 passed in 20.00s\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
-        " Test Files  3 passed (3)\n      Tests  32 passed (32)\n",
+        " Test Files  3 passed (3)\n      Tests  33 passed (33)\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-audit.txt").write_text(
@@ -227,12 +227,12 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
-        "Current evidence is **70/70 configured/killed**.\n",
+        "Current evidence is **71/71 configured/killed**.\n",
         encoding="utf-8",
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
         "- Frontend coverage: **91.05% line coverage**.\n"
-        "- Frontend mutation: **15/15 killed**.\n",
+        "- Frontend mutation: **16/16 killed**.\n",
         encoding="utf-8",
     )
     (root / "docs/browser-visual-diff.json").write_text(
@@ -264,15 +264,29 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
     assert artifact["evidence"]["tests"] == [
-        "253 passed",
-        "frontend tests 32 passed",
-        "Python mutation 70/70 killed",
-        "frontend mutation 15/15 killed",
+        "254 passed",
+        "frontend tests 33 passed",
+        "Python mutation 71/71 killed",
+        "frontend mutation 16/16 killed",
         "F Next.js coverage 91.05%",
         "frontend audit 0 vulnerabilities",
         "browser visual diff 1049/1296000 passed",
         "public hosting configured_not_observed (hash mismatched)",
     ]
+
+
+def test_canonical_showcase_artifact_rejects_failed_frontend_transcript(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    evidence_root = tmp_path / "evidence"
+    _write_current_evidence_root(evidence_root)
+    (evidence_root / "docs/review/assets/gate-frontend-test.txt").write_text(
+        " Test Files  1 failed | 2 passed (3)\n      Tests  1 failed | 32 passed (33)\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="frontend test evidence includes failures"):
+        build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
 
 def test_canonical_showcase_artifact_fails_closed_without_evidence_artifacts(tmp_path):

@@ -27,7 +27,8 @@ risk for future deployment catch-up checks.
   `freshnessStatus=fresh`.
 - Added a stale-but-otherwise-matching public-hosting test and kept PBT
   classifiers deterministic with fixed `now` inputs.
-- Added frontend mutation target `frontend-public-demo-hosting-freshness-gate`.
+- Added frontend mutation targets `frontend-public-demo-hosting-freshness-gate`
+  and `frontend-public-demo-expected-manifest-gate`.
 - Added standalone probe freshness metadata and helper tests covering stale,
   missing, and future observations.
 - Regenerated static docs artifacts and manifest/probe evidence. The branch
@@ -36,11 +37,12 @@ risk for future deployment catch-up checks.
 
 ## Evidence
 
-- `cd frontend && npm test -- --run` -> 32 passed.
-- `cd frontend && npm run coverage` -> 32 passed; line coverage 91.05%.
-- `cd frontend && npm run mutation` -> 15/15 killed, including
+- `cd frontend && npm test -- --run` -> 33 passed.
+- `cd frontend && npm run coverage` -> 33 passed; line coverage 91.05%.
+- `cd frontend && npm run mutation` -> 16/16 killed, including
   `frontend-public-demo-hosting-freshness-gate` and
-  `frontend-public-demo-probe-freshness-status-gate`.
+  `frontend-public-demo-probe-freshness-status-gate` and
+  `frontend-public-demo-expected-manifest-gate`.
 - `cd frontend && npm run export:public-demo` -> passed.
 - `cd frontend && npm run probe:public-demo` -> exit 2 as expected while
   deployed hash is stale.

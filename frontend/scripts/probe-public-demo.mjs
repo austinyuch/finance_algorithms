@@ -30,6 +30,29 @@ export function classifyProbeStatus({ httpStatus, hashStatus, manifestContractSt
     : "configured_not_observed";
 }
 
+function hasCompleteExpectedManifest(manifest) {
+  return Boolean(
+    manifest &&
+      typeof manifest.dataHash === "string" &&
+      typeof manifest.targetUrl === "string" &&
+      typeof manifest.artifactKind === "string" &&
+      typeof manifest.claimBoundary === "string" &&
+      typeof manifest.dashboardClaim === "string",
+  );
+}
+
+export function classifyManifestContractStatus({ expected, deployed }) {
+  if (!deployed || !hasCompleteExpectedManifest(expected)) {
+    return "missing";
+  }
+  return deployed.deployedTargetUrl === expected.targetUrl &&
+    deployed.deployedArtifactKind === expected.artifactKind &&
+    deployed.deployedClaimBoundary === expected.claimBoundary &&
+    deployed.deployedDashboardClaim === expected.dashboardClaim
+    ? "matched"
+    : "mismatched";
+}
+
 function readExpectedManifest() {
   const candidates = [
     join(process.cwd(), "out", "deployment-manifest.json"),
@@ -40,7 +63,7 @@ function readExpectedManifest() {
       continue;
     }
     const manifest = JSON.parse(readFileSync(path, "utf8"));
-    if (typeof manifest.dataHash === "string") {
+    if (hasCompleteExpectedManifest(manifest)) {
       return {
         dataHash: manifest.dataHash,
         targetUrl: manifest.targetUrl,
@@ -92,11 +115,12 @@ async function main() {
   } catch {
     deployedManifestStatus = 0;
   }
-  const manifestContractMatches =
-    deployedTargetUrl === (expectedManifest?.targetUrl ?? targetUrl) &&
-    deployedArtifactKind === (expectedManifest?.artifactKind ?? "github_pages_static_showcase") &&
-    deployedClaimBoundary === (expectedManifest?.claimBoundary ?? "no_alpha_claim") &&
-    deployedDashboardClaim === (expectedManifest?.dashboardClaim ?? "local_demo_only");
+  const deployedManifestContract = {
+    deployedTargetUrl,
+    deployedArtifactKind,
+    deployedClaimBoundary,
+    deployedDashboardClaim,
+  };
   const hashStatus =
     expectedManifest?.dataHash === undefined
       ? "not_checked"
@@ -108,9 +132,10 @@ async function main() {
   const manifestContractStatus =
     deployedManifestStatus !== 200
       ? "missing"
-      : manifestContractMatches
-        ? "matched"
-        : "mismatched";
+      : classifyManifestContractStatus({
+          expected: expectedManifest,
+          deployed: deployedManifestContract,
+        });
   const now = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_NOW ?? new Date().toISOString();
   const observedAt = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OBSERVED_AT ?? now;
   const freshness = publicHostingFreshness(observedAt, now);

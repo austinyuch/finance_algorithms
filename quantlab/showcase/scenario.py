@@ -13,8 +13,8 @@ from quantlab.tracking import LocalResultStore
 
 _FALLBACK_EVIDENCE_TESTS = [
     "250 passed",
-    "Python mutation 70/70 killed",
-    "frontend mutation 15/15 killed",
+    "Python mutation 71/71 killed",
+    "frontend mutation 16/16 killed",
     "F Next.js coverage 91.05%",
     "E-lite coverage 100%",
     "B source-health/Stooq proof coverage 90%",
@@ -43,6 +43,12 @@ def _extract_count(pattern: str, text: str, *, label: str) -> int:
     if not match:
         raise ValueError(f"missing {label} evidence count")
     return int(match.group(1))
+
+
+def _extract_successful_test_count(pattern: str, text: str, *, label: str) -> int:
+    if re.search(r"\b[1-9]\d* failed\b", text):
+        raise ValueError(f"{label} evidence includes failures")
+    return _extract_count(pattern, text, label=label)
 
 
 def _extract_ratio(pattern: str, text: str, *, label: str) -> str:
@@ -75,7 +81,11 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
     public_probe = _read_required_json(root, "docs/public-hosting-probe.json")
 
     pytest_count = _extract_count(r"(\d+) passed", pytest_text, label="pytest")
-    frontend_count = _extract_count(r"Tests\s+(\d+) passed", frontend_text, label="frontend test")
+    frontend_count = _extract_successful_test_count(
+        r"Tests\s+(\d+) passed",
+        frontend_text,
+        label="frontend test",
+    )
     mutation_ratio = _extract_ratio(
         r"\*\*(\d+/\d+) configured/killed\*\*",
         mutation_text,

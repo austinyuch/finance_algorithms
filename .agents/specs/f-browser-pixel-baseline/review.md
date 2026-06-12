@@ -31,9 +31,9 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 
 ## Verification Coverage
 
-- Focused frontend/public-demo tests are included in the current frontend suite: **32 passed**.
+- Focused frontend/public-demo tests are included in the current frontend suite: **33 passed**.
 - Frontend coverage: **91.05% line coverage**.
-- Frontend mutation: **15/15 killed**.
+- Frontend mutation: **16/16 killed**.
 - Browser visual smoke: **passed**, repo-baseline pixel diff `1007 / 1,296,000`.
 - Static showcase evidence was refreshed to current counts; CR-FPS-006 later moved the payload source to generated canonical local `local_result_store` records while preserving `local_demo_only` / `not_proven` readiness boundaries.
 - Build/smoke/audit: **passed**, `npm audit --json` 0 vulnerabilities.

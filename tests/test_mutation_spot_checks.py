@@ -84,6 +84,7 @@ def test_mutation_runner_list_smoke():
     assert "snapshot-report-stooq-default" in result.stdout
     assert "snapshot-scoped-source-health" in result.stdout
     assert "showcase-experiment-readiness" in result.stdout
+    assert "showcase-frontend-transcript-failure-gate" in result.stdout
     assert "g-alt-data-pit-gate" in result.stdout
     assert "root-torch-default-dependency" in result.stdout
     assert "governance-stale-next-steps-alert" in result.stdout
@@ -200,6 +201,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out
     assert "e-evidence-explicit-claim-boundary" in out
+    assert "showcase-frontend-transcript-failure-gate" in out
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out

@@ -19,9 +19,9 @@ Overall: **8.9 / 10**.
 
 ## Verification Coverage
 
-- Current frontend suite: `npm test -- --run` -> 32 passed.
+- Current frontend suite: `npm test -- --run` -> 33 passed.
 - Current frontend coverage: `npm run coverage` -> 91.05% line coverage.
-- Current frontend mutation: `npm run mutation` -> 15/15 killed.
+- Current frontend mutation: `npm run mutation` -> 16/16 killed.
 - `npm run build` -> success.
 - Local HTTP smoke on `127.0.0.1:3044` -> `/` and `/api/showcase` returned conservative demo-readiness evidence.
 

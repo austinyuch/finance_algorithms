@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { classifyProbeStatus, publicHostingFreshness } from "../scripts/probe-public-demo.mjs";
+import {
+  classifyManifestContractStatus,
+  classifyProbeStatus,
+  publicHostingFreshness,
+} from "../scripts/probe-public-demo.mjs";
 
 describe("public demo probe script helpers", () => {
   it("classifies probe observations by freshness window", () => {
@@ -36,5 +40,27 @@ describe("public demo probe script helpers", () => {
         freshnessStatus: "fresh",
       }),
     ).toBe("proven");
+  });
+
+  it("does not match deployed manifest metadata without a complete expected manifest", () => {
+    const deployed = {
+      deployedTargetUrl: "https://austinyuch.github.io/finance_algorithms/",
+      deployedArtifactKind: "github_pages_static_showcase",
+      deployedClaimBoundary: "no_alpha_claim",
+      deployedDashboardClaim: "local_demo_only",
+    };
+
+    expect(classifyManifestContractStatus({ deployed })).toBe("missing");
+    expect(
+      classifyManifestContractStatus({
+        expected: {
+          dataHash: "a".repeat(64),
+          targetUrl: "https://austinyuch.github.io/finance_algorithms/",
+          artifactKind: "github_pages_static_showcase",
+          claimBoundary: "no_alpha_claim",
+        },
+        deployed,
+      }),
+    ).toBe("missing");
   });
 });

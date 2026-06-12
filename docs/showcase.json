@@ -14,10 +14,10 @@
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "253 passed",
-      "frontend tests 32 passed",
-      "Python mutation 70/70 killed",
-      "frontend mutation 15/15 killed",
+      "254 passed",
+      "frontend tests 33 passed",
+      "Python mutation 71/71 killed",
+      "frontend mutation 16/16 killed",
       "F Next.js coverage 91.05%",
       "frontend audit 0 vulnerabilities",
       "browser visual diff 1007/1296000 passed",
