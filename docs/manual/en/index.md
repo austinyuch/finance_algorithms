@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 223 passed
+uv run pytest -q             # sanity: expect 224 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -154,7 +154,7 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
-> - Resolved: visual diff is repo-baseline pixel-backed (`505 / 1,296,000`
+> - Resolved: visual diff is repo-baseline pixel-backed (`235 / 1,296,000`
 >   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
 >   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
 >   probe is `proven` HTTP 200, but the export's embedded readiness panel
@@ -189,11 +189,11 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **223 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **40/40 configured/killed**, including root Torch dependency, stale governance evidence mutations through CR-B15 promotion drift, and CR-B12 scoped source-health overclaim protection.
+- Test suite is now **224 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **41/41 configured/killed**, including root Torch dependency, stale governance evidence mutations through CR-B16 promotion drift, and CR-B12 scoped source-health overclaim protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
-- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `505 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `235 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
 
