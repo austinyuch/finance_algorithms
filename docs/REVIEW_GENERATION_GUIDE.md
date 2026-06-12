@@ -44,8 +44,9 @@ Frontend visual evidence = a real chromium-headless screenshot
 plus the committed static export, the repo-baseline pixel diff
 (`browser-visual-diff.json`), and the public-hosting probe
 (`npm run probe:public-demo` → HTTP 200 `proven`). The review embeds the
-screenshot as `live_screenshot` and discloses the remaining ops residual: no
-live scheduled-run artifact. A long-running port-bound server still needs a
+screenshot as `live_screenshot` and discloses the remaining ops residual:
+`workflow_dispatch` schedule proof exists, while autonomous cron `event=schedule`
+proof is still pending. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
 
 ## 5. Gap analysis policy

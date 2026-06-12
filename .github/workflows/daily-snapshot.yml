@@ -16,18 +16,20 @@ jobs:
       - name: Snapshot dry-run report
         run: uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json
       - name: Build schedule report and proof
-        run: >
-          uv run python scripts/snapshot_schedule_report.py
-          artifacts/snapshot-report.json
-          --out-dir artifacts
-          --proof-json artifacts/snapshot-schedule-run-proof.json
-          --workflow daily-snapshot
-          --trigger "${{ github.event_name }}"
-          --command "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json"
-          --exit-code 0
-          --started-at "${{ github.run_started_at }}"
-          --finished-at "${{ github.run_started_at }}"
+        run: |
+          STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          uv run python scripts/snapshot_schedule_report.py \
+            artifacts/snapshot-report.json \
+            --out-dir artifacts \
+            --proof-json artifacts/snapshot-schedule-run-proof.json \
+            --workflow daily-snapshot \
+            --trigger "${{ github.event_name }}" \
+            --command "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json" \
+            --exit-code 0 \
+            --started-at "$STARTED_AT" \
+            --finished-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: snapshot-schedule-proof
           path: artifacts/*.json

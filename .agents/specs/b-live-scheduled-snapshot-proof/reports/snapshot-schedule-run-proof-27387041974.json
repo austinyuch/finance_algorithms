@@ -1,0 +1,21 @@
+{
+  "artifact_kind": "snapshot_schedule_run_proof",
+  "available_date": "2026-06-12",
+  "claim_boundary": "source_contract_status_only",
+  "command": "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json",
+  "counts": {
+    "dry": 22,
+    "fail": 0,
+    "ok": 0,
+    "skip": 0
+  },
+  "evidence_tier": "smoke",
+  "exit_code": 0,
+  "finished_at": "2026-06-12T00:47:33Z",
+  "retention": "append_only",
+  "schedule_status": "clean",
+  "started_at": "2026-06-12T00:47:33Z",
+  "status": "clean",
+  "trigger": "workflow_dispatch",
+  "workflow": "daily-snapshot"
+}
