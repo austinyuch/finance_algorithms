@@ -384,6 +384,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
     ),
     MutationSpec(
+        name="review-public-hosting-probe-status-overclaim",
+        path="docs/review/assets/public-hosting-probe.json",
+        original='"status": "configured_not_observed"',
+        mutated='"status": "proven"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
+    ),
+    MutationSpec(
         name="public-hosting-manifest-hash-overclaim",
         path="docs/deployment-manifest.json",
         original='"hashStatus": "mismatched"',

@@ -70,6 +70,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "231 passed",
         "238 passed",
         "237 passed",
+        "239 passed",
         "23 frontend tests",
         "27 frontend tests",
         "46/46 configured",
@@ -87,6 +88,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 48/48",
         "mutation spot checks 48/48",
         "mutation spot-checks are **48/48",
+        "49/49 configured",
+        "49/49 Python mutation",
+        "Python mutation 49/49",
+        "mutation spot checks 49/49",
+        "mutation spot-checks are **49/49",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -109,6 +115,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1022/1,296,000",
         "0.0007885802469135803",
         "38f9d1e6cc5d7a3dc9e395db41ee5dc5c2464e618062cf305f1f473db49d333e",
+        "1028 / 1,296,000",
+        "1028/1,296,000",
+        "0.0007932098765432099",
+        "51c691630c253843f92d748330814b4b0b0834939f1d7140a8bbb47a8dc96d03",
+        "4dd46e2c4cb2ceafc868888c9f28c969a71db408c1c2fa8aa87cd1aaecc92074",
+        "1030 / 1,296,000",
+        "1030/1,296,000",
+        "0.0007947530864197531",
+        "0898127d2d7192df7344c34736a89ce5623a7ca362923e2dcc7a6bc91e10fff9",
+        "bd09929c62f6874ac9753154272ae2ae27d51522d997e85a85ec190f1718b633",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
@@ -120,7 +136,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
 
 
 def test_current_visual_evidence_assets_are_synchronized():
-    """Stakeholder review assets must match the current browser visual evidence."""
+    """Stakeholder review/manual assets must match the current browser visual evidence."""
     browser_visual = json.loads((ROOT / "docs/browser-visual.json").read_text(encoding="utf-8"))
     review_browser_visual = json.loads(
         (ROOT / "docs/review/assets/browser-visual.json").read_text(encoding="utf-8")
@@ -132,9 +148,33 @@ def test_current_visual_evidence_assets_are_synchronized():
 
     assert review_browser_visual == browser_visual
     assert review_browser_diff == browser_diff
+    assert (ROOT / "docs/manual/assets/dashboard-browser-visual.png").read_bytes() == (
+        ROOT / "docs/browser-visual.png"
+    ).read_bytes()
+    assert (ROOT / "docs/review/assets/dashboard-browser-visual.png").read_bytes() == (
+        ROOT / "docs/browser-visual.png"
+    ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1028
+    assert browser_diff["mismatchedPixels"] == 976
     assert browser_diff["maxMismatchRatio"] == 0.001
+
+
+def test_current_stakeholder_payload_assets_are_synchronized():
+    """Copied stakeholder payload assets must not drift from committed docs artifacts."""
+    showcase = json.loads((ROOT / "docs/showcase.json").read_text(encoding="utf-8"))
+    manual_showcase = json.loads((ROOT / "docs/manual/assets/showcase.json").read_text(encoding="utf-8"))
+    review_showcase = json.loads((ROOT / "docs/review/assets/showcase.json").read_text(encoding="utf-8"))
+    public_probe = json.loads((ROOT / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
+    review_public_probe = json.loads(
+        (ROOT / "docs/review/assets/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+
+    assert manual_showcase == showcase
+    assert review_showcase == showcase
+    assert review_public_probe == public_probe
+    assert (ROOT / "docs/manual/assets/dashboard-static-export.html").read_text(encoding="utf-8") == (
+        ROOT / "docs/index.html"
+    ).read_text(encoding="utf-8")
 
 
 def test_next_steps_reflects_post_merge_torch_alert_state():
@@ -214,8 +254,12 @@ def test_public_hosting_manifest_carries_observed_proof():
     """The committed public demo manifest must not overclaim hosting parity."""
     manifest = json.loads((ROOT / "docs/deployment-manifest.json").read_text(encoding="utf-8"))
     probe = json.loads((ROOT / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
+    review_probe = json.loads(
+        (ROOT / "docs/review/assets/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
     hosting = manifest.get("hostingEvidence") or {}
 
+    assert review_probe == probe
     assert manifest.get("targetUrl") == "https://austinyuch.github.io/finance_algorithms/"
     assert manifest.get("claimBoundary") == "no_alpha_claim"
     assert probe.get("targetUrl") == manifest.get("targetUrl")

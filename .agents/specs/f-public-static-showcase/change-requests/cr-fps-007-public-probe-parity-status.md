@@ -42,19 +42,24 @@ optimistic than `docs/deployment-manifest.json`.
 - Regenerated `docs/public-hosting-probe.json` and
   `docs/deployment-manifest.json`; current branch-local evidence remains
   `configured_not_observed` because the deployed hash is stale.
+- Synchronized `docs/review/assets/public-hosting-probe.json` from the
+  canonical committed probe so the executive review evidence package cannot
+  preserve a stale `proven` public-hosting artifact.
 - Added frontend and Python governance guards for the committed
-  probe/manifest parity relationship.
+  probe/manifest/review-asset parity relationship.
 
 ## Evidence
 
 - RED: `uv run pytest -q tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof` failed while `docs/public-hosting-probe.json` still reported `status=proven` with a stale deployed hash.
+- RED: `uv run pytest -q tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof` failed while `docs/review/assets/public-hosting-probe.json` still reported stale `status=proven` after the canonical probe had been downgraded to `configured_not_observed`.
 - RED: `npm test -- --run tests/public-demo.test.tsx -t "committed public-hosting probe"` failed on the same stale-probe overclaim.
 - Probe refresh: `QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH=../docs/public-hosting-probe.json npm run probe:public-demo` returned exit code 2 and wrote `status=configured_not_observed`, `hashStatus=mismatched`, `manifestContractStatus=matched`.
 - GREEN: `npm test -- --run tests/public-demo.test.tsx` -> 20 passed.
 - GREEN: `npm test -- --run` -> 28 passed; `npm run coverage` -> 91.07% line coverage.
-- GREEN: `uv run pytest -q tests/quantlab/test_governance_guards.py` -> 11 passed.
+- GREEN: `uv run pytest -q tests/quantlab/test_governance_guards.py` -> 12 passed.
 - GREEN: `npm run visual`, `npm run visual:browser`, `npm run build`, `npm run smoke`, `npm audit --json`, and `npm run mutation` passed. `npm run probe:public-demo` is expected to return exit code 2 while deployed `dataHash` is stale.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only public-hosting-probe-status-overclaim` -> killed. The mutation changes the committed probe artifact from `status=configured_not_observed` to `status=proven` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
+- Mutation: `uv run python scripts/run_mutation_spot_checks.py --only review-public-hosting-probe-status-overclaim` -> killed. The mutation changes the executive-review probe artifact from `status=configured_not_observed` to `status=proven` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only public-hosting-probe-hash-overclaim` -> killed. The mutation changes the committed probe artifact from `hashStatus=mismatched` to `hashStatus=matched` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
 
 ## Claim Boundary

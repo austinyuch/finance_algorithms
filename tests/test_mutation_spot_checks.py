@@ -166,4 +166,5 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out
+    assert "review-public-hosting-probe-status-overclaim" in out
     assert "b-scheduled-observer-manual-pending" in out
