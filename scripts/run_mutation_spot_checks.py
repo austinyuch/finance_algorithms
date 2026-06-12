@@ -168,6 +168,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_serving_smoke_evidence_proves_only_serving_slice"),
     ),
     MutationSpec(
+        name="e-retraining-smoke-status-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if str(result.get("status") or "").lower() != "completed":',
+        mutated='if str(result.get("status") or "").lower() == "completed":',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_retraining_smoke_evidence_proves_only_retraining_slice"),
+    ),
+    MutationSpec(
         name="d-result-store-evaluation-source",
         path="quantlab/models/evaluation.py",
         original='"source": "local_result_store"',
