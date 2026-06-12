@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 190 passed
+uv run pytest -q             # sanity: expect 188 passed, 1 skipped
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -50,16 +50,16 @@ Live output (`assets/backend-hedge-slice-01-leaderboard.txt`):
 strategy          OOS net Sharpe
 --------------------------------
 BuyAndHold                0.3911
-LSTMStrategy              0.3911
 HedgeStrategy             0.3528
 StaticWeights             0.2759
 RandomStrategy           -0.0092
 ```
 
 **How to read it:** strategies are ranked by **out-of-sample net** Sharpe (after
-costs). `RandomStrategy` is the sanity floor. The slice runs on **synthetic**
-cointegrated data — it proves the pipeline is correct, not that the hedge earns
-money.
+costs). `RandomStrategy` is the sanity floor. In the default UAT/runtime env the
+optional PyTorch LSTM lane is not installed, so this transcript contains hedge
+and baseline strategies only. The slice runs on **synthetic** cointegrated data —
+it proves the pipeline is correct, not that the hedge earns money.
 
 > - Evidence Source: `live_command_output`
 > - Coverage Tier: `hybrid` · Readiness State: `PASS` (`a-tsmc-hedge-slice/review.md`)
@@ -190,7 +190,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite grew **163 → 190 passed**; mypy now clean over **50** files; mutation **22/22 killed**.
+- Test suite is now **188 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane; mypy is clean over **51** files; mutation spot checks are **23/23 killed**, including the root Torch dependency mutation.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.

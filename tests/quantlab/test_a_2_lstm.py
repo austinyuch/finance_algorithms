@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
+
+pytest.importorskip("torch", reason="PyTorch strategy lane is optional outside the default UAT/runtime env")
 
 
 def _synth_target(n=120, seed=1):

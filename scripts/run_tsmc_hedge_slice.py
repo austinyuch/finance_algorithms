@@ -2,7 +2,7 @@
 """反台積電對衝 thin slice 的可重現執行器(產生 A-6 writeup 的數字)。
 
 ⚠️ 資料為合成(strategy C:數字明知假、僅驗證管線),非真實 alpha。
-跑:HedgeStrategy(共整合-反向對衝)+ LSTMStrategy(PyTorch 擇時)+ 笨 baselines
+跑:HedgeStrategy(共整合-反向對衝)+ optional LSTMStrategy(PyTorch 擇時)+ 笨 baselines
 → A0 PIT 回測 → leaderboard(依 OOS-net Sharpe)。
 
 用法:uv run python scripts/run_tsmc_hedge_slice.py
@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import sys
 import tempfile
+import importlib
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -20,8 +22,16 @@ import pandas as pd
 
 from quantlab.data.provider import InMemoryPITDataProvider
 from quantlab.runner import run_and_log, run_hedge_slice
-from quantlab.strategies.lstm import LSTMStrategy
 from quantlab.tracking import LocalResultStore
+
+
+def load_lstm_strategy() -> type[Any] | None:
+    try:
+        return importlib.import_module("quantlab.strategies.lstm").LSTMStrategy
+    except ModuleNotFoundError as exc:
+        if exc.name == "torch":
+            return None
+        raise
 
 
 def synth():
@@ -52,7 +62,12 @@ def main() -> int:
 
     store = LocalResultStore(Path(tempfile.mkdtemp()) / "slice.db")
     run_hedge_slice(data, cfg, store, target="TSMC", candidates=["PLANT", "RAND"], hedge_fraction=0.3)
-    run_and_log(LSTMStrategy("TSMC", seed=0), data, cfg, store)
+    lstm_strategy = load_lstm_strategy()
+    if lstm_strategy is None:
+        print("[optional] LSTMStrategy skipped: PyTorch lane not installed; see quantlab/envs/pytorch.txt",
+              file=sys.stderr)
+    else:
+        run_and_log(lstm_strategy("TSMC", seed=0), data, cfg, store)
 
     print(f"{'strategy':<16}{'OOS net Sharpe':>16}")
     print("-" * 32)

@@ -29,17 +29,19 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 ## Latest authoritative gate evidence (2026-06-12)
 
-- `uv run pytest -q` → **190 passed** (up from 163 at the prior memo)
-- `uv run mypy quantlab/ --ignore-missing-imports` → clean, **50 source files**
+- `uv run pytest -q` → **188 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
+- `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports` → clean, **51 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (71 files, 174 deps)
 - `frontend` `npm test` → **23 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
-- Python mutation spot checks → **22/22 killed**; frontend coverage **91.42%**, mutation 9/9 killed
+- Python mutation spot checks → **23/23 killed**, including `root-torch-default-dependency`; frontend coverage **91.42%**, mutation 9/9 killed
 - `npm run visual:browser` → chromium-headless screenshot `proven`
   (`frontend/out/browser-visual.png`); `npm run probe:public-demo` → **HTTP 200 proven**
   (`frontend/out/public-hosting-probe.json`), per
   `.agents/specs/ops-visual-drift-artifacts/review.md`
 - GitHub Actions `daily-snapshot.yml` `workflow_dispatch` run `27387041974`
   succeeded and uploaded `snapshot-schedule-proof`
+- Root `pyproject.toml` / `uv.lock` no longer includes unpatched `torch`; default
+  TSMC hedge demo skips the optional PyTorch LSTM lane explicitly.
 
 These counts are the basis for the "gaps resolved since last check" sections of
 the manual and review. Visual diff is now repo-baseline pixel-backed; the
