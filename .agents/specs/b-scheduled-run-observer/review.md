@@ -2,7 +2,7 @@
 
 ## Verdict
 
-**PASSED for repo-side scheduled-run observation.** The project now has a repeatable fail-closed way to observe the autonomous cron proof gap.
+**PASSED for repo-side scheduled-run observation.** The project now has a repeatable fail-closed way to observe autonomous cron proof.
 
 ## Scores
 
@@ -18,7 +18,7 @@
 
 - `uv run pytest -q tests/test_daily_snapshot.py -k scheduled_run_observer` -> 2 passed.
 - `uv run python scripts/run_mutation_spot_checks.py --only b-scheduled-observer-manual-pending` -> KILLED.
-- Live smoke over current `gh run list` evidence -> `status=pending`, `schedule_run_count=0`, latest manual success `27387041974`.
+- Live smoke over current `gh run list` evidence after run `27392471359` -> `status=proven`, `schedule_run_count=1`, latest schedule success `27392471359`.
 
 ## Acceptance Status
 
@@ -30,12 +30,12 @@
 
 ## Live-Demo / Ops Readiness
 
-**CONDITIONAL.** The observer improves ops evidence integrity, but it does not replace the missing external cron run. Current real state remains pending for autonomous `event=schedule` proof.
+**PASSED for cron-trigger classification.** The observer improves ops evidence integrity and now records successful autonomous `event=schedule` proof. This still does not prove live data writes.
 
 ## Residual Risk
 
-- If GitHub cron is disabled or delayed, the observer will continue to report pending. That is the intended fail-closed behavior.
+- If future GitHub cron runs fail or disappear from the queried window, the observer will report the fresher current state. That is the intended fail-closed behavior.
 
 ## Next Action
 
-Schedule proof can move from pending to proven only after a completed successful `event=schedule` run appears in GitHub Actions.
+Keep the observer report fresh after future schedule runs; live data writes remain governed separately.

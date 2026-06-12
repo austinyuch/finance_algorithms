@@ -42,8 +42,8 @@
 - No real production serving endpoint has been probed.
 - No real production retraining orchestrator has been run.
 - No real production automated drift monitoring service has been run.
-- B autonomous cron proof remains pending until a successful `event=schedule` workflow run is observed.
+- B autonomous cron dry-run proof is observed through successful `event=schedule` workflow run `27392471359`; live writes remain separately governed.
 
 ## Next Action
 
-Use these production evidence builders when real external serving, retraining, and drift-monitoring proof payloads are available. Continue observing `daily-snapshot.yml` for autonomous cron proof.
+Use these production evidence builders when real external serving, retraining, and drift-monitoring proof payloads are available. Keep `daily-snapshot.yml` observer evidence fresh after future cron runs.

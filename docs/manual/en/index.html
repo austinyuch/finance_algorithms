@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>Getting started / starter assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 deps</span>
-uv run pytest -q             <span style="color:#7d90b0"># expect 190 passed, 1 skipped</span>
+uv run pytest -q             <span style="color:#7d90b0"># expect 214 passed, 1 skipped</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps</span></pre>
     <p>Committed seed/sample data:</p>
     <ul>
@@ -137,7 +137,7 @@ npm run smoke                  <span style="color:#7d90b0"># local HTTP smoke (n
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source:</b> live_screenshot (chromium-headless) + static_export · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> f-demo-hardening/review.md, ops-visual-drift-artifacts/review.md<br>
-      <b>Resolved:</b> public-hosting probe <code>proven</code> HTTP 200; browser screenshot captured; visual diff is repo-baseline pixel-backed (<code>505 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); GitHub Actions <code>workflow_dispatch</code> schedule proof exists as run <code>27387041974</code>. <b>Residual:</b> no autonomous cron <code>event=schedule</code> run observed; export's embedded readiness panel remains conservative (<code>not_proven</code>) by contract.
+      <b>Resolved:</b> public-hosting probe <code>proven</code> HTTP 200; browser screenshot captured; visual diff is repo-baseline pixel-backed (<code>505 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); GitHub Actions autonomous <code>event=schedule</code> dry-run proof exists as run <code>27392471359</code>. The export's embedded readiness panel remains conservative (<code>not_proven</code>) by contract.
     </div>
   </section>
 
@@ -155,11 +155,11 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
-    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>190 passed, 1 skipped</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 51 files; mutation spot checks 24/24 configured, including root Torch dependency and stale governance evidence mutations; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>505 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>).</p>
+    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>214 passed, 1 skipped</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 53 files; mutation spot checks 35/35 configured, including root Torch dependency and stale governance evidence mutations; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>505 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>).</p>
     <table>
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
-      <tr><td>No autonomous cron <code>event=schedule</code> GitHub Actions run observed</td><td>Medium</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
+      <tr><td>Live append-only snapshot writes remain separate from dry-run schedule proof</td><td>Low</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
       <tr><td>Static export's readiness panel remains conservative (<code>not_proven</code>) by dashboard contract</td><td>Low</td><td>frontend/out/index.html</td></tr>
       <tr><td>Vintage real-data backtest deferred (&lt;2 price assets)</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>

@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>快速開始 / Starter Assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 依賴</span>
-uv run pytest -q             <span style="color:#7d90b0"># 預期 190 passed, 1 skipped</span>
+uv run pytest -q             <span style="color:#7d90b0"># 預期 214 passed, 1 skipped</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js 依賴</span></pre>
     <p>已 commit 的 seed／樣本資料：</p>
     <ul>
@@ -133,7 +133,7 @@ npm run smoke                  <span style="color:#7d90b0"># 本地 HTTP smoke�
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、ops-visual-drift-artifacts/review.md<br>
-      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>505 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；GitHub Actions <code>workflow_dispatch</code> schedule proof 已有 run <code>27387041974</code>。<b>殘留：</b>尚無 autonomous cron <code>event=schedule</code> run；export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
+      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>505 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；GitHub Actions autonomous <code>event=schedule</code> dry-run proof 已有 run <code>27392471359</code>。export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
     </div>
   </section>
 
@@ -151,11 +151,11 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
-    <p><b>自上次檢查以來已解決（2026-06-11 → 2026-06-12）：</b>測試目前 <b>190 passed, 1 skipped</b>，PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 51 檔 clean；mutation spot checks 24/24 configured，包含 root Torch dependency 與 stale governance evidence mutations；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>public-hosting probe proven</b> HTTP 200；<b>visual diff repo-baseline pixel-backed</b>（<code>505 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）。</p>
+    <p><b>自上次檢查以來已解決（2026-06-11 → 2026-06-12）：</b>測試目前 <b>214 passed, 1 skipped</b>，PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 53 檔 clean；mutation spot checks 35/35 configured，包含 root Torch dependency 與 stale governance evidence mutations；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>public-hosting probe proven</b> HTTP 200；<b>visual diff repo-baseline pixel-backed</b>（<code>505 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）。</p>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
-      <tr><td>尚無 autonomous cron <code>event=schedule</code> GitHub Actions run</td><td>Medium</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
+      <tr><td>Live append-only snapshot writes 仍與 dry-run schedule proof 分開治理</td><td>Low</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
       <tr><td>Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 <code>not_proven</code></td><td>Low</td><td>frontend/out/index.html</td></tr>
       <tr><td>Vintage 真實資料回測延後（&lt;2 價格資產）</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>

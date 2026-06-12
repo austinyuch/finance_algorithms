@@ -80,9 +80,12 @@ def test_next_steps_reflects_post_merge_scheduled_observer_state():
 
     assert "Commit/push `spec/scheduled-run-observer`" not in text
     assert "promote it through `dev`/`main`" not in text
+    assert "observer should keep status `pending`" not in text
     assert "PR #29" in text
     assert "PR #30" in text
-    assert "schedule_run_count=0" in text
+    assert "schedule_run_count=0" not in text
+    assert "27392471359" in text
+    assert "schedule_run_count=1" in text
 
 
 def test_next_steps_reflects_post_merge_governance_sync_state():

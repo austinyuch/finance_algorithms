@@ -31,7 +31,7 @@ This is a governance/readiness hardening slice. It treats stale current-state ev
 
 ## Repo-side Closure vs External Execution Boundary
 
-Repo-side closure is achieved when current governance surfaces and stakeholder docs match verified evidence, stale current-state markers fail deterministic tests, and the static visual contract is regenerated. External autonomous cron proof remains pending because only GitHub can emit a real `event=schedule` run.
+Repo-side closure is achieved when current governance surfaces and stakeholder docs match verified evidence, stale current-state markers fail deterministic tests, and the static visual contract is regenerated. External autonomous cron dry-run proof is now observed via GitHub Actions run `27392471359`; live writes remain governed separately.
 
 ## Contracts
 

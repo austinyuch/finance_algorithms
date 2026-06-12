@@ -14,7 +14,7 @@ This lane addresses the remaining B scheduled snapshot proof gap: the repository
 
 - **Repo-side Closure:** fix the workflow timestamp bug, add a regression guard, update spec/governance artifacts, and capture local dry-run proof.
 - **External Execution:** dispatch the GitHub Actions workflow on the fixed branch and preserve run/artifact metadata as proof.
-- **External Blockers / Constraints:** a `workflow_dispatch` success proves real Actions execution, not autonomous cron firing. Cron proof remains pending until a scheduled event run exists.
+- **External Blockers / Constraints:** a `workflow_dispatch` success proves real Actions execution, not autonomous cron firing. Autonomous dry-run cron proof is proven only by a completed successful `event=schedule` run; live writes remain governed separately.
 
 ## Requirements
 
