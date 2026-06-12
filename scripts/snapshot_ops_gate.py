@@ -13,6 +13,14 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+DEFAULT_SOURCE_QUORUM: dict[str, tuple[str, ...]] = {
+    "fred_macro": ("fred:FEDFUNDS",),
+    "fred_price_proxy": ("fred:SP500", "fred:NASDAQCOM", "fred:PCOPPUSDM", "fred:DCOILWTICO", "fred:DEXTAUS"),
+    "yahoo_equity": ("yahoo:2330.TW",),
+    "yahoo_market": ("yahoo:^TWII",),
+    "noaa_macro": ("noaa:oni",),
+}
+
 
 def _counts(report: Mapping[str, Any]) -> Mapping[str, Any]:
     counts = report.get("counts")
@@ -64,19 +72,60 @@ def validate_snapshot_report(
     }
 
 
+def validate_source_quorum_report(
+    report: Mapping[str, Any],
+    *,
+    required_groups: Mapping[str, tuple[str, ...]] = DEFAULT_SOURCE_QUORUM,
+) -> dict[str, Any]:
+    """Require broad live source coverage, not just an honest scoped smoke."""
+    summary = validate_snapshot_report(report, require_live_jobs=True)
+    counts = summary["counts"]
+    if int(counts["fail"]) > 0:
+        raise ValueError("broad source quorum requires zero failed sources")
+
+    jobs = report["jobs"]
+    covered: dict[str, list[str]] = {}
+    for group, source_ids in required_groups.items():
+        seen: list[str] = []
+        for job in jobs:
+            source_id = str(job.get("source_id", ""))
+            status = str(job.get("status", ""))
+            if source_id in source_ids and status in {"ok", "skip"}:
+                seen.append(source_id)
+        if not seen:
+            expected = ", ".join(source_ids)
+            raise ValueError(f"missing broad source quorum for {group}: expected one of {expected}")
+        covered[group] = seen
+
+    return {
+        "claim_boundary": "source_contract_status_only",
+        "available_date": summary["available_date"],
+        "dry_run": False,
+        "counts": counts,
+        "status": "broad_source_quorum",
+        "evidence_tier": "live_source_quorum",
+        "groups": covered,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="validate daily snapshot report JSON")
     parser.add_argument("report_json", type=Path)
     parser.add_argument("--allow-failures", action="store_true")
     parser.add_argument("--allow-dry-run", action="store_true")
+    parser.add_argument("--require-source-quorum", action="store_true",
+                        help="require broad live default-source quorum; rejects scoped smoke evidence")
     args = parser.parse_args(argv)
 
     report = json.loads(args.report_json.read_text(encoding="utf-8"))
-    summary = validate_snapshot_report(
-        report,
-        allow_failures=args.allow_failures,
-        require_live_jobs=not args.allow_dry_run,
-    )
+    if args.require_source_quorum:
+        summary = validate_source_quorum_report(report)
+    else:
+        summary = validate_snapshot_report(
+            report,
+            allow_failures=args.allow_failures,
+            require_live_jobs=not args.allow_dry_run,
+        )
     print(json.dumps(summary, sort_keys=True))
     return 0
 
