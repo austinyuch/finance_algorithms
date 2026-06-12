@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 
@@ -26,6 +27,26 @@ function deployedManifestContract() {
 }
 
 describe("F public static showcase proof", () => {
+  it("keeps the committed public-hosting probe unproven while deployed dataHash is stale", () => {
+    const manifest = JSON.parse(
+      readFileSync(new URL("../../docs/deployment-manifest.json", import.meta.url), "utf8"),
+    );
+    const probe = JSON.parse(
+      readFileSync(new URL("../../docs/public-hosting-probe.json", import.meta.url), "utf8"),
+    );
+
+    expect(probe.targetUrl).toBe(manifest.targetUrl);
+    expect(probe.deployedDataHash).toBe(manifest.hostingEvidence.deployedDataHash);
+    if (manifest.hostingEvidence.deployedDataHash === manifest.dataHash) {
+      expect(probe.status).toBe("proven");
+      expect(manifest.hostingEvidence.hashStatus).toBe("matched");
+    } else {
+      expect(probe.status).toBe("configured_not_observed");
+      expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
+      expect(manifest.hostingEvidence.hashStatus).toBe("mismatched");
+    }
+  });
+
   it("builds a GitHub Pages manifest without overclaiming live hosting", () => {
     const manifest = buildPublicDemoManifest(getShowcaseDashboard());
 

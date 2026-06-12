@@ -67,6 +67,9 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   if (parsed.status === "proven" && typeof parsed.deployedDataHash !== "string") {
     throw new Error("public hosting probe requires deployedDataHash when proven");
   }
+  if (parsed.status === "proven" && parsed.hashStatus !== "matched") {
+    throw new Error("public hosting probe requires matched deployed dataHash when proven");
+  }
   if (parsed.status === "proven" && parsed.deployedTargetUrl !== PUBLIC_SHOWCASE_URL) {
     throw new Error("public hosting probe requires matching deployedTargetUrl when proven");
   }
@@ -78,6 +81,9 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   }
   if (parsed.status === "proven" && parsed.deployedDashboardClaim !== "local_demo_only") {
     throw new Error("public hosting probe requires local_demo_only deployedDashboardClaim when proven");
+  }
+  if (parsed.status === "proven" && parsed.manifestContractStatus !== "matched") {
+    throw new Error("public hosting probe requires matched manifest contract when proven");
   }
   return {
     pagesConfigured: parsed.pagesConfigured === true,

@@ -198,7 +198,6 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert hosting.get("sourcePath") == "docs/"
     assert hosting.get("publishMode") == "github_pages_branch_source"
     assert hosting.get("httpStatus") == 200
-    assert probe.get("status") == "proven"
     assert probe.get("httpStatus") == 200
     assert probe.get("deployedManifestStatus") == 200
     assert isinstance(hosting.get("observedAt"), str)
@@ -216,8 +215,10 @@ def test_public_hosting_manifest_carries_observed_proof():
     if hosting.get("deployedDataHash") == manifest.get("dataHash"):
         assert hosting.get("status") == "proven"
         assert hosting.get("hashStatus") == "matched"
+        assert probe.get("status") == "proven"
         assert probe.get("deployedDataHash") == manifest.get("dataHash")
     else:
         assert hosting.get("status") == "configured_not_observed"
         assert hosting.get("hashStatus") == "mismatched"
+        assert probe.get("status") == "configured_not_observed"
         assert probe.get("deployedDataHash") != manifest.get("dataHash")

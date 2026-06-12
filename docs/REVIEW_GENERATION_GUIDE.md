@@ -35,7 +35,7 @@ Project is Backend/CLI-dominant Hybrid. Captured live (2026-06-12):
 uv run pytest -q                     # 238 passed → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports # clean 57 files → gate-mypy.txt
 uv run lint-imports                  # KEPT          → gate-lint-imports.txt
-(cd frontend && npm test)            # 27 passed     → gate-frontend-test.txt
+(cd frontend && npm test)            # 28 passed     → gate-frontend-test.txt
 (cd frontend && npm audit --omit=dev)# 0 vulns       → gate-frontend-audit.txt
 ```
 
@@ -43,8 +43,9 @@ Frontend visual evidence = a real chromium-headless screenshot
 (`frontend/out/browser-visual.png`, `npm run visual:browser`, status `proven`)
 plus the committed static export, the repo-baseline pixel diff
 (`browser-visual-diff.json`), and the public-hosting probe
-(`npm run probe:public-demo` → HTTP 200 plus deployed manifest contract metadata
-and deployed `dataHash` parity). The review embeds the
+(`npm run probe:public-demo` → HTTP 200 plus deployed manifest contract metadata;
+exit 0 only when deployed `dataHash` parity is proven, exit 2 while branch-local
+Pages parity is pending). The review embeds the
 screenshot as `live_screenshot` and discloses the remaining ops residual:
 autonomous `event=schedule` dry-run proof exists as run `27392471359`, and CR-B12 proves scoped live-write mechanics. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
