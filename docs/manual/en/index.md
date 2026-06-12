@@ -189,7 +189,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **223 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **39/39 configured/killed**, including root Torch dependency, stale governance evidence mutations through CR-B14 promotion drift, and CR-B12 scoped source-health overclaim protection.
+- Test suite is now **223 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **40/40 configured/killed**, including root Torch dependency, stale governance evidence mutations through CR-B15 promotion drift, and CR-B12 scoped source-health overclaim protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
