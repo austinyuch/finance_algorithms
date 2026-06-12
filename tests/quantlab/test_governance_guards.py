@@ -61,6 +61,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         ROOT / "docs/manual/zh-tw/index.md",
         ROOT / "docs/manual/zh-tw/index.html",
         ROOT / "docs/review/index.html",
+        ROOT / "docs/MANUAL_GENERATION_GUIDE.md",
+        ROOT / "docs/REVIEW_GENERATION_GUIDE.md",
+        ROOT / "docs/review/assets/gate-pytest.txt",
+        ROOT / "docs/review/assets/gate-frontend-test.txt",
+        ROOT / "docs/review/assets/gate-frontend-audit.txt",
     ]
     stale_markers = [
         "190 pytest",
@@ -70,9 +75,13 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "231 passed",
         "238 passed",
         "237 passed",
+        "240 passed",
         "239 passed",
         "23 frontend tests",
         "27 frontend tests",
+        "27 tests pass",
+        "found 1 vulnerability",
+        "1 vulnerability",
         "46/46 configured",
         "46/46 Python mutation",
         "Python mutation 46/46",
@@ -103,6 +112,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 51/51",
         "mutation spot checks 51/51",
         "mutation spot-checks are **51/51",
+        "52/52 configured",
+        "52/52 Python mutation",
+        "Python mutation 52/52",
+        "mutation spot checks 52/52",
+        "mutation spot-checks are **52/52",
+        "53/53 configured",
+        "53/53 Python mutation",
+        "Python mutation 53/53",
+        "mutation spot checks 53/53",
+        "mutation spot-checks are **53/53",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -147,6 +166,19 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "132387264370da6f7be62d80a48083cbabde04108bff37d585ac065bfc30a3b7",
         "c660658743856add81851bd3d822133bfec2aabbf84a1ab2c0ecd62d8754b4cc",
         "e5d0eb89f0ca0a54b4668c5fd6c7d5b3cf0f64ee5c74a67c8479267e404ba9d5",
+        "38474295d540374507c2ba45b5c370054526a785bef2c1e7c731caa8b31654f4",
+        "b882f8668327a705364f60d55787e66b85fd59a01e933369868cbb07eee3bb3f",
+        "7ecee9da57399c11ddc531c82438b3143897df3e05f75eafd7b708aba6dff5a8",
+        "45f35838a658b63377f34ea58c514e6889d89c808794c4d2f0bbc746c0505c89",
+        "75cee9526ae96f63cb9ff95901cf1931a5a34a4f3bbcb89c1af33946ba617b0a",
+        "966 / 1,296,000",
+        "966/1,296,000",
+        "1051 / 1,296,000",
+        "1051/1,296,000",
+        "0.0008109567901234568",
+        "3e94cdbe790007dfe7f8a58d4aa45ebc39fd709f88152d351b089339761d71b1",
+        "700134c3e1504b866e395f4e7c1465d7a1e094eade4a71960890b1b89c90922c",
+        "47be766e853053e34fb2fe331caf8f337090bee5b6315fc057bc5c7350e1d423",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
@@ -155,6 +187,31 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         text = path.read_text(encoding="utf-8")
         for marker in stale_markers:
             assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale marker: {marker}"
+
+
+def test_current_review_gate_transcripts_match_published_evidence():
+    """Review gate transcripts and generation guides must match current evidence counts."""
+    review_html = (ROOT / "docs/review/index.html").read_text(encoding="utf-8")
+    manual_guide = (ROOT / "docs/MANUAL_GENERATION_GUIDE.md").read_text(encoding="utf-8")
+    review_guide = (ROOT / "docs/REVIEW_GENERATION_GUIDE.md").read_text(encoding="utf-8")
+    pytest_gate = (ROOT / "docs/review/assets/gate-pytest.txt").read_text(encoding="utf-8")
+    frontend_gate = (ROOT / "docs/review/assets/gate-frontend-test.txt").read_text(encoding="utf-8")
+    mypy_gate = (ROOT / "docs/review/assets/gate-mypy.txt").read_text(encoding="utf-8")
+    lint_gate = (ROOT / "docs/review/assets/gate-lint-imports.txt").read_text(encoding="utf-8")
+    audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
+    audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
+
+    assert "241 passed" in pytest_gate
+    assert "241 passed" in manual_guide
+    assert "241 passed" in review_guide
+    assert "Python suite now <b>241 passed</b>" in review_html
+    assert "Tests  28 passed (28)" in frontend_gate
+    assert "Frontend <b>28 tests pass</b>" in review_html
+    assert "27 tests pass" not in review_html
+    assert "Success: no issues found in 57 source files" in mypy_gate
+    assert "Analyzed 74 files, 185 dependencies." in lint_gate
+    assert audit_text.strip() == "found 0 vulnerabilities"
+    assert audit_gate["metadata"]["vulnerabilities"]["total"] == 0
 
 
 def test_current_visual_evidence_assets_are_synchronized():
@@ -177,7 +234,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 966
+    assert browser_diff["mismatchedPixels"] == 1052
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
