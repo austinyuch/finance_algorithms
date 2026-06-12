@@ -312,6 +312,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_scheduled_observer_state"),
     ),
     MutationSpec(
+        name="governance-stale-live-write-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="CR-B12 scoped live write smoke promoted to `dev` via PR #61 (`0f3af09`) and to `main` via PR #62 (`4f2f58a`).",
+        mutated="CR-B12 scoped live write smoke is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_live_write_smoke_state"),
+    ),
+    MutationSpec(
         name="b-scheduled-observer-manual-pending",
         path="scripts/scheduled_run_observer.py",
         original='status = "proven" if latest_schedule_success is not None else "pending"',
