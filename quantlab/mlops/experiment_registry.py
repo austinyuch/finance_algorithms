@@ -192,12 +192,20 @@ _TIER3_READY_EVIDENCE_KEYS = [
 
 
 def _is_production_evidence(value: Mapping[str, Any] | None, target: str) -> bool:
-    return (
-        isinstance(value, Mapping)
-        and value.get("status") == "proven"
-        and value.get("readiness_evidence_for") == target
-        and value.get("evidence_tier") == "production"
-    )
+    if not isinstance(value, Mapping):
+        return False
+    try:
+        if target == "serving_evidence":
+            validate_production_serving_evidence(value)
+        elif target == "retraining_evidence":
+            validate_production_retraining_evidence(value)
+        elif target == "automated_drift_monitoring_evidence":
+            validate_production_automated_drift_monitoring_evidence(value)
+        else:
+            return False
+    except ValueError:
+        return False
+    return True
 
 
 def build_tier3_readiness_gate(
@@ -213,6 +221,10 @@ def build_tier3_readiness_gate(
         "retraining_evidence": dict(retraining_evidence or {}),
         "automated_drift_monitoring_evidence": dict(automated_drift_monitoring_evidence or {}),
     }
+    evidence_digests = {
+        key: _digest_payload(payload)
+        for key, payload in evidence.items()
+    }
     missing = [
         key for key in _TIER3_READY_EVIDENCE_KEYS
         if not _is_production_evidence(evidence[key], key)
@@ -222,8 +234,13 @@ def build_tier3_readiness_gate(
         "claim_boundary": "no_alpha_claim",
         "readiness": "tier3_ready" if not missing else "not_ready",
         "source_manifest_readiness": manifest["readiness"],
+        "manifest_digest": _digest_payload(dict(manifest)),
         "required_evidence": list(_TIER3_READY_EVIDENCE_KEYS),
         "missing_evidence": missing,
+        "evidence_digests": evidence_digests,
+        "serving_evidence_digest": evidence_digests["serving_evidence"],
+        "retraining_evidence_digest": evidence_digests["retraining_evidence"],
+        "automated_drift_monitoring_evidence_digest": evidence_digests["automated_drift_monitoring_evidence"],
         "serving_evidence": evidence["serving_evidence"],
         "retraining_evidence": evidence["retraining_evidence"],
         "automated_drift_monitoring_evidence": evidence["automated_drift_monitoring_evidence"],

@@ -70,6 +70,8 @@ def test_mutation_runner_list_smoke():
     assert "d3-robust-claim-boundary" in result.stdout
     assert "e-registry-claim-boundary" in result.stdout
     assert "e-tier3-readiness-gate" in result.stdout
+    assert "e-tier3-gate-proof-digest" in result.stdout
+    assert "e-tier3-gate-production-validator" in result.stdout
     assert "e-tier3-production-tier-gate" in result.stdout
     assert "e-serving-smoke-health-gate" in result.stdout
     assert "e-retraining-smoke-status-gate" in result.stdout
@@ -180,6 +182,8 @@ def test_main_list_prints_mutation_names(capsys):
     assert "d3-robust-claim-boundary" in out
     assert "e-registry-claim-boundary" in out
     assert "e-tier3-readiness-gate" in out
+    assert "e-tier3-gate-proof-digest" in out
+    assert "e-tier3-gate-production-validator" in out
     assert "e-tier3-production-tier-gate" in out
     assert "e-serving-smoke-health-gate" in out
     assert "e-retraining-smoke-status-gate" in out

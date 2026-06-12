@@ -200,6 +200,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 65/65",
         "mutation spot checks 65/65",
         "mutation spot-checks are **65/65",
+        "66/66 configured",
+        "66/66 Python mutation",
+        "Python mutation 66/66",
+        "mutation spot checks 66/66",
+        "mutation spot-checks are **66/66",
+        "67/67 configured",
+        "67/67 Python mutation",
+        "Python mutation 67/67",
+        "mutation spot checks 67/67",
+        "mutation spot-checks are **67/67",
         "6/6 configured",
         "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
@@ -360,10 +370,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "249 passed" in pytest_gate
-    assert "249 passed" in manual_guide
-    assert "249 passed" in review_guide
-    assert "Python suite now <b>249 passed</b>" in review_html
+    assert "250 passed" in pytest_gate
+    assert "250 passed" in manual_guide
+    assert "250 passed" in review_guide
+    assert "Python suite now <b>250 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -395,7 +405,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1089
+    assert browser_diff["mismatchedPixels"] == 1007
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 

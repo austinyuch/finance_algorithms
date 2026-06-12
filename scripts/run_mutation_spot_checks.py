@@ -209,12 +209,28 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_readiness_gate_fails_closed_for_artifact_only_manifest"),
     ),
     MutationSpec(
+        name="e-tier3-gate-proof-digest",
+        path="quantlab/mlops/experiment_registry.py",
+        original='"manifest_digest": _digest_payload(dict(manifest)),',
+        mutated='"manifest_digest": "",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+    ),
+    MutationSpec(
+        name="e-tier3-gate-production-validator",
+        path="quantlab/mlops/experiment_registry.py",
+        original="validate_production_serving_evidence(value)",
+        mutated="None  # production serving validator bypassed by mutation",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_gate_rejects_spoofed_production_serving_map"),
+    ),
+    MutationSpec(
         name="e-tier3-production-tier-gate",
         path="quantlab/mlops/experiment_registry.py",
-        original='and value.get("evidence_tier") == "production"',
-        mutated='and value.get("evidence_tier") != "production"',
+        original="    return True\n\n\ndef build_tier3_readiness_gate(",
+        mutated="    return False\n\n\ndef build_tier3_readiness_gate(",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_readiness_gate_requires_all_live_evidence"),
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
         name="e-serving-smoke-health-gate",
@@ -403,7 +419,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**66/66 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**68/68 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -507,7 +523,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"249 passed"',
+        original='"250 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -515,7 +531,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"249 passed"',
+        original='"250 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -523,7 +539,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="249 passed",
+        original="250 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),

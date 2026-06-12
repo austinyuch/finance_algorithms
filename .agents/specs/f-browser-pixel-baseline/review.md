@@ -25,7 +25,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 
 - Gate result: **CONDITIONAL**
 - Coverage tier: **hybrid**
-- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `1089 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `e1da1441c424517de42f1e65ccdfe6023da815826b74bb8c2293f422cd6ee738`.
+- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `1007 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `3e671908be38211b4f250472804b851de47396c8f6e01644dbb8c5b13d95dcb1`.
 - Data source boundary: dashboard data now comes from the generated canonical `local_result_store` payload introduced by CR-FPS-006; no live backend/live market data dashboard path is claimed.
 - No auth surface exists in this dashboard slice.
 
@@ -34,7 +34,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 - Focused frontend/public-demo tests are included in the current frontend suite: **32 passed**.
 - Frontend coverage: **91.05% line coverage**.
 - Frontend mutation: **15/15 killed**.
-- Browser visual smoke: **passed**, repo-baseline pixel diff `1089 / 1,296,000`.
+- Browser visual smoke: **passed**, repo-baseline pixel diff `1007 / 1,296,000`.
 - Static showcase evidence was refreshed to current counts; CR-FPS-006 later moved the payload source to generated canonical local `local_result_store` records while preserving `local_demo_only` / `not_proven` readiness boundaries.
 - Build/smoke/audit: **passed**, `npm audit --json` 0 vulnerabilities.
 

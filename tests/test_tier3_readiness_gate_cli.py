@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 
@@ -28,6 +29,12 @@ def _load():
 def _write_json(path: Path, payload: dict) -> Path:
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True), encoding="utf-8")
     return path
+
+
+def _digest(payload: dict) -> str:
+    return hashlib.sha256(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _production_payloads(tmp_path: Path) -> tuple[dict, dict, dict, dict]:
@@ -91,6 +98,12 @@ def test_tier3_readiness_gate_cli_writes_ready_artifact(tmp_path):
     assert artifact["readiness"] == "tier3_ready"
     assert artifact["missing_evidence"] == []
     assert artifact["serving_evidence"]["artifact_kind"] == "production_serving_evidence"
+    assert artifact["manifest_digest"] == _digest(manifest)
+    assert artifact["evidence_digests"] == {
+        "serving_evidence": _digest(serving),
+        "retraining_evidence": _digest(retraining),
+        "automated_drift_monitoring_evidence": _digest(drift),
+    }
 
 
 def test_tier3_readiness_gate_cli_rejects_local_smoke_evidence(tmp_path):
@@ -118,7 +131,7 @@ def test_tier3_readiness_gate_cli_rejects_local_smoke_evidence(tmp_path):
     assert not out.exists()
 
 
-def test_tier3_readiness_gate_cli_rejects_spoofed_production_map(tmp_path):
+def test_tier3_readiness_gate_cli_rejects_spoofed_production_map(tmp_path, capsys):
     mod = _load()
     manifest, _serving, retraining, drift = _production_payloads(tmp_path)
     spoofed_serving = {
@@ -140,6 +153,7 @@ def test_tier3_readiness_gate_cli_rejects_spoofed_production_map(tmp_path):
 
     assert rc == 1
     assert not out.exists()
+    assert "unknown production serving evidence artifact" in capsys.readouterr().err
 
 
 def test_tier3_readiness_gate_cli_invalid_json_is_chaos_safe(tmp_path):

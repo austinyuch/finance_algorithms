@@ -216,7 +216,7 @@ def test_tier3_readiness_gate_requires_all_live_evidence(tmp_path):
         retraining_evidence={"status": "proven", "run_id": "train-1"},
         automated_drift_monitoring_evidence={"status": "proven", "monitor_id": "drift-1"},
     )
-    ready = build_tier3_readiness_gate(
+    production_looking_maps = build_tier3_readiness_gate(
         manifest,
         serving_evidence={
             "status": "proven",
@@ -247,13 +247,26 @@ def test_tier3_readiness_gate_requires_all_live_evidence(tmp_path):
         "retraining_evidence",
         "automated_drift_monitoring_evidence",
     ]
-    assert ready["readiness"] == "tier3_ready"
-    assert ready["missing_evidence"] == []
-    assert ready["required_evidence"] == [
+    assert production_looking_maps["readiness"] == "not_ready"
+    assert production_looking_maps["missing_evidence"] == [
         "serving_evidence",
         "retraining_evidence",
         "automated_drift_monitoring_evidence",
     ]
+    assert production_looking_maps["required_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+    assert production_looking_maps["manifest_digest"]
+    assert production_looking_maps["evidence_digests"] == {
+        "serving_evidence": production_looking_maps["serving_evidence_digest"],
+        "retraining_evidence": production_looking_maps["retraining_evidence_digest"],
+        "automated_drift_monitoring_evidence": production_looking_maps[
+            "automated_drift_monitoring_evidence_digest"
+        ],
+    }
+    assert len(set(production_looking_maps["evidence_digests"].values())) == 3
 
 
 def test_serving_smoke_evidence_proves_only_serving_slice(tmp_path):
@@ -528,6 +541,68 @@ def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
     assert drift["evidence_tier"] == "production"
     assert gate["readiness"] == "tier3_ready"
     assert gate["missing_evidence"] == []
+    assert gate["manifest_digest"]
+    assert gate["evidence_digests"] == {
+        "serving_evidence": gate["serving_evidence_digest"],
+        "retraining_evidence": gate["retraining_evidence_digest"],
+        "automated_drift_monitoring_evidence": gate["automated_drift_monitoring_evidence_digest"],
+    }
+
+
+def test_tier3_gate_rejects_spoofed_production_serving_map(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_production_automated_drift_monitoring_evidence,
+        build_production_retraining_evidence,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+    spoofed_serving = {
+        "artifact_kind": "hand_written_map",
+        "claim_boundary": "no_alpha_claim",
+        "status": "proven",
+        "readiness_evidence_for": "serving_evidence",
+        "evidence_tier": "production",
+    }
+    retraining = build_production_retraining_evidence(
+        entry,
+        orchestrator="github-actions://finance_algorithms/retrain",
+        result={
+            "status": "completed",
+            "run_id": "train-prod-123",
+            "artifact_uri": "s3://quant-prod/models/return-risk/train-prod-123.json",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
+        },
+        observed_at="2026-06-12T05:10:00Z",
+        external_proof_id="retrain-run-123",
+    )
+    drift = build_production_automated_drift_monitoring_evidence(
+        entry,
+        monitor="https://quant.example.com/monitors/return-risk",
+        result={
+            "status": "stable",
+            "claim_boundary": "no_alpha_claim",
+            "metric_deltas": {"oos_net_sharpe": 0.02},
+            "threshold": 0.05,
+        },
+        observed_at="2026-06-12T05:20:00Z",
+        external_proof_id="drift-run-123",
+    )
+
+    gate = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence=spoofed_serving,
+        retraining_evidence=retraining,
+        automated_drift_monitoring_evidence=drift,
+    )
+
+    assert gate["readiness"] == "not_ready"
+    assert gate["missing_evidence"] == ["serving_evidence"]
 
 
 def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
