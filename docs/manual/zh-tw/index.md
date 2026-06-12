@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 227 passed
+uv run pytest -q             # 健檢：預期 231 passed
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -182,7 +182,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **227 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **53** 檔且 clean；mutation spot checks **39/39 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、CR-FPS-001 public-hosting manifest/probe drift、CR-B12 scoped source-health overclaim 防護，以及 CR-B18 broad source-quorum overclaim 防護。
+- 測試套件目前為 **231 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **54** 檔且 clean；mutation spot checks **41/41 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、CR-FPS-001 public-hosting manifest/probe drift、CR-B12 scoped source-health overclaim 防護，以及 CR-B18 broad source-quorum overclaim 防護與 CR-B19 proof replay 防護。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。
@@ -193,7 +193,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 | 缺口 | 嚴重度 | 來源 |
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
-| Broad source-quorum proof 仍與 scoped live-write smoke 分開治理 | Low | `b-data-platform/change-requests/cr-b18-source-quorum-gate.md` |
+| Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
 | Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 `not_proven` | Low | `frontend/out/index.html` |
 | Vintage 真實資料回測仍延後（<2 價格資產） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |

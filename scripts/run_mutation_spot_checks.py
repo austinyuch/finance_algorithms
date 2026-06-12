@@ -144,6 +144,22 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/test_daily_snapshot.py::test_source_quorum_gate_rejects_dry_or_failed_critical_sources"),
     ),
     MutationSpec(
+        name="b-source-quorum-proof-exit-gate",
+        path="scripts/source_quorum_proof.py",
+        original="if snapshot_exit_code != 0:",
+        mutated="if snapshot_exit_code == 0:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_source_quorum_proof_rejects_scoped_or_failed_attempts"),
+    ),
+    MutationSpec(
+        name="b-source-quorum-proof-file-gate",
+        path="scripts/source_quorum_proof.py",
+        original="if not path.exists():",
+        mutated="if path.exists():",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_source_quorum_proof_rejects_replayed_report_without_snapshot_files"),
+    ),
+    MutationSpec(
         name="e-registry-snapshot-checksum",
         path="quantlab/mlops/experiment_registry.py",
         original='if artifact.get("checksum") != _checksum(entries):',

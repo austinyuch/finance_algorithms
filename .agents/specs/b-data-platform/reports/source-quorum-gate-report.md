@@ -27,6 +27,7 @@ default-source readiness.
 
 ## Residual
 
-No current committed live report proves broad default-source quorum. This is an
-intentional conservative boundary: CR-B12 remains scoped live-write proof, while
-CR-B18 defines the stronger gate required for broad source readiness.
+At CR-B18 closeout, no committed live report proved broad default-source
+quorum. That conservative boundary was later narrowed by CR-B19, which added a
+live proof wrapper and captured a passing FRED/Yahoo/NOAA quorum proof on
+2026-06-12. Stooq remains separate source-contract work.

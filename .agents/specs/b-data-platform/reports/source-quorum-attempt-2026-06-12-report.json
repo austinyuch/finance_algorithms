@@ -1,0 +1,81 @@
+{
+  "available_date": "2026-06-12",
+  "counts": {
+    "dry": 0,
+    "fail": 0,
+    "ok": 0,
+    "skip": 6
+  },
+  "dry_run": false,
+  "jobs": [
+    {
+      "safe_id": "fred_FEDFUNDS",
+      "source_id": "fred:FEDFUNDS",
+      "status": "skip"
+    },
+    {
+      "safe_id": "fred_SP500",
+      "source_id": "fred:SP500",
+      "status": "skip"
+    },
+    {
+      "safe_id": "fred_PCOPPUSDM",
+      "source_id": "fred:PCOPPUSDM",
+      "status": "skip"
+    },
+    {
+      "safe_id": "yahoo_2330.TW",
+      "source_id": "yahoo:2330.TW",
+      "status": "skip"
+    },
+    {
+      "safe_id": "yahoo_idx_TWII",
+      "source_id": "yahoo:^TWII",
+      "status": "skip"
+    },
+    {
+      "safe_id": "noaa_oni",
+      "source_id": "noaa:oni",
+      "status": "skip"
+    }
+  ],
+  "out_dir": "data/vintage/raw/2026-06-12",
+  "source_health": {
+    "claim_boundary": "source_contract_status_only",
+    "fred": {
+      "default_enabled": true,
+      "reason": "configured fredgraph source",
+      "status": "available",
+      "symbols": [
+        "FEDFUNDS",
+        "SP500",
+        "PCOPPUSDM"
+      ]
+    },
+    "noaa": {
+      "default_enabled": true,
+      "reason": "configured public text source",
+      "status": "available",
+      "symbols": [
+        "oni"
+      ]
+    },
+    "stooq": {
+      "default_enabled": false,
+      "reason": "disabled by source-contract policy after observed 404s",
+      "status": "blocked",
+      "symbols": [
+        "*"
+      ]
+    },
+    "yahoo": {
+      "default_enabled": true,
+      "reason": "configured chart fallback source",
+      "status": "available",
+      "symbols": [
+        "2330.TW",
+        "^TWII"
+      ]
+    }
+  }
+}
