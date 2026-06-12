@@ -64,6 +64,12 @@ def _csv_env_symbols(name: str, default: list[str]) -> list[str]:
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
+def _csv_arg_symbols(raw: str | None, default: list[str]) -> list[str]:
+    if raw is None:
+        return list(default)
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
 # Stooq 報價(免金鑰 CSV)。2026-06-11 本環境重複 404,故預設停用以免 daily
 # snapshot 假性失敗;若要重試,設定 QUANTLAB_STOOQ_SYMBOLS="spy.us,2330.tw"。
 STOOQ_SYMBOLS = _csv_env_symbols("QUANTLAB_STOOQ_SYMBOLS", [])
@@ -100,25 +106,32 @@ def _write(out_dir: Path, source_id: str, payload: dict[str, Any], dry: bool) ->
     return f"OK   {source_id}"
 
 
-def _source_health_summary() -> dict[str, object]:
+def _source_health_summary(
+    *,
+    fred_series: list[str],
+    stooq_symbols: list[str],
+    yahoo_symbols: list[str],
+    include_noaa: bool,
+) -> dict[str, object]:
     from quantlab.data.source_health import SourceHealthRegistry
 
     registry = SourceHealthRegistry()
-    for series in FRED_SERIES:
+    for series in fred_series:
         registry.record("fred", series, status="available", default_enabled=True,
                         reason="configured fredgraph source")
-    if STOOQ_SYMBOLS:
-        for symbol in STOOQ_SYMBOLS:
+    if stooq_symbols:
+        for symbol in stooq_symbols:
             registry.record("stooq", symbol, status="unknown", default_enabled=True,
                             reason="operator opt-in source")
     else:
         registry.record("stooq", "*", status="blocked", default_enabled=False,
                         reason="disabled by source-contract policy after observed 404s")
-    for symbol in YAHOO_SYMBOLS:
+    for symbol in yahoo_symbols:
         registry.record("yahoo", symbol, status="available", default_enabled=True,
                         reason="configured chart fallback source")
-    registry.record("noaa", "oni", status="available", default_enabled=True,
-                    reason="configured public text source")
+    if include_noaa:
+        registry.record("noaa", "oni", status="available", default_enabled=True,
+                        reason="configured public text source")
     return registry.summary()
 
 
@@ -191,18 +204,32 @@ def fetch_noaa_oni(available_date: str) -> dict[str, Any]:
 def main() -> int:
     ap = argparse.ArgumentParser(description="每日 point-in-time snapshot 擷取器")
     ap.add_argument("--dry-run", action="store_true", help="只列出要抓的源,不寫檔")
+    ap.add_argument("--out-root", type=Path, default=OUT_ROOT,
+                    help="snapshot output root; defaults to data/vintage/raw")
+    ap.add_argument("--fred-series",
+                    help="comma-separated FRED series override; empty string disables FRED jobs")
+    ap.add_argument("--stooq-symbols",
+                    help="comma-separated Stooq symbol override; empty string keeps Stooq disabled")
+    ap.add_argument("--yahoo-symbols",
+                    help="comma-separated Yahoo symbol override; empty string disables Yahoo jobs")
+    ap.add_argument("--no-noaa", action="store_true", help="disable NOAA ONI job")
     ap.add_argument("--report-json", type=Path,
                     help="write machine-readable run summary/source-health JSON")
     args = ap.parse_args()
 
     available_date = _today()
-    out_dir = OUT_ROOT / available_date
+    out_dir = args.out_root / available_date
+    fred_series = _csv_arg_symbols(args.fred_series, FRED_SERIES)
+    stooq_symbols = _csv_arg_symbols(args.stooq_symbols, STOOQ_SYMBOLS)
+    yahoo_symbols = _csv_arg_symbols(args.yahoo_symbols, YAHOO_SYMBOLS)
+    include_noaa = not args.no_noaa
 
     jobs: list[tuple[str, Any]] = []
-    jobs += [(f"fred:{s}", lambda s=s: fetch_fred(s, available_date)) for s in FRED_SERIES]
-    jobs += [(f"stooq:{s}", lambda s=s: fetch_stooq(s, available_date)) for s in STOOQ_SYMBOLS]
-    jobs += [(f"yahoo:{s}", lambda s=s: fetch_yahoo_chart(s, available_date)) for s in YAHOO_SYMBOLS]
-    jobs += [("noaa:oni", lambda: fetch_noaa_oni(available_date))]
+    jobs += [(f"fred:{s}", lambda s=s: fetch_fred(s, available_date)) for s in fred_series]
+    jobs += [(f"stooq:{s}", lambda s=s: fetch_stooq(s, available_date)) for s in stooq_symbols]
+    jobs += [(f"yahoo:{s}", lambda s=s: fetch_yahoo_chart(s, available_date)) for s in yahoo_symbols]
+    if include_noaa:
+        jobs += [("noaa:oni", lambda: fetch_noaa_oni(available_date))]
 
     print(f"[snapshot] available_date={available_date}  out={out_dir}  jobs={len(jobs)}"
           + ("  (DRY-RUN)" if args.dry_run else ""))
@@ -250,7 +277,12 @@ def main() -> int:
             "dry_run": bool(args.dry_run),
             "counts": {"ok": ok, "skip": skip, "fail": fail, "dry": dry},
             "jobs": job_reports,
-            "source_health": _source_health_summary(),
+            "source_health": _source_health_summary(
+                fred_series=fred_series,
+                stooq_symbols=stooq_symbols,
+                yahoo_symbols=yahoo_symbols,
+                include_noaa=include_noaa,
+            ),
         })
     return 0 if fail == 0 else 1
 
