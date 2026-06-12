@@ -104,10 +104,13 @@ def test_next_steps_reflects_post_merge_e_gate_state():
     assert "open the usual squash PRs for `dev` and `main`" not in text
     assert "Current branch lane:** `spec/e-tier3-serving-evidence`" not in text
     assert "Current branch lane:** `spec/e-tier3-retraining-evidence`" not in text
+    assert "Current branch lane:** `spec/e-tier3-production-evidence-gate`" not in text
     assert "PR #35" in text
     assert "PR #36" in text
     assert "PR #39" in text
     assert "PR #40" in text
     assert "PR #44" in text
     assert "PR #45" in text
+    assert "PR #48" in text
+    assert "PR #49" in text
     assert "not_ready" in text
