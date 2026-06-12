@@ -182,7 +182,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **223 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **53** 檔且 clean；mutation spot checks **39/39 configured/killed**，包含 root Torch dependency、延伸到 CR-B14 promotion drift 的 stale governance evidence mutations 與 CR-B12 scoped source-health overclaim 防護。
+- 測試套件目前為 **223 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **53** 檔且 clean；mutation spot checks **40/40 configured/killed**，包含 root Torch dependency、延伸到 CR-B15 promotion drift 的 stale governance evidence mutations 與 CR-B12 scoped source-health overclaim 防護。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。

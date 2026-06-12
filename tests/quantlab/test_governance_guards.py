@@ -150,13 +150,19 @@ def test_next_steps_reflects_post_merge_cr_b13_state():
 
 
 def test_next_steps_reflects_post_merge_cr_b14_state():
-    """NEXT_STEPS should retain CR-B14 proof without a self-staling current lane."""
+    """NEXT_STEPS should retain CR-B14/CR-B15 proof without a self-staling current lane."""
     text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
 
     assert "CR-B14 post CR-B13 governance sync is implemented locally" not in text
+    assert "CR-B15 post CR-B14 governance sync is implemented locally" not in text
     assert "Current branch lane:** none after CR-B14 promotion" not in text
+    assert "Current branch lane:** none after CR-B15 promotion" not in text
     assert "Current branch lane:** none." in text
     assert "PR #65 squash-merged CR-B14 post CR-B13 governance sync to `dev` as `05485cc`" in text
     assert "PR #66 squash-merged CR-B14 post CR-B13 governance sync to `main` as `c1e1591`" in text
+    assert "PR #67 squash-merged CR-B15 post CR-B14 governance sync to `dev` as `8b72a51`" in text
+    assert "PR #68 squash-merged CR-B15 post CR-B14 governance sync to `main` as `508187e`" in text
     assert "05485cc" in text
     assert "c1e1591" in text
+    assert "8b72a51" in text
+    assert "508187e" in text
