@@ -29,12 +29,12 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 ## Latest authoritative gate evidence (2026-06-12)
 
-- `uv run pytest -q` → **214 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
+- `uv run pytest -q` → **216 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
 - `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py --ignore-missing-imports` → clean, **53 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (72 files, 175 deps)
 - `frontend` `npm test` → **23 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
 - E registry focused line coverage → **100%** for `quantlab.mlops.experiment_registry`
-- Python mutation spot checks → **35/35 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-post-merge-sync-promotion`, `governance-stale-cron-proof-pending`, `e-tier3-readiness-gate`, `e-serving-smoke-health-gate`, `e-retraining-smoke-status-gate`, `e-tier3-production-tier-gate`, `e-automated-drift-status-gate`, `e-production-serving-endpoint-gate`, `e-production-retraining-status-gate`, `e-tier3-cli-serving-validator`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
+- Python mutation spot checks → **36/36 configured/killed**, including `snapshot-scoped-source-health`, `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-post-merge-sync-promotion`, `governance-stale-cron-proof-pending`, `e-tier3-readiness-gate`, `e-serving-smoke-health-gate`, `e-retraining-smoke-status-gate`, `e-tier3-production-tier-gate`, `e-automated-drift-status-gate`, `e-production-serving-endpoint-gate`, `e-production-retraining-status-gate`, `e-tier3-cli-serving-validator`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
 - `npm run visual:browser` → chromium-headless screenshot `proven`
   (`frontend/out/browser-visual.png`); `npm run probe:public-demo` → **HTTP 200 proven**
   (`frontend/out/public-hosting-probe.json`), per
@@ -47,5 +47,6 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 These counts are the basis for the "gaps resolved since last check" sections of
 the manual and review. Visual diff is now repo-baseline pixel-backed; autonomous
-cron dry-run proof is observed, while live append-only writes and Stooq source
+cron dry-run proof is observed, and CR-B12 proves scoped live append-only
+write/skip mechanics. Broad default source availability and Stooq source
 availability remain governed separately.

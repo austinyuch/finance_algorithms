@@ -209,6 +209,74 @@ def test_main_writes_machine_readable_report_for_dry_run(monkeypatch, tmp_path):
     assert report["source_health"]["yahoo"]["status"] == "available"
 
 
+def test_main_scoped_live_write_uses_out_root_and_scoped_source_health(monkeypatch, tmp_path):
+    out_root = tmp_path / "vintage"
+    report_path = tmp_path / "snapshot-report.json"
+
+    def fake_get(url, *a, **k):
+        assert "FEDFUNDS" in url
+        return FakeResp("observation_date,FEDFUNDS\n2026-05-01,4.33\n")
+
+    monkeypatch.setattr(ds.requests, "get", fake_get)
+    monkeypatch.setattr(ds.sys, "argv", [
+        "daily_snapshot.py",
+        "--out-root",
+        str(out_root),
+        "--fred-series",
+        "FEDFUNDS",
+        "--yahoo-symbols",
+        "",
+        "--no-noaa",
+        "--report-json",
+        str(report_path),
+    ])
+
+    rc = ds.main()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    out_dir = out_root / ds._today()
+    written = out_dir / "fred_FEDFUNDS.json"
+
+    assert rc == 0
+    assert written.exists()
+    assert report["dry_run"] is False
+    assert report["out_dir"] == str(out_dir)
+    assert report["counts"] == {"ok": 1, "skip": 0, "fail": 0, "dry": 0}
+    assert report["jobs"] == [{"source_id": "fred:FEDFUNDS", "safe_id": "fred_FEDFUNDS", "status": "ok"}]
+    assert report["source_health"]["fred"]["symbols"] == ["FEDFUNDS"]
+    assert "yahoo" not in report["source_health"]
+    assert "noaa" not in report["source_health"]
+    assert report["source_health"]["stooq"]["status"] == "blocked"
+
+
+def test_main_scoped_live_write_is_append_only_on_second_run(monkeypatch, tmp_path):
+    out_root = tmp_path / "vintage"
+
+    def fake_get(url, *a, **k):
+        return FakeResp("observation_date,FEDFUNDS\n2026-05-01,4.33\n")
+
+    monkeypatch.setattr(ds.requests, "get", fake_get)
+    argv = [
+        "daily_snapshot.py",
+        "--out-root",
+        str(out_root),
+        "--fred-series",
+        "FEDFUNDS",
+        "--yahoo-symbols",
+        "",
+        "--no-noaa",
+    ]
+
+    monkeypatch.setattr(ds.sys, "argv", argv)
+    assert ds.main() == 0
+    first = (out_root / ds._today() / "fred_FEDFUNDS.json").read_text(encoding="utf-8")
+
+    monkeypatch.setattr(ds.sys, "argv", argv)
+    assert ds.main() == 0
+    second = (out_root / ds._today() / "fred_FEDFUNDS.json").read_text(encoding="utf-8")
+
+    assert second == first
+
+
 def test_main_report_records_failed_sources_without_corrupting_successes(monkeypatch, tmp_path):
     monkeypatch.setattr(ds, "OUT_ROOT", tmp_path / "vintage")
     monkeypatch.setattr(ds, "FRED_SERIES", ["GOOD", "BAD"])

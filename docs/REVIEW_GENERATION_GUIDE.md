@@ -32,7 +32,7 @@ ISSUE_LOG,RTM}.md`, every `.agents/specs/**/review.md`, and `git log`.
 Project is Backend/CLI-dominant Hybrid. Captured live (2026-06-12):
 
 ```bash
-uv run pytest -q                     # 214 passed, 1 skipped → docs/review/assets/gate-pytest.txt
+uv run pytest -q                     # 216 passed, 1 skipped → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports # clean 53 files → gate-mypy.txt
 uv run lint-imports                  # KEPT          → gate-lint-imports.txt
 (cd frontend && npm test)            # 23 passed     → gate-frontend-test.txt
@@ -45,7 +45,7 @@ plus the committed static export, the repo-baseline pixel diff
 (`browser-visual-diff.json`), and the public-hosting probe
 (`npm run probe:public-demo` → HTTP 200 `proven`). The review embeds the
 screenshot as `live_screenshot` and discloses the remaining ops residual:
-autonomous `event=schedule` dry-run proof exists as run `27392471359`. A long-running port-bound server still needs a
+autonomous `event=schedule` dry-run proof exists as run `27392471359`, and CR-B12 proves scoped live-write mechanics. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
 
 ## 5. Gap analysis policy

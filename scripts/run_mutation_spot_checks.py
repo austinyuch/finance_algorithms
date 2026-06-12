@@ -104,6 +104,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/test_daily_snapshot.py::test_main_writes_machine_readable_report_for_dry_run"),
     ),
     MutationSpec(
+        name="snapshot-scoped-source-health",
+        path="scripts/daily_snapshot.py",
+        original="yahoo_symbols=yahoo_symbols,\n                include_noaa=include_noaa,",
+        mutated="yahoo_symbols=YAHOO_SYMBOLS,\n                include_noaa=include_noaa,",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_main_scoped_live_write_uses_out_root_and_scoped_source_health"),
+    ),
+    MutationSpec(
         name="showcase-experiment-readiness",
         path="quantlab/showcase/api.py",
         original='"readiness": entry.readiness,',
@@ -290,7 +298,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-post-merge-sync-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="post-E-gate governance sync. The E Tier3 readiness gate is already promoted to both long-lived branches; this lane keeps the rolling memo and stale-state guards aligned with that post-merge state.",
+        original="PR #31 squash-merged scheduled-observer governance sync to `dev` as `bd9d8f6`; PR #32 squash-merged scheduled-observer governance sync to `main` as `b358733`;",
         mutated="Open/promote `spec/post-merge-scheduled-observer-sync` after the governance guard confirms the observer promotion memo is no longer stale.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_governance_sync_state"),
