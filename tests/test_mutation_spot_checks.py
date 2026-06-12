@@ -66,6 +66,7 @@ def test_mutation_runner_list_smoke():
     assert "d2-forecast-claim-boundary" in result.stdout
     assert "d3-robust-claim-boundary" in result.stdout
     assert "e-registry-claim-boundary" in result.stdout
+    assert "e-tier3-readiness-gate" in result.stdout
     assert "b-source-health-claim-boundary" in result.stdout
     assert "snapshot-report-stooq-default" in result.stdout
     assert "showcase-experiment-readiness" in result.stdout
@@ -139,6 +140,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "d2-forecast-claim-boundary" in out
     assert "d3-robust-claim-boundary" in out
     assert "e-registry-claim-boundary" in out
+    assert "e-tier3-readiness-gate" in out
     assert "b-source-health-claim-boundary" in out
     assert "snapshot-report-stooq-default" in out
     assert "showcase-experiment-readiness" in out

@@ -183,6 +183,47 @@ def validate_tier3_run_manifest(manifest: Mapping[str, Any]) -> None:
         raise ValueError("tier3 manifest experiment_ids must be a list")
 
 
+_TIER3_READY_EVIDENCE_KEYS = [
+    "serving_evidence",
+    "retraining_evidence",
+    "automated_drift_monitoring_evidence",
+]
+
+
+def _is_proven_evidence(value: Mapping[str, Any] | None) -> bool:
+    return isinstance(value, Mapping) and value.get("status") == "proven"
+
+
+def build_tier3_readiness_gate(
+    manifest: Mapping[str, Any],
+    *,
+    serving_evidence: Mapping[str, Any] | None = None,
+    retraining_evidence: Mapping[str, Any] | None = None,
+    automated_drift_monitoring_evidence: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    validate_tier3_run_manifest(manifest)
+    evidence = {
+        "serving_evidence": dict(serving_evidence or {}),
+        "retraining_evidence": dict(retraining_evidence or {}),
+        "automated_drift_monitoring_evidence": dict(automated_drift_monitoring_evidence or {}),
+    }
+    missing = [
+        key for key in _TIER3_READY_EVIDENCE_KEYS
+        if not _is_proven_evidence(evidence[key])
+    ]
+    return {
+        "artifact_kind": "tier3_readiness_gate",
+        "claim_boundary": "no_alpha_claim",
+        "readiness": "tier3_ready" if not missing else "not_ready",
+        "source_manifest_readiness": manifest["readiness"],
+        "required_evidence": list(_TIER3_READY_EVIDENCE_KEYS),
+        "missing_evidence": missing,
+        "serving_evidence": evidence["serving_evidence"],
+        "retraining_evidence": evidence["retraining_evidence"],
+        "automated_drift_monitoring_evidence": evidence["automated_drift_monitoring_evidence"],
+    }
+
+
 def build_drift_report_skeleton(
     entry: ExperimentEntry,
     *,
