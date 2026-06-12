@@ -94,3 +94,14 @@ def test_next_steps_reflects_post_merge_governance_sync_state():
     assert "PR #32" in text
     assert "E Tier3" in text
     assert "serving, retraining, and automated drift monitoring" in text
+
+
+def test_next_steps_reflects_post_merge_e_gate_state():
+    """NEXT_STEPS should not ask future agents to promote the already-merged E gate."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "Commit/push `spec/e-tier3-readiness-gate`" not in text
+    assert "open the usual squash PRs for `dev` and `main`" not in text
+    assert "PR #35" in text
+    assert "PR #36" in text
+    assert "not_ready" in text
