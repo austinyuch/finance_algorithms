@@ -72,3 +72,14 @@ def test_next_steps_reflects_post_merge_torch_alert_state():
     assert "implemented locally" not in text
     assert "post-merge rescan pending" not in text
     assert "Dependabot alert #7 fixed" in text
+
+
+def test_next_steps_reflects_post_merge_scheduled_observer_state():
+    """NEXT_STEPS should not ask future agents to promote already-merged observer work."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "Commit/push `spec/scheduled-run-observer`" not in text
+    assert "promote it through `dev`/`main`" not in text
+    assert "PR #29" in text
+    assert "PR #30" in text
+    assert "schedule_run_count=0" in text

@@ -13,6 +13,6 @@
 | 7 | **不可重現** | 同 seed+config+data_version → 指標一致 | `test_a0_4`/`test_a0_5` PBT-3 |
 | 8 | **黑箱/框架綁死** | 回測核心對框架無感(Protocol);engine/data 禁 import torch/tf/jax | `test_a0_0` AST 隔離 |
 | 9 | **平行結果不一致** | 母 seed 衍生子 seed,平行==序列 | `test_a0_3`/`test_a0_5` PBT-4 |
-| 10 | **測試假綠** | mutation spot checks kill representative domain/governance mutations; current configured suite is 25/25, including root Torch dependency, stale governance evidence, and scheduled-run observer guards | `scripts/run_mutation_spot_checks.py`; `quantlab/TESTS.md` |
+| 10 | **測試假綠** | mutation spot checks kill representative domain/governance mutations; current configured suite is 26/26, including root Torch dependency, stale governance evidence, and scheduled-run observer guards | `scripts/run_mutation_spot_checks.py`; `quantlab/TESTS.md` |
 
-驗證指令:`uv run pytest -q`(192 passed, 1 skipped; PyTorch LSTM optional lane skipped in default env)· `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports`(clean)· `uv run lint-imports`(KEPT)· `uv run python scripts/run_mutation_spot_checks.py --only b-scheduled-observer-manual-pending`(killed; full configured suite now 25/25)
+驗證指令:`uv run pytest -q`(193 passed, 1 skipped; PyTorch LSTM optional lane skipped in default env)· `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports`(clean)· `uv run lint-imports`(KEPT)· `uv run python scripts/run_mutation_spot_checks.py --only governance-stale-scheduled-observer-promotion`(killed; full configured suite now 26/26)
