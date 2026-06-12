@@ -36,17 +36,23 @@ describe("F public static showcase proof", () => {
   });
 
   it("records proven public hosting only when Pages and URL evidence agree", () => {
-    const manifest = buildPublicDemoManifest(getShowcaseDashboard(), {
+    const dashboard = getShowcaseDashboard();
+    const expectedHash = buildPublicDemoManifest(dashboard).dataHash;
+    const manifest = buildPublicDemoManifest(dashboard, {
       pagesConfigured: true,
       pagesStatus: "built",
       httpStatus: 200,
       observedAt: "2026-06-11T14:50:00Z",
+      deployedDataHash: expectedHash,
     });
 
     expect(manifest.hostingEvidence.status).toBe("proven");
     expect(manifest.hostingEvidence.pagesStatus).toBe("built");
     expect(manifest.hostingEvidence.httpStatus).toBe(200);
     expect(manifest.hostingEvidence.observedAt).toBe("2026-06-11T14:50:00Z");
+    expect(manifest.hostingEvidence.deployedDataHash).toBe(expectedHash);
+    expect(manifest.hostingEvidence.expectedDataHash).toBe(expectedHash);
+    expect(manifest.hostingEvidence.hashStatus).toBe("matched");
   });
 
   it("keeps public hosting unobserved when Pages is configured but URL is not live", () => {
@@ -57,6 +63,26 @@ describe("F public static showcase proof", () => {
         httpStatus: 404,
       }).status,
     ).toBe("configured_not_observed");
+  });
+
+  it("keeps public hosting unobserved when HTTP 200 serves a stale deployment manifest", () => {
+    const dashboard = getShowcaseDashboard();
+    const expectedHash = buildPublicDemoManifest(dashboard).dataHash;
+    const staleHash = "f".repeat(64);
+
+    const manifest = buildPublicDemoManifest(dashboard, {
+      pagesConfigured: true,
+      pagesStatus: "built",
+      httpStatus: 200,
+      observedAt: "2026-06-11T14:50:00Z",
+      deployedDataHash: staleHash,
+    });
+
+    expect(staleHash).not.toBe(expectedHash);
+    expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
+    expect(manifest.hostingEvidence.deployedDataHash).toBe(staleHash);
+    expect(manifest.hostingEvidence.expectedDataHash).toBe(expectedHash);
+    expect(manifest.hostingEvidence.hashStatus).toBe("mismatched");
   });
 
   it("creates a deterministic static visual contract baseline", () => {
@@ -250,15 +276,37 @@ describe("F public static showcase proof", () => {
   });
 
   it("PBT: public hosting classifier never proves non-200 responses", () => {
+    const expectedDataHash = "a".repeat(64);
     fc.assert(
       fc.property(fc.integer({ min: 100, max: 599 }).filter((status) => status !== 200), (httpStatus) => {
         const evidence = classifyPublicHostingEvidence({
           pagesConfigured: true,
           pagesStatus: "built",
           httpStatus,
-        });
+          deployedDataHash: expectedDataHash,
+        }, expectedDataHash);
         expect(evidence.status).not.toBe("proven");
       }),
+    );
+  });
+
+  it("PBT: public hosting classifier proves only matching deployed data hashes", () => {
+    const expectedDataHash = "a".repeat(64);
+    fc.assert(
+      fc.property(
+        fc.boolean(),
+        fc.string({ minLength: 1, maxLength: 16 }),
+        (useMatchingHash, suffix) => {
+          const deployedDataHash = useMatchingHash ? expectedDataHash : `${"b".repeat(48)}${suffix.padEnd(16, "0")}`;
+          const evidence = classifyPublicHostingEvidence({
+            pagesConfigured: true,
+            pagesStatus: "built",
+            httpStatus: 200,
+            deployedDataHash,
+          }, expectedDataHash);
+          expect(evidence.status).toBe(deployedDataHash === expectedDataHash ? "proven" : "configured_not_observed");
+        },
+      ),
     );
   });
 

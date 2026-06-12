@@ -141,13 +141,23 @@ def test_next_steps_uses_non_self_staling_promotion_boundary():
 def test_public_hosting_manifest_carries_observed_proof():
     """The committed public demo manifest must carry the observed Pages proof."""
     manifest = json.loads((ROOT / "docs/deployment-manifest.json").read_text(encoding="utf-8"))
+    probe = json.loads((ROOT / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
     hosting = manifest.get("hostingEvidence") or {}
 
     assert manifest.get("targetUrl") == "https://austinyuch.github.io/finance_algorithms/"
     assert manifest.get("claimBoundary") == "no_alpha_claim"
+    assert probe.get("targetUrl") == manifest.get("targetUrl")
+    assert probe.get("claimBoundary") == "no_alpha_claim"
     assert hosting.get("sourcePath") == "docs/"
     assert hosting.get("publishMode") == "github_pages_branch_source"
     assert hosting.get("status") == "proven"
     assert hosting.get("httpStatus") == 200
+    assert probe.get("status") == "proven"
+    assert probe.get("httpStatus") == 200
+    assert probe.get("deployedManifestStatus") == 200
     assert isinstance(hosting.get("observedAt"), str)
     assert hosting["observedAt"].endswith("Z")
+    assert hosting.get("hashStatus") == "matched"
+    assert hosting.get("expectedDataHash") == manifest.get("dataHash")
+    assert hosting.get("deployedDataHash") == manifest.get("dataHash")
+    assert probe.get("deployedDataHash") == manifest.get("dataHash")

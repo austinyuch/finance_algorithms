@@ -37,9 +37,16 @@ const mutations = [
   {
     name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
-    original: "if (probe.httpStatus === 200)",
-    mutated: "if (probe.httpStatus !== 200)",
+    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
+    mutated: "if (probe.httpStatus !== 200 && hashStatus === \"matched\")",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
+  },
+  {
+    name: "frontend-public-demo-hosting-hash-gate",
+    path: "lib/public-demo.ts",
+    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
+    mutated: "if (probe.httpStatus === 200 && hashStatus !== \"missing\")",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "deployed data hashes"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",

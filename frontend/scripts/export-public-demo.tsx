@@ -22,7 +22,8 @@ function hostingProbeFromEnv(): PublicHostingProbe | undefined {
   if (
     process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS === undefined &&
     process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS === undefined &&
-    process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT === undefined
+    process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DATA_HASH === undefined
   ) {
     return undefined;
   }
@@ -33,6 +34,7 @@ function hostingProbeFromEnv(): PublicHostingProbe | undefined {
       ? Number(process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS)
       : undefined,
     observedAt: process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT,
+    deployedDataHash: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DATA_HASH,
   };
 }
 
@@ -54,11 +56,15 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   if (parsed.status === "proven" && typeof parsed.observedAt !== "string") {
     throw new Error("public hosting probe requires observedAt when proven");
   }
+  if (parsed.status === "proven" && typeof parsed.deployedDataHash !== "string") {
+    throw new Error("public hosting probe requires deployedDataHash when proven");
+  }
   return {
     pagesConfigured: parsed.pagesConfigured === true,
     pagesStatus: typeof parsed.pagesStatus === "string" ? parsed.pagesStatus : undefined,
     httpStatus: typeof parsed.httpStatus === "number" ? parsed.httpStatus : undefined,
     observedAt: typeof parsed.observedAt === "string" ? parsed.observedAt : undefined,
+    deployedDataHash: typeof parsed.deployedDataHash === "string" ? parsed.deployedDataHash : undefined,
   };
 }
 
