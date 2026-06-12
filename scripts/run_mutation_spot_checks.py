@@ -152,6 +152,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_manifest_and_drift_skeleton_remain_non_serving"),
     ),
     MutationSpec(
+        name="e-tier3-readiness-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='"readiness": "tier3_ready" if not missing else "not_ready",',
+        mutated='"readiness": "tier3_ready",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_readiness_gate_fails_closed_for_artifact_only_manifest"),
+    ),
+    MutationSpec(
         name="d-result-store-evaluation-source",
         path="quantlab/models/evaluation.py",
         original='"source": "local_result_store"',
