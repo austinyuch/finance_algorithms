@@ -462,6 +462,185 @@ def test_automated_drift_monitoring_rejects_overclaim_or_bad_status(tmp_path):
         )
 
 
+def test_production_evidence_triplet_satisfies_tier3_gate(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_production_automated_drift_monitoring_evidence,
+        build_production_retraining_evidence,
+        build_production_serving_evidence,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+        validate_production_automated_drift_monitoring_evidence,
+        validate_production_retraining_evidence,
+        validate_production_serving_evidence,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+    serving = build_production_serving_evidence(
+        entry,
+        endpoint="https://quant.example.com/models/return-risk",
+        health={"status": "ok", "model_loaded": True},
+        sample_request={"features": {"momentum": 0.6}},
+        prediction={"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6, "B": 0.4}},
+        observed_at="2026-06-12T05:00:00Z",
+        external_proof_id="serving-run-123",
+    )
+    retraining = build_production_retraining_evidence(
+        entry,
+        orchestrator="github-actions://finance_algorithms/retrain",
+        result={
+            "status": "completed",
+            "run_id": "train-prod-123",
+            "artifact_uri": "s3://quant-prod/models/return-risk/train-prod-123.json",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.2}],
+        },
+        observed_at="2026-06-12T05:10:00Z",
+        external_proof_id="retrain-run-123",
+    )
+    drift = build_production_automated_drift_monitoring_evidence(
+        entry,
+        monitor="https://quant.example.com/monitors/return-risk",
+        result={
+            "status": "stable",
+            "claim_boundary": "no_alpha_claim",
+            "metric_deltas": {"oos_net_sharpe": 0.02},
+            "threshold": 0.05,
+        },
+        observed_at="2026-06-12T05:20:00Z",
+        external_proof_id="drift-run-123",
+    )
+
+    validate_production_serving_evidence(serving)
+    validate_production_retraining_evidence(retraining)
+    validate_production_automated_drift_monitoring_evidence(drift)
+    gate = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence=serving,
+        retraining_evidence=retraining,
+        automated_drift_monitoring_evidence=drift,
+    )
+
+    assert serving["evidence_tier"] == "production"
+    assert retraining["evidence_tier"] == "production"
+    assert drift["evidence_tier"] == "production"
+    assert gate["readiness"] == "tier3_ready"
+    assert gate["missing_evidence"] == []
+
+
+def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_production_automated_drift_monitoring_evidence,
+        build_production_retraining_evidence,
+        build_production_serving_evidence,
+    )
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    with pytest.raises(ValueError, match="production HTTPS"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="http://127.0.0.1:9000/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+
+    with pytest.raises(ValueError, match="external orchestrator"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="in_process",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+
+    with pytest.raises(ValueError, match="completed"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "failed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+
+    with pytest.raises(ValueError, match="external monitor"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="local_smoke",
+            result={
+                "status": "stable",
+                "claim_boundary": "no_alpha_claim",
+                "metric_deltas": {"x": 0.1},
+            },
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+
+    with pytest.raises(ValueError, match="stable or drift_detected"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={
+                "status": "unknown",
+                "claim_boundary": "no_alpha_claim",
+                "metric_deltas": {"x": 0.1},
+            },
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+
+
+@given(
+    host=st.sampled_from(["localhost", "127.0.0.1", "0.0.0.0"]),
+    scheme=st.sampled_from(["http", "https"]),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_production_serving_rejects_local_endpoint_identities(tmp_path, host, scheme):
+    from quantlab.mlops import ExperimentRegistry, build_production_serving_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    with pytest.raises(ValueError, match="production HTTPS"):
+        build_production_serving_evidence(
+            entry,
+            endpoint=f"{scheme}://{host}:9000/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+
+
 def test_retraining_smoke_evidence_rejects_failed_alpha_or_missing_oos(tmp_path):
     from quantlab.mlops import ExperimentRegistry, build_retraining_smoke_evidence
 
@@ -505,12 +684,18 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
         build_automated_drift_monitoring_evidence,
         build_drift_assessment_report,
         build_drift_report_skeleton,
+        build_production_automated_drift_monitoring_evidence,
+        build_production_retraining_evidence,
+        build_production_serving_evidence,
         build_retraining_smoke_evidence,
         build_serving_smoke_evidence,
         build_tier3_run_manifest,
         register_result_store_runs,
         validate_automated_drift_monitoring_evidence,
         validate_drift_assessment_report,
+        validate_production_automated_drift_monitoring_evidence,
+        validate_production_retraining_evidence,
+        validate_production_serving_evidence,
         validate_registry_snapshot,
         validate_retraining_smoke_evidence,
         validate_serving_smoke_evidence,
@@ -808,6 +993,381 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
     ]:
         with pytest.raises(ValueError):
             validate_automated_drift_monitoring_evidence(evidence)
+
+    with pytest.raises(ValueError, match="external_proof_id"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id=" ",
+        )
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_serving_evidence(
+            alpha_entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+    with pytest.raises(ValueError, match="observed_at"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at=" ",
+            external_proof_id="serving-run-123",
+        )
+    with pytest.raises(ValueError, match="sample_request"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+    with pytest.raises(ValueError, match="healthy"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "degraded"},
+            sample_request={"x": 1},
+            prediction={"claim_boundary": "no_alpha_claim", "ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+    with pytest.raises(ValueError, match="prediction"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "production_serving_evidence", "claim_boundary": "alpha_claim"},
+        {"artifact_kind": "production_serving_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "serving_status": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "serving_status": "production_serving",
+            "endpoint": "http://127.0.0.1:9000/model",
+        },
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "serving_status": "production_serving",
+            "endpoint": "https://quant.example.com/model",
+            "external_proof_id": "serving-run-123",
+            "health": {"status": "degraded"},
+        },
+        {
+            "artifact_kind": "production_serving_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "serving_status": "production_serving",
+            "endpoint": "https://quant.example.com/model",
+            "external_proof_id": "serving-run-123",
+            "health": {"status": "ok"},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_production_serving_evidence(evidence)
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_retraining_evidence(
+            alpha_entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={"status": "completed"},
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="observed_at"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={"status": "completed"},
+            observed_at=" ",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="result"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={},
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "claim_boundary": "alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="run_id"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="artifact_uri"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": " ",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    with pytest.raises(ValueError, match="out_of_sample net metrics"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "in_sample", "basis": "net", "sharpe": 99.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "production_retraining_evidence", "claim_boundary": "alpha_claim"},
+        {"artifact_kind": "production_retraining_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "retraining_status": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "retraining_status": "production_retraining",
+            "orchestrator": "in_process",
+        },
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "retraining_status": "production_retraining",
+            "orchestrator": "github-actions://finance_algorithms/retrain",
+            "external_proof_id": "retrain-run-123",
+            "oos_net_metrics": {},
+        },
+        {
+            "artifact_kind": "production_retraining_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "retraining_status": "production_retraining",
+            "orchestrator": "github-actions://finance_algorithms/retrain",
+            "external_proof_id": "retrain-run-123",
+            "oos_net_metrics": {"sharpe": 1.0},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_production_retraining_evidence(evidence)
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_automated_drift_monitoring_evidence(
+            alpha_entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={"status": "stable"},
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+    with pytest.raises(ValueError, match="observed_at"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={"status": "stable"},
+            observed_at=" ",
+            external_proof_id="drift-run-123",
+        )
+    with pytest.raises(ValueError, match="result"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={},
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+    with pytest.raises(ValueError, match="metric_deltas"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={"status": "stable", "claim_boundary": "no_alpha_claim", "metric_deltas": {}},
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={"status": "stable", "claim_boundary": "alpha_claim", "metric_deltas": {"x": 0.1}},
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "production_automated_drift_monitoring_evidence", "claim_boundary": "alpha_claim"},
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "wrong",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "monitoring_status": "local_automated_smoke",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "monitoring_status": "production_automated_monitoring",
+            "drift_status": "unknown",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "monitoring_status": "production_automated_monitoring",
+            "drift_status": "stable",
+            "monitor": "local_smoke",
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "monitoring_status": "production_automated_monitoring",
+            "drift_status": "stable",
+            "monitor": "https://quant.example.com/monitors/return-risk",
+            "external_proof_id": "drift-run-123",
+            "metric_deltas": {},
+        },
+        {
+            "artifact_kind": "production_automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+            "status": "proven",
+            "monitoring_status": "production_automated_monitoring",
+            "drift_status": "stable",
+            "monitor": "https://quant.example.com/monitors/return-risk",
+            "external_proof_id": "drift-run-123",
+            "metric_deltas": {"x": 0.1},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_production_automated_drift_monitoring_evidence(evidence)
 
     store = LocalResultStore(tmp_path / "runs.sqlite")
     alpha_run = store.log({
