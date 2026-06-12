@@ -354,10 +354,18 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-cr-b17-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="PR #71 squash-merged CR-B17 governance sync to `dev` as `be0cafc`; PR #72 squash-merged CR-B17 governance sync to `main` as `20175f7`.",
+        original="PR #71 squash-merged CR-B17 governance sync to `dev` as `be0cafc`; PR #72 squash-merged CR-B17 governance sync to `main` as `20175f7`;",
         mutated="CR-B17 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b17_state"),
+    ),
+    MutationSpec(
+        name="governance-stale-cr-fps001-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="PR #73 squash-merged CR-FPS-001 public hosting manifest proof sync to `dev` as `031b500`; PR #74 squash-merged CR-FPS-001 public hosting manifest proof sync to `main` as `d1e65b3`.",
+        mutated="CR-FPS-001 hosting manifest proof sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_fps001_state"),
     ),
     MutationSpec(
         name="public-hosting-manifest-status-regression",

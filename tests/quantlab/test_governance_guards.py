@@ -195,6 +195,19 @@ def test_next_steps_reflects_post_merge_cr_b17_state():
     assert "20175f7" in text
 
 
+def test_next_steps_reflects_post_merge_cr_fps001_state():
+    """NEXT_STEPS should retain CR-FPS-001 promotion proof after dev/main squash PRs."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "CR-FPS-001 hosting manifest proof sync is implemented locally" not in text
+    assert "Current branch lane:** none after CR-FPS-001 promotion" not in text
+    assert "Current branch lane:** none." in text
+    assert "PR #73 squash-merged CR-FPS-001 public hosting manifest proof sync to `dev` as `031b500`" in text
+    assert "PR #74 squash-merged CR-FPS-001 public hosting manifest proof sync to `main` as `d1e65b3`" in text
+    assert "031b500" in text
+    assert "d1e65b3" in text
+
+
 def test_public_hosting_manifest_carries_observed_proof():
     """The committed public demo manifest must carry the observed Pages proof."""
     manifest = json.loads((ROOT / "docs/deployment-manifest.json").read_text(encoding="utf-8"))
