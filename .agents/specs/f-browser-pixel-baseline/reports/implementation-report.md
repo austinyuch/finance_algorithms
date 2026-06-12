@@ -12,7 +12,7 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 - Updated `frontend/scripts/browser-visual-smoke.mjs` to decode PNGs via `pngjs`, compare actual pixels, fail on dimension drift, and fail when mismatch exceeds `QUANTLAB_BROWSER_VISUAL_MAX_MISMATCH_RATIO` (default `0.001`).
 - Added frontend tests/PBT for pixel mismatch ratio and dimension/buffer-size rejection.
 - Added frontend mutation target for suppressed pixel mismatch counts.
-- Refreshed the static showcase fixture evidence strings from stale `156 passed` / `8/8` / `84.37%` values to current conservative gate evidence.
+- Refreshed the static showcase evidence strings from stale `156 passed` / `8/8` / `84.37%` values to the then-current conservative gate evidence; CR-FPS-006 later replaced the inline fixture source with a generated canonical local result-store payload.
 - Copied current diff evidence to `docs/browser-visual-diff.json`.
 - Refreshed `quantlab/TESTS.md`, `.agents/specs/TESTS.md`, `SPECS.md`, `RTM.md`, `NEXT_STEPS.md`, and stakeholder docs to remove the stale hash-equality visual residual where current evidence supports it.
 
@@ -34,6 +34,6 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 
 ## Residuals
 
-- Dashboard data remains fixture-driven and `local_demo_only`; this lane does not prove full backend/live-data dashboard readiness. The export readiness panel intentionally remains `not_proven` by local dashboard contract.
+- Dashboard data is now generated from the canonical local result-store scenario and remains `local_demo_only`; this lane does not prove full backend/live-data dashboard readiness. The export readiness panel intentionally remains `not_proven` by local dashboard contract.
 - Visual baseline history is repo-committed, not CI-managed historical storage.
 - Live scheduled GitHub Actions snapshot artifact remains unproven; existing schedule proof is smoke-tier.

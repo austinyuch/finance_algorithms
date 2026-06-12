@@ -16,7 +16,7 @@
 
 ## Live-Demo Readiness
 
-**CONDITIONAL / hybrid.** The static dashboard remains fixture-driven and explicitly labeled `MOCK_DOMINANT_EVIDENCE` / `no_alpha_claim`. Browser visual evidence is real chromium-headless proof and passed the repo-baseline pixel gate, but this slice does not convert the dashboard into a full live-backend demo.
+**CONDITIONAL / hybrid.** The static dashboard now uses the generated canonical local result-store payload and remains explicitly labeled `local_demo_only` / `no_alpha_claim`. Browser visual evidence is real chromium-headless proof and passed the repo-baseline pixel gate, but this slice does not convert the dashboard into a full live-backend demo.
 
 ## Verification Coverage
 

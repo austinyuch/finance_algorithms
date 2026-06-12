@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>Getting started / starter assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 deps</span>
-uv run pytest -q             <span style="color:#7d90b0"># expect 241 passed</span>
+uv run pytest -q             <span style="color:#7d90b0"># expect 242 passed</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps</span></pre>
     <p>Committed seed/sample data:</p>
     <ul>
@@ -137,7 +137,7 @@ npm run smoke                  <span style="color:#7d90b0"># local HTTP smoke (n
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span><br>
       <b>Evidence Source:</b> live_screenshot (chromium-headless) + static_export + canonical_local_result_store · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> f-demo-hardening/review.md, f-public-static-showcase/review.md<br>
-      <b>Resolved:</b> browser screenshot captured; visual diff is repo-baseline pixel-backed (<code>1052 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); dashboard payload now comes from a generated local result-store scenario. Branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash.
+      <b>Resolved:</b> browser screenshot captured; visual diff is repo-baseline pixel-backed (<code>1043 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); dashboard payload now comes from a generated local result-store scenario. Branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash.
     </div>
   </section>
 
@@ -155,7 +155,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
-    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>241 passed</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 57 files; mutation spot checks 54/54 configured/killed, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, review pytest/audit transcript drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>dashboard payload now generated from local result-store records</b> via CR-FPS-006; branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash; <b>visual diff repo-baseline pixel-backed</b> (<code>1052 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); <b>scoped live snapshot write smoke proven</b> via CR-B12; <b>broad source-quorum gate added</b> via CR-B18 and <b>live quorum proof captured</b> via CR-B19; <b>Stooq restoration proof fails closed</b> via CR-B20.</p>
+    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>242 passed</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 57 files; mutation spot checks 56/56 configured/killed, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, review pytest/frontend-count/audit transcript drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>dashboard payload now generated from local result-store records</b> via CR-FPS-006; branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash; <b>visual diff repo-baseline pixel-backed</b> (<code>1043 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); <b>scoped live snapshot write smoke proven</b> via CR-B12; <b>broad source-quorum gate added</b> via CR-B18 and <b>live quorum proof captured</b> via CR-B19; <b>Stooq restoration proof fails closed</b> via CR-B20.</p>
     <table>
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>

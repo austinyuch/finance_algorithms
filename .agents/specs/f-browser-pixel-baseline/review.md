@@ -4,7 +4,7 @@
 
 **Review PASSED for repo-side pixel visual-diff closure.**
 
-Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still uses fixture-backed showcase data and `local_demo_only` labels. This lane closes the visual-diff false-green residual only.
+Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses a generated canonical local result-store scenario and `local_demo_only` labels, not a live backend/live market data service. This lane closes the visual-diff false-green residual only; CR-FPS-006 later superseded the old inline fixture source.
 
 ## Scores
 
@@ -26,7 +26,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still
 - Gate result: **CONDITIONAL**
 - Coverage tier: **hybrid**
 - Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `221 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88`.
-- Still fixture-backed: dashboard data from `frontend/lib/showcase-fixture.ts`; no live backend/live market data dashboard path is claimed.
+- Data source boundary: dashboard data now comes from the generated canonical `local_result_store` payload introduced by CR-FPS-006; no live backend/live market data dashboard path is claimed.
 - No auth surface exists in this dashboard slice.
 
 ## Verification Coverage
@@ -54,4 +54,4 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still
 
 - CI-managed visual baseline history is not implemented; the current baseline is repo-committed.
 - Live scheduled snapshot workflow proof remains separate and open.
-- Dashboard evidence remains `MOCK_DOMINANT_EVIDENCE` for data content and must not be described as full production backend readiness.
+- Dashboard evidence remains local-demo-only canonical result-store evidence and must not be described as full production backend readiness.

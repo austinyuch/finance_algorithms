@@ -83,10 +83,12 @@ def test_mutation_runner_list_smoke():
     assert "governance-stale-next-steps-alert" in result.stdout
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
     assert "governance-stale-cron-proof-pending" in result.stdout
+    assert "governance-stale-dashboard-source-wording" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
     assert "manual-showcase-payload-sync-regression" in result.stdout
     assert "frontend-showcase-payload-sync-regression" in result.stdout
     assert "review-pytest-gate-transcript-regression" in result.stdout
+    assert "review-frontend-count-shorthand-regression" in result.stdout
     assert "review-audit-gate-transcript-regression" in result.stdout
 
 
@@ -170,9 +172,11 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out
+    assert "governance-stale-dashboard-source-wording" in out
     assert "review-public-hosting-probe-status-overclaim" in out
     assert "b-scheduled-observer-manual-pending" in out
     assert "manual-showcase-payload-sync-regression" in out
     assert "frontend-showcase-payload-sync-regression" in out
     assert "review-pytest-gate-transcript-regression" in out
+    assert "review-frontend-count-shorthand-regression" in out
     assert "review-audit-gate-transcript-regression" in out

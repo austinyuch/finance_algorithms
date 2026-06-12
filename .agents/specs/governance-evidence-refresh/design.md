@@ -19,7 +19,8 @@ This is a governance/readiness hardening slice. It treats stale current-state ev
   - `quantlab/CORRECTNESS_CHECKLIST.md`
 - **Stakeholder surfaces**
   - `docs/*`
-  - `frontend/lib/showcase-fixture.ts`
+  - `frontend/lib/showcase-payload.json` with `sourceMetadata.source=local_result_store`
+  - `quantlab/showcase/scenario.py`
   - `frontend/visual-baselines/showcase.visual.json`
 
 ## Test Coverage Declaration

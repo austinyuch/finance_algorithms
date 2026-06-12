@@ -72,6 +72,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "20 frontend",
         "22 mutation",
         "66 passed",
+        "241 passed",
         "231 passed",
         "238 passed",
         "237 passed",
@@ -139,6 +140,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "mutation 13/13 killed",
         "frontend mutation 13/13",
         "29 frontend tests",
+        "frontend 29",
         "29 tests pass",
         "14 frontend mutations",
         "mutation 14/14 killed",
@@ -213,10 +215,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "241 passed" in pytest_gate
-    assert "241 passed" in manual_guide
-    assert "241 passed" in review_guide
-    assert "Python suite now <b>241 passed</b>" in review_html
+    assert "242 passed" in pytest_gate
+    assert "242 passed" in manual_guide
+    assert "242 passed" in review_guide
+    assert "Python suite now <b>242 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -248,7 +250,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1052
+    assert browser_diff["mismatchedPixels"] == 1043
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
@@ -270,6 +272,32 @@ def test_current_stakeholder_payload_assets_are_synchronized():
     assert (ROOT / "docs/manual/assets/dashboard-static-export.html").read_text(encoding="utf-8") == (
         ROOT / "docs/index.html"
     ).read_text(encoding="utf-8")
+
+
+def test_current_dashboard_source_wording_tracks_canonical_payload():
+    """Current F/governance handoff surfaces must not point at the retired inline fixture."""
+    current_source_surfaces = [
+        ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/design.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/tasks.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/review.md",
+    ]
+    stale_source_markers = [
+        "frontend/lib/showcase-fixture.ts",
+        "dashboard still uses fixture-backed showcase data",
+        "Still fixture-backed",
+        "Dashboard data remains fixture-driven",
+        "static dashboard remains fixture-driven",
+        "static showcase fixture evidence",
+    ]
+
+    for path in current_source_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert "local_result_store" in text or "local result-store" in text
+        for marker in stale_source_markers:
+            assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale source marker: {marker}"
 
 
 def test_next_steps_reflects_post_merge_torch_alert_state():

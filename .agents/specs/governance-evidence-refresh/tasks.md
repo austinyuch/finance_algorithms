@@ -15,7 +15,7 @@
 - [x] 2. Evidence and stakeholder-doc refresh [Implements REQ-GOV-EVID-002]
   - [x] 2.1 Update `quantlab/TESTS.md`, `.agents/specs/TESTS.md`, `RTM.md`, `SPECS.md`, `ISSUE_LOG.md`, and `CORRECTNESS_CHECKLIST.md` from verified outputs.
     - _Eval: stale-string scan and targeted governance tests._
-  - [x] 2.2 Refresh `frontend/lib/showcase-fixture.ts`, static docs exports, visual snapshot hash, and tracked browser visual artifacts.
+  - [x] 2.2 Refresh generated `local_result_store` showcase payload/static docs exports, visual snapshot hash, and tracked browser visual artifacts.
     - _Eval: `cd frontend && npm run export:public-demo:docs && npm run visual && npm run visual:browser`._
   - [x] 2.3 Contain visual diff overclaim by reporting the actual threshold-passing mismatch count.
     - _Eval: `docs/browser-visual-diff.json` matches docs wording._
