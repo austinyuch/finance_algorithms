@@ -136,6 +136,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/test_daily_snapshot.py::test_snapshot_ops_gate_accepts_partial_live_report_when_allowed"),
     ),
     MutationSpec(
+        name="b-source-quorum-status-gate",
+        path="scripts/snapshot_ops_gate.py",
+        original='if source_id in source_ids and status in {"ok", "skip"}:',
+        mutated='if source_id in source_ids and status in {"ok", "skip", "dry", "fail"}:',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_source_quorum_gate_rejects_dry_or_failed_critical_sources"),
+    ),
+    MutationSpec(
         name="e-registry-snapshot-checksum",
         path="quantlab/mlops/experiment_registry.py",
         original='if artifact.get("checksum") != _checksum(entries):',
@@ -258,8 +266,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="e-drift-threshold-gate",
         path="quantlab/mlops/experiment_registry.py",
-        original='abs(delta) > threshold + 1e-12',
-        mutated='abs(delta) < threshold + 1e-12',
+        original='abs(delta) > threshold',
+        mutated='abs(delta) < threshold',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_e_1_experiment_registry.py::test_drift_assessment_report_detects_metric_drift_without_serving_claim"),
     ),

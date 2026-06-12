@@ -1445,7 +1445,8 @@ def test_pbt_drift_status_matches_absolute_threshold(tmp_path, reference, delta,
         observed_at="2026-06-11T00:00:00Z",
     )
 
-    assert report["status"] == ("drift_detected" if abs(delta) > threshold else "stable")
+    reported_delta = report["metric_deltas"]["oos_net_sharpe"]
+    assert report["status"] == ("drift_detected" if abs(reported_delta) > threshold else "stable")
 
 
 @given(

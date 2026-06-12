@@ -353,6 +353,131 @@ def test_snapshot_ops_gate_accepts_partial_live_report_when_allowed():
     assert summary["claim_boundary"] == "source_contract_status_only"
 
 
+def test_source_quorum_gate_requires_broad_default_live_coverage():
+    from scripts.snapshot_ops_gate import validate_source_quorum_report
+
+    report = _broad_source_quorum_report()
+
+    summary = validate_source_quorum_report(report)
+
+    assert summary["status"] == "broad_source_quorum"
+    assert summary["evidence_tier"] == "live_source_quorum"
+    assert summary["claim_boundary"] == "source_contract_status_only"
+    assert summary["groups"] == {
+        "fred_macro": ["fred:FEDFUNDS"],
+        "fred_price_proxy": ["fred:SP500", "fred:PCOPPUSDM"],
+        "yahoo_equity": ["yahoo:2330.TW"],
+        "yahoo_market": ["yahoo:^TWII"],
+        "noaa_macro": ["noaa:oni"],
+    }
+
+
+def _broad_source_quorum_report() -> dict[str, object]:
+    return {
+        "available_date": "2026-06-12",
+        "dry_run": False,
+        "counts": {"ok": 6, "skip": 0, "fail": 0, "dry": 0},
+        "jobs": [
+            {"source_id": "fred:FEDFUNDS", "status": "ok"},
+            {"source_id": "fred:SP500", "status": "ok"},
+            {"source_id": "fred:PCOPPUSDM", "status": "ok"},
+            {"source_id": "yahoo:2330.TW", "status": "ok"},
+            {"source_id": "yahoo:^TWII", "status": "ok"},
+            {"source_id": "noaa:oni", "status": "ok"},
+        ],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+
+
+def test_source_quorum_gate_cli_smoke(tmp_path, capsys):
+    from scripts.snapshot_ops_gate import main
+
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps(_broad_source_quorum_report()), encoding="utf-8")
+
+    rc = main([str(report_path), "--require-source-quorum"])
+    out = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert out["status"] == "broad_source_quorum"
+    assert out["evidence_tier"] == "live_source_quorum"
+
+
+@given(group=st.sampled_from(["fred_macro", "fred_price_proxy", "yahoo_equity", "yahoo_market", "noaa_macro"]))
+def test_pbt_source_quorum_gate_fails_when_any_group_is_missing(group):
+    from scripts.snapshot_ops_gate import DEFAULT_SOURCE_QUORUM, validate_source_quorum_report
+
+    report = _broad_source_quorum_report()
+    required = set(DEFAULT_SOURCE_QUORUM[group])
+    jobs = report["jobs"]
+    assert isinstance(jobs, list)
+    report["jobs"] = [job for job in jobs if job["source_id"] not in required]
+    report["counts"] = {"ok": len(report["jobs"]), "skip": 0, "fail": 0, "dry": 0}
+
+    with pytest.raises(ValueError, match=f"missing broad source quorum for {group}"):
+        validate_source_quorum_report(report)
+
+
+def test_source_quorum_gate_rejects_scoped_smoke_as_broad_readiness():
+    from scripts.snapshot_ops_gate import validate_source_quorum_report
+
+    report = {
+        "available_date": "2026-06-12",
+        "dry_run": False,
+        "counts": {"ok": 1, "skip": 0, "fail": 0, "dry": 0},
+        "jobs": [{"source_id": "fred:FEDFUNDS", "status": "ok"}],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+
+    with pytest.raises(ValueError, match="missing broad source quorum"):
+        validate_source_quorum_report(report)
+
+
+def test_source_quorum_gate_rejects_dry_or_failed_critical_sources():
+    from scripts.snapshot_ops_gate import validate_source_quorum_report
+
+    report = {
+        "available_date": "2026-06-12",
+        "dry_run": False,
+        "counts": {"ok": 5, "skip": 0, "fail": 1, "dry": 0},
+        "jobs": [
+            {"source_id": "fred:FEDFUNDS", "status": "ok"},
+            {"source_id": "fred:SP500", "status": "ok"},
+            {"source_id": "fred:PCOPPUSDM", "status": "ok"},
+            {"source_id": "yahoo:2330.TW", "status": "ok"},
+            {"source_id": "yahoo:^TWII", "status": "fail"},
+            {"source_id": "noaa:oni", "status": "ok"},
+        ],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+    dry = {
+        **report,
+        "dry_run": True,
+        "counts": {"ok": 0, "skip": 0, "fail": 0, "dry": 6},
+        "jobs": [{**job, "status": "dry"} for job in report["jobs"]],
+    }
+    replayed_dry_rows = {
+        **dry,
+        "dry_run": False,
+    }
+
+    with pytest.raises(ValueError, match="failed sources"):
+        validate_source_quorum_report(report)
+    with pytest.raises(ValueError, match="non-dry-run"):
+        validate_source_quorum_report(dry)
+    with pytest.raises(ValueError, match="missing broad source quorum"):
+        validate_source_quorum_report(replayed_dry_rows)
+
+
 def test_schedule_report_records_retention_and_latest_pointer(tmp_path):
     from scripts.snapshot_schedule_report import build_schedule_report, write_schedule_report
 

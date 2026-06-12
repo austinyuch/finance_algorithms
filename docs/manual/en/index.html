@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>Getting started / starter assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 deps</span>
-uv run pytest -q             <span style="color:#7d90b0"># expect 222 passed</span>
+uv run pytest -q             <span style="color:#7d90b0"># expect 227 passed</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps</span></pre>
     <p>Committed seed/sample data:</p>
     <ul>
@@ -155,11 +155,11 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
-    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>222 passed</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 53 files; mutation spot checks 38/38 configured/killed, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift, and CR-B12 scoped source-health overclaim protection; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>234 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); <b>scoped live snapshot write smoke proven</b> via CR-B12.</p>
+    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>227 passed</b> after isolating PyTorch LSTM to the optional lane and adding current-governance stale-evidence guards; mypy clean over 53 files; mutation spot checks 39/39 configured/killed, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift, CR-B12 scoped source-health overclaim protection, and CR-B18 broad source-quorum overclaim protection; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>234 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); <b>scoped live snapshot write smoke proven</b> via CR-B12; <b>broad source-quorum gate added</b> via CR-B18.</p>
     <table>
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
-      <tr><td>Live append-only snapshot writes remain separate from dry-run schedule proof</td><td>Low</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
+      <tr><td>Broad source-quorum proof remains separate from scoped live-write smoke</td><td>Low</td><td>b-data-platform/change-requests/cr-b18-source-quorum-gate.md</td></tr>
       <tr><td>Static export's readiness panel remains conservative (<code>not_proven</code>) by dashboard contract</td><td>Low</td><td>frontend/out/index.html</td></tr>
       <tr><td>Vintage real-data backtest deferred (&lt;2 price assets)</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>
