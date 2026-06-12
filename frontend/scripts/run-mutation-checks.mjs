@@ -37,7 +37,7 @@ const mutations = [
   {
     name: "frontend-dashboard-stale-gate-evidence",
     path: "lib/showcase-payload.json",
-    original: '"frontend mutation 14/14 killed"',
+    original: '"frontend mutation 15/15 killed"',
     mutated: '"mutation 9/9 killed"',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
   },
@@ -75,6 +75,13 @@ const mutations = [
     original: 'freshness.freshnessStatus === "fresh"',
     mutated: 'true',
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "probe evidence is stale"]
+  },
+  {
+    name: "frontend-public-demo-probe-freshness-status-gate",
+    path: "scripts/probe-public-demo.mjs",
+    original: 'freshnessStatus === "fresh"',
+    mutated: 'true',
+    command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "observation is stale"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",

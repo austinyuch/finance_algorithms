@@ -1,10 +1,34 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const targetUrl = "https://austinyuch.github.io/finance_algorithms/";
+const publicHostingEvidenceMaxAgeHours = 24;
 const outPath = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH
   ? join(process.cwd(), process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH)
   : join(process.cwd(), "out", "public-hosting-probe.json");
+
+export function publicHostingFreshness(observedAt, now, maxAgeHours = publicHostingEvidenceMaxAgeHours) {
+  if (!observedAt) {
+    return { freshnessStatus: "missing", maxAgeHours };
+  }
+  const observedMs = Date.parse(observedAt);
+  const nowMs = Date.parse(now);
+  if (!Number.isFinite(observedMs) || !Number.isFinite(nowMs) || observedMs > nowMs) {
+    return { freshnessStatus: "invalid", maxAgeHours };
+  }
+  const ageHours = (nowMs - observedMs) / (1000 * 60 * 60);
+  return { freshnessStatus: ageHours <= maxAgeHours ? "fresh" : "stale", maxAgeHours };
+}
+
+export function classifyProbeStatus({ httpStatus, hashStatus, manifestContractStatus, freshnessStatus }) {
+  return httpStatus === 200 &&
+    hashStatus === "matched" &&
+    manifestContractStatus === "matched" &&
+    freshnessStatus === "fresh"
+    ? "proven"
+    : "configured_not_observed";
+}
 
 function readExpectedManifest() {
   const candidates = [
@@ -87,11 +111,15 @@ async function main() {
       : manifestContractMatches
         ? "matched"
         : "mismatched";
-  const observedAt = new Date().toISOString();
-  const status =
-    httpStatus === 200 && hashStatus === "matched" && manifestContractStatus === "matched"
-      ? "proven"
-      : "configured_not_observed";
+  const now = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_NOW ?? new Date().toISOString();
+  const observedAt = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OBSERVED_AT ?? now;
+  const freshness = publicHostingFreshness(observedAt, now);
+  const status = classifyProbeStatus({
+    httpStatus,
+    hashStatus,
+    manifestContractStatus,
+    freshnessStatus: freshness.freshnessStatus,
+  });
   const evidence = {
     targetUrl,
     status,
@@ -107,6 +135,7 @@ async function main() {
     deployedDashboardClaim,
     manifestContractStatus,
     observedAt,
+    ...freshness,
     claimBoundary: "no_alpha_claim",
   };
   writeFileSync(outPath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
@@ -114,4 +143,6 @@ async function main() {
   return status === "proven" ? 0 : 2;
 }
 
-main().then((code) => process.exit(code));
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().then((code) => process.exit(code));
+}

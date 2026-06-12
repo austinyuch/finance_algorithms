@@ -45,9 +45,10 @@ describe("F Next.js showcase dashboard", () => {
   it("keeps dashboard gate evidence aligned with current governed proof", () => {
     const payload = getShowcaseDashboard();
 
-    expect(payload.evidence.tests).toContain("frontend mutation 14/14 killed");
-    expect(payload.evidence.tests).toContain("F Next.js coverage 91.07%");
+    expect(payload.evidence.tests).toContain("frontend mutation 15/15 killed");
+    expect(payload.evidence.tests).toContain("F Next.js coverage 91.05%");
     expect(payload.evidence.tests).not.toContain("mutation 9/9 killed");
+    expect(payload.evidence.tests).not.toContain("frontend mutation 14/14 killed");
     expect(payload.evidence.tests).not.toContain("F Next.js coverage 91.42%");
   });
 

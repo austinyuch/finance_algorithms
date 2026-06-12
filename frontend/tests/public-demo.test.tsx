@@ -40,9 +40,12 @@ describe("F public static showcase proof", () => {
 
     expect(probe.targetUrl).toBe(manifest.targetUrl);
     expect(probe.deployedDataHash).toBe(manifest.hostingEvidence.deployedDataHash);
+    expect(probe.freshnessStatus).toBe(manifest.hostingEvidence.freshnessStatus);
+    expect(probe.maxAgeHours).toBe(manifest.hostingEvidence.maxAgeHours);
     if (manifest.hostingEvidence.deployedDataHash === manifest.dataHash) {
       expect(probe.status).toBe("proven");
       expect(manifest.hostingEvidence.hashStatus).toBe("matched");
+      expect(probe.freshnessStatus).toBe("fresh");
     } else {
       expect(probe.status).toBe("configured_not_observed");
       expect(manifest.hostingEvidence.status).toBe("configured_not_observed");

@@ -138,6 +138,13 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "13 frontend mutations",
         "mutation 13/13 killed",
         "frontend mutation 13/13",
+        "29 frontend tests",
+        "29 tests pass",
+        "14 frontend mutations",
+        "mutation 14/14 killed",
+        "frontend mutation 14/14",
+        "91.07% line coverage",
+        "F Next.js coverage 91.07%",
         "221 / 1,296,000",
         "221/1,296,000",
         "latest 221",
@@ -210,10 +217,11 @@ def test_current_review_gate_transcripts_match_published_evidence():
     assert "241 passed" in manual_guide
     assert "241 passed" in review_guide
     assert "Python suite now <b>241 passed</b>" in review_html
-    assert "Tests  29 passed (29)" in frontend_gate
-    assert "Frontend <b>29 tests pass</b>" in review_html
+    assert "Tests  32 passed (32)" in frontend_gate
+    assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
     assert "28 tests pass" not in review_html
+    assert "29 tests pass" not in review_html
     assert "Success: no issues found in 57 source files" in mypy_gate
     assert "Analyzed 74 files, 185 dependencies." in lint_gate
     assert audit_text.strip() == "found 0 vulnerabilities"
@@ -372,6 +380,10 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert probe.get("deployedDashboardClaim") == manifest.get("dashboardClaim")
     assert probe.get("expectedDataHash") == manifest.get("dataHash")
     assert probe.get("manifestContractStatus") == "matched"
+    assert probe.get("freshnessStatus") == hosting.get("freshnessStatus")
+    assert probe.get("freshnessStatus") == "fresh"
+    assert probe.get("maxAgeHours") == hosting.get("maxAgeHours")
+    assert probe.get("maxAgeHours") == 24
     if hosting.get("deployedDataHash") == manifest.get("dataHash"):
         assert hosting.get("status") == "proven"
         assert hosting.get("hashStatus") == "matched"

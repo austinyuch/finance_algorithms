@@ -160,7 +160,7 @@ export function classifyPublicHostingEvidence(
     deployedTargetUrl: probe.deployedTargetUrl,
     deployedArtifactKind: probe.deployedArtifactKind,
     deployedClaimBoundary: probe.deployedClaimBoundary,
-      deployedDashboardClaim: probe.deployedDashboardClaim,
+    deployedDashboardClaim: probe.deployedDashboardClaim,
   };
   const freshness = publicHostingFreshness(probe.observedAt, freshnessOptions);
   const hashStatus =

@@ -85,6 +85,9 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   if (parsed.status === "proven" && parsed.manifestContractStatus !== "matched") {
     throw new Error("public hosting probe requires matched manifest contract when proven");
   }
+  if (parsed.status === "proven" && parsed.freshnessStatus !== "fresh") {
+    throw new Error("public hosting probe requires fresh observation when proven");
+  }
   return {
     pagesConfigured: parsed.pagesConfigured === true,
     pagesStatus: typeof parsed.pagesStatus === "string" ? parsed.pagesStatus : undefined,

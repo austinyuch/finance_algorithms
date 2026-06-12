@@ -35,7 +35,7 @@ Project is Backend/CLI-dominant Hybrid. Captured live (2026-06-12):
 uv run pytest -q                     # 241 passed → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports # clean 57 files → gate-mypy.txt
 uv run lint-imports                  # KEPT          → gate-lint-imports.txt
-(cd frontend && npm test)            # 29 passed     → gate-frontend-test.txt
+(cd frontend && npm test)            # 32 passed     → gate-frontend-test.txt
 (cd frontend && npm audit --omit=dev)# 0 vulns       → gate-frontend-audit.txt
 ```
 

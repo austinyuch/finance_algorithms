@@ -14,8 +14,9 @@ risk for future deployment catch-up checks.
    deployed manifest contract metadata, and observation freshness all pass.
 2. Otherwise matching public-hosting evidence older than the configured
    freshness window must remain `configured_not_observed`.
-3. The committed deployment manifest must carry machine-readable freshness
-   classification for the public-hosting observation.
+3. The committed deployment manifest and standalone probe must carry
+   machine-readable freshness classification for the public-hosting
+   observation.
 4. Frontend tests and mutation coverage must kill a freshness-gate bypass.
 
 ## Implementation
@@ -27,16 +28,19 @@ risk for future deployment catch-up checks.
 - Added a stale-but-otherwise-matching public-hosting test and kept PBT
   classifiers deterministic with fixed `now` inputs.
 - Added frontend mutation target `frontend-public-demo-hosting-freshness-gate`.
+- Added standalone probe freshness metadata and helper tests covering stale,
+  missing, and future observations.
 - Regenerated static docs artifacts and manifest/probe evidence. The branch
   remains `configured_not_observed` because Pages still serves the old deployed
   `dataHash`, but the observation is now explicitly `fresh`.
 
 ## Evidence
 
-- `cd frontend && npm test -- --run` -> 29 passed.
-- `cd frontend && npm run coverage` -> 29 passed; line coverage 91.05%.
-- `cd frontend && npm run mutation` -> 14/14 killed, including
-  `frontend-public-demo-hosting-freshness-gate`.
+- `cd frontend && npm test -- --run` -> 32 passed.
+- `cd frontend && npm run coverage` -> 32 passed; line coverage 91.05%.
+- `cd frontend && npm run mutation` -> 15/15 killed, including
+  `frontend-public-demo-hosting-freshness-gate` and
+  `frontend-public-demo-probe-freshness-status-gate`.
 - `cd frontend && npm run export:public-demo` -> passed.
 - `cd frontend && npm run probe:public-demo` -> exit 2 as expected while
   deployed hash is stale.
