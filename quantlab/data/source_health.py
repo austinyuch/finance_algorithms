@@ -6,6 +6,7 @@ network or silently re-enable sources that were disabled by source-contract CRs.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Any, Literal, Mapping, Sequence
 
 SourceStatus = Literal["available", "blocked", "degraded", "unknown"]
@@ -67,7 +68,7 @@ def _normalize_live_close_rows(rows: Sequence[Mapping[str, Any]]) -> list[dict[s
             raise ValueError("live close row requires symbol")
         if not event_date:
             raise ValueError("live close row requires event_date")
-        if not isinstance(close, (int, float)) or close <= 0:
+        if not isinstance(close, (int, float)) or not math.isfinite(float(close)) or close <= 0:
             raise ValueError("live close row requires positive close")
         normalized.append({"symbol": symbol, "event_date": event_date, "close": float(close)})
     if not normalized:

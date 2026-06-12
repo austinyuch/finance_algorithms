@@ -45,8 +45,8 @@ uv run python scripts/snapshot_ops_gate.py --help # → backend-ops-gate-01-help
 Authoritative gates (recorded in the manual evidence panel):
 
 ```bash
-uv run pytest -q                                   # 231 passed (2026-06-12)
-uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py --ignore-missing-imports # clean, 54 files
+uv run pytest -q                                   # 236 passed (2026-06-12)
+uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports # clean, 55 files
 uv run lint-imports                                # engine/data KEPT
 (cd frontend && npm test && npm audit --omit=dev)  # 23 passed, 0 vulnerabilities
 ```

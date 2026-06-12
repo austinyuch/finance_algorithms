@@ -1,0 +1,31 @@
+{
+  "available_date": "2026-06-12",
+  "counts": {
+    "dry": 0,
+    "fail": 1,
+    "ok": 0,
+    "skip": 0
+  },
+  "dry_run": false,
+  "jobs": [
+    {
+      "error": "404 Client Error: Not Found for url: https://stooq.com/q/l/?s=spy.us&f=sd2t2ohlcv&h&e=csv",
+      "error_type": "HTTPError",
+      "safe_id": "stooq_spy.us",
+      "source_id": "stooq:spy.us",
+      "status": "fail"
+    }
+  ],
+  "out_dir": "data/vintage/raw/2026-06-12",
+  "source_health": {
+    "claim_boundary": "source_contract_status_only",
+    "stooq": {
+      "default_enabled": true,
+      "reason": "operator opt-in source",
+      "status": "unknown",
+      "symbols": [
+        "spy.us"
+      ]
+    }
+  }
+}

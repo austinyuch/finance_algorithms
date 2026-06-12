@@ -1,0 +1,37 @@
+{
+  "artifact_kind": "stooq_contract_proof",
+  "claim_boundary": "source_contract_status_only",
+  "command": [
+    "python",
+    "scripts/daily_snapshot.py",
+    "--out-root",
+    "data/vintage/raw",
+    "--fred-series",
+    "",
+    "--stooq-symbols",
+    "spy.us",
+    "--yahoo-symbols",
+    "",
+    "--no-noaa",
+    "--report-json",
+    ".agents/specs/b-data-platform/reports/stooq-contract-proof-2026-06-12-report.json"
+  ],
+  "decision": {
+    "claim_boundary": "source_contract_status_only",
+    "decision": "requires_live_close_rows",
+    "default_enabled": "false",
+    "required_evidence": "non_empty_close_rows_before_default_enable"
+  },
+  "default_enabled": false,
+  "evidence_tier": "not_proven",
+  "exit_code": 1,
+  "observed_at": "2026-06-12T08:11:06.933284+00:00",
+  "reasons": [
+    "snapshot command exited 1",
+    "stooq:spy.us status fail"
+  ],
+  "reopen_evidence": null,
+  "rows": [],
+  "source": "stooq",
+  "status": "not_proven"
+}
