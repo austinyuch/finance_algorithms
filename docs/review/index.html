@@ -52,9 +52,9 @@
     <h1>Finance Algorithms · QuantLab</h1>
     <p>A portfolio-grade personal quant research lab: point-in-time data, vectorized backtesting, strategy comparison, and an honest, no-alpha-claim research dashboard.</p>
     <div class="stats">
-      <div class="stat"><b>190</b><span>Python tests passing</span></div>
-      <div class="stat"><b>20</b><span>frontend tests passing</span></div>
-      <div class="stat"><b>0</b><span>dependency vulnerabilities</span></div>
+      <div class="stat"><b>188</b><span>Python tests passing</span></div>
+      <div class="stat"><b>23</b><span>frontend tests passing</span></div>
+      <div class="stat"><b>0</b><span>frontend vulnerabilities</span></div>
       <div class="stat"><b>9</b><span>spec epics implemented</span></div>
     </div>
   </div>
@@ -92,7 +92,7 @@
       <h3>QuantLab gives a solo quant a portfolio-grade research lab that never lies about its own results</h3>
       <p><b>Taipei, 2026 —</b> Finance Algorithms today described QuantLab, a personal research platform that lets one person design, backtest, and compare investment strategies with the same point-in-time and out-of-sample discipline used by serious shops — while refusing to dress up synthetic experiments as alpha.</p>
       <p>“The point was never to claim I beat the market,” the maintainer said. “The point was to build a lab where every number is reproducible, every backtest respects what I could actually have known at the time, and every demo says exactly how strong its evidence is.”</p>
-      <p><b>The problem:</b> personal quant projects routinely leak future information, compare strategies in-sample, and present mock dashboards as if they were live products. <b>The solution:</b> QuantLab enforces <code>available_date &le; asof</code> in the data layer, reports out-of-sample net metrics on a shared leaderboard, and caps every stakeholder-facing claim with explicit evidence labels. <b>Today:</b> nine spec epics are implemented and reviewed, 190 Python tests and 20 frontend tests pass, dependency audit is clean, and a fixture-driven showcase dashboard renders the latest research summary.</p>
+      <p><b>The problem:</b> personal quant projects routinely leak future information, compare strategies in-sample, and present mock dashboards as if they were live products. <b>The solution:</b> QuantLab enforces <code>available_date &le; asof</code> in the data layer, reports out-of-sample net metrics on a shared leaderboard, and caps every stakeholder-facing claim with explicit evidence labels. <b>Today:</b> nine spec epics are implemented and reviewed, 188 Python tests pass with one explicit optional PyTorch-lane skip, 23 frontend tests pass, the root Python lock excludes unpatched Torch, and a fixture-driven showcase dashboard renders the latest research summary.</p>
     </div>
   </section>
 
@@ -100,7 +100,7 @@
     <h2 class="sec">FAQ</h2>
     <p class="sub">Three audiences, straight answers.</p>
     <details><summary>Internal · How much does this cost to maintain?</summary><p>It is a single Python 3.13 + Next.js workspace with <code>uv</code> and npm. CI-style gates (pytest, mypy, lint-imports, npm test/audit) run in seconds-to-minutes locally. No paid infra is required; external data sources are free (FRED/NOAA/Yahoo) and degrade per-source.</p></details>
-    <details><summary>Internal · Is it safe / compliant?</summary><p>It is paper-only research with no trading execution and no credentials. Dependency audit reports 0 vulnerabilities. The architecture linter forbids the data/engine core from importing ML frameworks, keeping the backtest core deterministic.</p></details>
+    <details><summary>Internal · Is it safe / compliant?</summary><p>It is paper-only research with no trading execution and no credentials. Frontend audit reports 0 vulnerabilities, and the root Python lock no longer includes unpatched Torch in the default runtime. The architecture linter forbids the data/engine core from importing ML frameworks, keeping the backtest core deterministic.</p></details>
     <details><summary>External · How is this different from a notebook?</summary><p>It separates contracts, PIT data, a vectorized engine, strategy adapters, portfolio construction, and tracking into reviewed specs. Lookahead protection and out-of-sample net scoring are built into the engine, not bolted on per-experiment.</p></details>
     <details><summary>External · What's the 6-month roadmap?</summary><p>Accumulate real price vintages until the live-data backtest unblocks, prove public hosting + visual regression for the dashboard, and expand the model-family evaluation. See the Roadmap below.</p></details>
     <details><summary>User · What does it improve for me day to day?</summary><p>One command produces a baseline-anchored OOS leaderboard; one command captures an immutable daily data snapshot with a machine-readable run report; one dashboard summarizes the latest research state — all without hand-rolling lookahead-safe plumbing.</p></details>
@@ -152,7 +152,7 @@ flowchart LR
       <div>
         <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-12)</h3>
         <ul class="clean">
-          <li>Python suite grew <b>163 → 190 passed</b>; mypy clean over 50 files; mutation <b>22/22 killed</b> <span class="sev sL">gate</span></li>
+          <li>Python suite now <b>188 passed, 1 skipped</b>; mypy clean over 51 files; mutation spot checks <b>23/23 killed</b>, including root Torch dependency mutation <span class="sev sL">gate</span></li>
           <li>Frontend <b>23 tests pass</b>, coverage 91.42%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
           <li><b>Public-hosting probe proven</b> HTTP 200 (<code>public-hosting-probe.json</code>) <span class="sev sL">hosting</span></li>
@@ -180,7 +180,7 @@ flowchart LR
     <h2 class="sec">Roadmap</h2>
     <p class="sub">Next milestones, in order.</p>
     <div class="timeline">
-      <div><b>Now</b> — Manual + review docs published; gates refreshed (190/20/0, mutation 22/22); browser visual + pixel diff + public-hosting probe proven.</div>
+      <div><b>Now</b> — Manual + review docs published; gates refreshed (188 passed / 1 skipped, frontend 23, frontend audit 0); browser visual + pixel diff + public-hosting probe proven; default Python lock excludes Torch.</div>
       <div><b>Next</b> — Observe an autonomous cron <code>event=schedule</code> run; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
       <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
       <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>

@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 190 passed
+uv run pytest -q             # 健檢：預期 188 passed, 1 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -49,14 +49,15 @@ uv run python scripts/run_tsmc_hedge_slice.py
 strategy          OOS net Sharpe
 --------------------------------
 BuyAndHold                0.3911
-LSTMStrategy              0.3911
 HedgeStrategy             0.3528
 StaticWeights             0.2759
 RandomStrategy           -0.0092
 ```
 
 **怎麼讀：** 以**樣本外淨值**（扣成本後）Sharpe 排名；`RandomStrategy` 是健檢
-下限。本切片使用**合成**共整合資料 — 證明 pipeline 正確，不證明對沖會賺錢。
+下限。default UAT/runtime 環境未安裝 optional PyTorch LSTM lane，因此此 transcript
+只包含 hedge 與 baseline 策略。本切片使用**合成**共整合資料 — 證明 pipeline 正確，
+不證明對沖會賺錢。
 
 > - Evidence Source: `live_command_output`
 > - Coverage Tier: `hybrid` · Readiness State: `PASS`（`a-tsmc-hedge-slice/review.md`）
@@ -182,7 +183,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件由 **163 → 190 passed**；mypy 現涵蓋 **50** 檔且 clean；mutation **22/22 killed**。
+- 測試套件目前為 **188 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane）；mypy 現涵蓋 **51** 檔且 clean；mutation spot checks **23/23 killed**，包含 root Torch dependency mutation。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。

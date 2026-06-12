@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>Getting started / starter assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 deps</span>
-uv run pytest -q             <span style="color:#7d90b0"># expect 190 passed</span>
+uv run pytest -q             <span style="color:#7d90b0"># expect 188 passed, 1 skipped</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps</span></pre>
     <p>Committed seed/sample data:</p>
     <ul>
@@ -85,11 +85,10 @@ cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps<
     <pre>strategy          OOS net Sharpe
 --------------------------------
 BuyAndHold                0.3911
-LSTMStrategy              0.3911
 HedgeStrategy             0.3528
 StaticWeights             0.2759
 RandomStrategy           -0.0092</pre>
-    <p><b>How to read it:</b> ranked by out-of-sample <em>net</em> Sharpe (after costs). <code>RandomStrategy</code> is the sanity floor. Synthetic cointegrated data — proves pipeline correctness, not profit.</p>
+    <p><b>How to read it:</b> ranked by out-of-sample <em>net</em> Sharpe (after costs). <code>RandomStrategy</code> is the sanity floor. The default UAT/runtime env skips the optional PyTorch LSTM lane, so this transcript contains hedge and baseline strategies only. Synthetic cointegrated data — proves pipeline correctness, not profit.</p>
     <div class="evidence">
       <span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source:</b> live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> a-tsmc-hedge-slice/review.md
@@ -156,7 +155,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
-    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests 163 → <b>190 passed</b>; mypy clean over 50 files; mutation 22/22 killed; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>).</p>
+    <p><b>Resolved since last check (2026-06-11 → 2026-06-12):</b> tests now <b>188 passed, 1 skipped</b> after isolating PyTorch LSTM to the optional lane; mypy clean over 51 files; mutation spot checks 23/23 killed, including root Torch dependency mutation; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>public-hosting probe proven</b> HTTP 200; <b>visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>).</p>
     <table>
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>

@@ -70,6 +70,7 @@ def test_mutation_runner_list_smoke():
     assert "snapshot-report-stooq-default" in result.stdout
     assert "showcase-experiment-readiness" in result.stdout
     assert "g-alt-data-pit-gate" in result.stdout
+    assert "root-torch-default-dependency" in result.stdout
 
 
 def test_selected_specs_rejects_unknown_name():
@@ -139,3 +140,4 @@ def test_main_list_prints_mutation_names(capsys):
     assert "snapshot-report-stooq-default" in out
     assert "showcase-experiment-readiness" in out
     assert "g-alt-data-pit-gate" in out
+    assert "root-torch-default-dependency" in out
