@@ -251,6 +251,11 @@ def _digest_payload(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(_canonical_json(_json_native(value)).encode("utf-8")).hexdigest()
 
 
+def _require_no_alpha_claim(payload: Mapping[str, Any], label: str) -> None:
+    if payload.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError(f"{label} must explicitly preserve no_alpha_claim")
+
+
 def build_serving_smoke_evidence(
     entry: ExperimentEntry,
     *,
@@ -274,8 +279,7 @@ def build_serving_smoke_evidence(
     prediction = _json_native(dict(predict(request)))
     if not isinstance(prediction, Mapping) or not prediction:
         raise ValueError("serving smoke requires a non-empty prediction")
-    if prediction.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("serving smoke prediction must preserve no_alpha_claim")
+    _require_no_alpha_claim(prediction, "serving smoke prediction")
     return {
         "artifact_kind": "serving_smoke_evidence",
         "claim_boundary": "no_alpha_claim",
@@ -336,8 +340,7 @@ def build_retraining_smoke_evidence(
         raise ValueError("retraining smoke requires a non-empty result")
     if str(result.get("status") or "").lower() != "completed":
         raise ValueError("retraining smoke requires completed status")
-    if result.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("retraining smoke result must preserve no_alpha_claim")
+    _require_no_alpha_claim(result, "retraining smoke result")
     run_id = str(result.get("run_id") or "").strip()
     if not run_id:
         raise ValueError("retraining smoke requires run_id")
@@ -400,8 +403,7 @@ def build_automated_drift_monitoring_evidence(
     result = _json_native(dict(monitor(request)))
     if not isinstance(result, Mapping) or not result:
         raise ValueError("automated drift monitoring requires a non-empty result")
-    if result.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("automated drift monitoring result must preserve no_alpha_claim")
+    _require_no_alpha_claim(result, "automated drift monitoring result")
     if result.get("status") not in {"stable", "drift_detected"}:
         raise ValueError("automated drift monitoring status must be stable or drift_detected")
     deltas = result.get("metric_deltas")
@@ -509,8 +511,7 @@ def build_production_serving_evidence(
     prediction_payload = _json_native(dict(prediction))
     if not isinstance(prediction_payload, Mapping) or not prediction_payload:
         raise ValueError("production serving evidence requires a non-empty prediction")
-    if prediction_payload.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("production serving prediction must preserve no_alpha_claim")
+    _require_no_alpha_claim(prediction_payload, "production serving prediction")
     return {
         "artifact_kind": "production_serving_evidence",
         "claim_boundary": "no_alpha_claim",
@@ -573,8 +574,7 @@ def build_production_retraining_evidence(
         raise ValueError("production retraining evidence requires a non-empty result")
     if str(payload.get("status") or "").lower() != "completed":
         raise ValueError("production retraining evidence requires completed status")
-    if payload.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("production retraining result must preserve no_alpha_claim")
+    _require_no_alpha_claim(payload, "production retraining result")
     run_id = str(payload.get("run_id") or "").strip()
     artifact_uri = str(payload.get("artifact_uri") or "").strip()
     if not run_id:
@@ -642,8 +642,7 @@ def build_production_automated_drift_monitoring_evidence(
     payload = _json_native(dict(result))
     if not isinstance(payload, Mapping) or not payload:
         raise ValueError("production drift monitoring evidence requires a non-empty result")
-    if payload.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-        raise ValueError("production drift monitoring result must preserve no_alpha_claim")
+    _require_no_alpha_claim(payload, "production drift monitoring result")
     if payload.get("status") not in {"stable", "drift_detected"}:
         raise ValueError("production drift monitoring status must be stable or drift_detected")
     deltas = payload.get("metric_deltas")
@@ -795,8 +794,7 @@ def register_result_store_runs(
     records = [store.get(str(run_id)) for run_id in run_ids]
     for record in records:
         metadata = record.get("strategy_metadata") or {}
-        if metadata.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
-            raise ValueError("result-store bridge only accepts no_alpha_claim runs")
+        _require_no_alpha_claim(metadata, "result-store bridge run metadata")
     primary_metrics = _oos_net_metrics(records[0])
     return registry.register(
         model_family,

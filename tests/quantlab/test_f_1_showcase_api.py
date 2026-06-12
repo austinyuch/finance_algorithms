@@ -31,10 +31,12 @@ def _metric(sharpe: float) -> dict:
 
 def _record(name: str, sharpe: float, *, run_id: str = "", baseline: bool = False,
             metadata: dict | None = None) -> dict:
+    if metadata is None:
+        metadata = {"claim_boundary": "no_alpha_claim"}
     return {
         "run_id": run_id,
         "strategy_name": name,
-        "strategy_metadata": metadata or {},
+        "strategy_metadata": metadata,
         "config": {"seed": 7, "data_version": "canonical-showcase-scenario"},
         "rebalance_dates": ["2022-01-31", "2022-02-28"],
         "metrics": [_metric(sharpe)],
@@ -70,6 +72,20 @@ def test_showcase_api_returns_sorted_leaderboard_and_run_detail(tmp_path):
 
     with pytest.raises(KeyError):
         api.run_detail("missing-run")
+
+
+def test_showcase_api_rejects_missing_claim_boundary_metadata(tmp_path):
+    from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary
+    from quantlab.tracking import LocalResultStore
+
+    store = LocalResultStore(tmp_path / "missing-claim.db")
+    run_id = store.log(_record("missing-claim", 0.4, metadata={}))
+    api = ShowcaseReadAPI(store)
+
+    with pytest.raises(ValueError, match="claim_boundary"):
+        api.leaderboard()
+    with pytest.raises(ValueError, match="claim_boundary"):
+        build_dashboard_summary(api.run_detail(run_id), [])
 
 
 def test_dashboard_summary_conservative_defaults_and_no_mutation(tmp_path):
@@ -161,6 +177,20 @@ def test_dashboard_html_smoke_contains_sections_and_warning(tmp_path):
     assert "no_alpha_claim" in html
 
 
+def test_dashboard_html_rejects_missing_claim_boundary_rows():
+    from quantlab.showcase import render_dashboard_html
+
+    summary = {
+        "claim_boundary": "no_alpha_claim",
+        "leaderboard": [{"strategy_name": "model", "run_id": "r1", "oos_net_sharpe": 0.1}],
+        "experiments": [],
+        "warnings": [],
+    }
+
+    with pytest.raises(ValueError, match="claim_boundary"):
+        render_dashboard_html(summary)
+
+
 def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
     from quantlab.showcase import build_canonical_dashboard_artifact
 
@@ -185,7 +215,7 @@ def _write_current_evidence_root(root: Path) -> None:
     (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
     (root / "docs").mkdir(exist_ok=True)
     (root / "docs/review/assets/gate-pytest.txt").write_text(
-        "251 passed in 20.00s\n",
+        "253 passed in 20.00s\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
@@ -197,7 +227,7 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
-        "Current evidence is **69/69 configured/killed**.\n",
+        "Current evidence is **70/70 configured/killed**.\n",
         encoding="utf-8",
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
@@ -234,9 +264,9 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
     assert artifact["evidence"]["tests"] == [
-        "251 passed",
+        "253 passed",
         "frontend tests 32 passed",
-        "Python mutation 69/69 killed",
+        "Python mutation 70/70 killed",
         "frontend mutation 15/15 killed",
         "F Next.js coverage 91.05%",
         "frontend audit 0 vulnerabilities",

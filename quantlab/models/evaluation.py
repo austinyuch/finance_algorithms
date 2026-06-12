@@ -31,7 +31,10 @@ def _oos_net_sharpe(record: Mapping[str, Any]) -> float:
 
 def _claim_boundary(record: Mapping[str, Any]) -> str:
     metadata = record.get("strategy_metadata") or {}
-    return str(metadata.get("claim_boundary") or "no_alpha_claim")
+    claim = metadata.get("claim_boundary")
+    if claim != "no_alpha_claim":
+        raise ValueError("model evaluation only accepts explicit no_alpha_claim records")
+    return str(claim)
 
 
 def score_model_family(record: Mapping[str, Any], *, model_family: str) -> ModelFamilyScore:

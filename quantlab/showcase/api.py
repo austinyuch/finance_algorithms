@@ -11,7 +11,10 @@ from typing import Any, Mapping, Sequence
 
 def _claim_boundary(record: Mapping[str, Any] | None = None) -> str:
     metadata = (record or {}).get("strategy_metadata") or {}
-    return str(metadata.get("claim_boundary") or "no_alpha_claim")
+    claim = metadata.get("claim_boundary")
+    if claim != "no_alpha_claim":
+        raise ValueError("showcase records must explicitly preserve claim_boundary=no_alpha_claim")
+    return str(claim)
 
 
 def _metric_by_segment(record: Mapping[str, Any], segment: str = "out_of_sample",

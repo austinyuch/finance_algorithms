@@ -5,6 +5,13 @@ from html import escape
 from typing import Any, Mapping
 
 
+def _required_claim_boundary(row: Mapping[str, Any]) -> str:
+    claim = row.get("claim_boundary")
+    if claim != "no_alpha_claim":
+        raise ValueError("dashboard rows must explicitly preserve claim_boundary=no_alpha_claim")
+    return str(claim)
+
+
 def _items(values: Mapping[str, Any]) -> str:
     return "".join(
         f"<li><span>{escape(str(k))}</span>: <strong>{escape(str(v))}</strong></li>"
@@ -18,7 +25,7 @@ def render_dashboard_html(summary: Mapping[str, Any]) -> str:
         f"<td>{escape(str(row.get('strategy_name', '')))}</td>"
         f"<td>{escape(str(row.get('run_id', '')))}</td>"
         f"<td>{escape(str(row.get('oos_net_sharpe', '')))}</td>"
-        f"<td>{escape(str(row.get('claim_boundary', 'no_alpha_claim')))}</td>"
+        f"<td>{escape(_required_claim_boundary(row))}</td>"
         "</tr>"
         for row in summary.get("leaderboard", [])
     )
@@ -30,10 +37,11 @@ def render_dashboard_html(summary: Mapping[str, Any]) -> str:
         f"<td>{escape(str(row.get('model_family', '')))}</td>"
         f"<td>{escape(str(row.get('strategy_name', '')))}</td>"
         f"<td>{escape(str(row.get('readiness', 'registry_only')))}</td>"
-        f"<td>{escape(str(row.get('claim_boundary', 'no_alpha_claim')))}</td>"
+        f"<td>{escape(_required_claim_boundary(row))}</td>"
         "</tr>"
         for row in summary.get("experiments", [])
     )
+    summary_claim = _required_claim_boundary({"claim_boundary": summary.get("claim_boundary")})
     return (
         "<main>"
         "<section id=\"leaderboard\"><h2>Leaderboard</h2>"
@@ -50,7 +58,7 @@ def render_dashboard_html(summary: Mapping[str, Any]) -> str:
         "<th>Claim</th></tr></thead>"
         f"<tbody>{experiments}</tbody></table></section>"
         "<section id=\"evidence\"><h2>Evidence</h2>"
-        f"<p>{escape(str(summary.get('claim_boundary', 'no_alpha_claim')))}</p>"
+        f"<p>{escape(summary_claim)}</p>"
         f"<ul>{warnings}</ul></section>"
         "</main>"
     )

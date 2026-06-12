@@ -69,6 +69,7 @@ def test_mutation_runner_list_smoke():
     assert "d2-forecast-claim-boundary" in result.stdout
     assert "d3-robust-claim-boundary" in result.stdout
     assert "e-registry-claim-boundary" in result.stdout
+    assert "e-evidence-explicit-claim-boundary" in result.stdout
     assert "e-tier3-readiness-gate" in result.stdout
     assert "e-tier3-gate-proof-digest" in result.stdout
     assert "e-tier3-gate-production-validator" in result.stdout
@@ -198,6 +199,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "showcase-experiment-readiness" in out
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out
+    assert "e-evidence-explicit-claim-boundary" in out
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out

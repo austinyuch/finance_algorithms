@@ -330,6 +330,15 @@ def test_serving_smoke_evidence_rejects_unhealthy_or_alpha_claim(tmp_path):
             observed_at="2026-06-12T02:30:00Z",
         )
 
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_serving_smoke_evidence(
+            entry,
+            health_check=lambda: {"status": "ok"},
+            predict=lambda request: {"ok": True},
+            sample_request={"features": {"x": 1}},
+            observed_at="2026-06-12T02:30:00Z",
+        )
+
 
 def test_retraining_smoke_evidence_proves_only_retraining_slice(tmp_path):
     from quantlab.mlops import (
@@ -462,6 +471,14 @@ def test_automated_drift_monitoring_rejects_overclaim_or_bad_status(tmp_path):
         build_automated_drift_monitoring_evidence(
             entry,
             monitor=lambda request: {"status": "stable", "claim_boundary": "alpha_claim", "metric_deltas": {"x": 0.1}},
+            monitor_request={"threshold": 0.05},
+            observed_at="2026-06-12T04:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_automated_drift_monitoring_evidence(
+            entry,
+            monitor=lambda request: {"status": "stable", "metric_deltas": {"x": 0.1}},
             monitor_request={"threshold": 0.05},
             observed_at="2026-06-12T04:00:00Z",
         )
@@ -637,6 +654,17 @@ def test_production_evidence_rejects_local_or_overclaimed_inputs(tmp_path):
             external_proof_id="serving-run-123",
         )
 
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_serving_evidence(
+            entry,
+            endpoint="https://quant.example.com/model",
+            health={"status": "ok"},
+            sample_request={"x": 1},
+            prediction={"ok": True},
+            observed_at="2026-06-12T05:00:00Z",
+            external_proof_id="serving-run-123",
+        )
+
     with pytest.raises(ValueError, match="external orchestrator"):
         build_production_retraining_evidence(
             entry,
@@ -733,6 +761,14 @@ def test_retraining_smoke_evidence_rejects_failed_alpha_or_missing_oos(tmp_path)
         build_retraining_smoke_evidence(
             entry,
             retrain=lambda request: {"status": "completed", "run_id": "train-1", "claim_boundary": "alpha_claim"},
+            training_request={"lookback": 12},
+            observed_at="2026-06-12T03:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_retraining_smoke_evidence(
+            entry,
+            retrain=lambda request: {"status": "completed", "run_id": "train-1"},
             training_request={"lookback": 12},
             observed_at="2026-06-12T03:00:00Z",
         )
@@ -1227,6 +1263,19 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             observed_at="2026-06-12T05:10:00Z",
             external_proof_id="retrain-run-123",
         )
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_retraining_evidence(
+            entry,
+            orchestrator="github-actions://finance_algorithms/retrain",
+            result={
+                "status": "completed",
+                "run_id": "train-prod-123",
+                "artifact_uri": "s3://quant-prod/models/train-prod-123.json",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            observed_at="2026-06-12T05:10:00Z",
+            external_proof_id="retrain-run-123",
+        )
     with pytest.raises(ValueError, match="run_id"):
         build_production_retraining_evidence(
             entry,
@@ -1368,6 +1417,14 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             observed_at="2026-06-12T05:20:00Z",
             external_proof_id="drift-run-123",
         )
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_production_automated_drift_monitoring_evidence(
+            entry,
+            monitor="https://quant.example.com/monitors/return-risk",
+            result={"status": "stable", "metric_deltas": {"x": 0.1}},
+            observed_at="2026-06-12T05:20:00Z",
+            external_proof_id="drift-run-123",
+        )
     for evidence in [
         {"artifact_kind": "bad"},
         {"artifact_kind": "production_automated_drift_monitoring_evidence", "claim_boundary": "alpha_claim"},
@@ -1450,10 +1507,17 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
         "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
         "strategy_metadata": {"claim_boundary": "alpha_claim"},
     })
+    missing_claim_run = store.log({
+        "strategy_name": "MissingClaimStrategy",
+        "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+        "strategy_metadata": {},
+    })
     with pytest.raises(ValueError, match="run_ids"):
         register_result_store_runs(registry, store, model_family="family", strategy_name="Strategy", config={}, run_ids=[])
     with pytest.raises(ValueError, match="no_alpha_claim"):
         register_result_store_runs(registry, store, model_family="family", strategy_name="Strategy", config={}, run_ids=[alpha_run])
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        register_result_store_runs(registry, store, model_family="family", strategy_name="Strategy", config={}, run_ids=[missing_claim_run])
 
 
 def test_drift_assessment_report_detects_metric_drift_without_serving_claim(tmp_path):

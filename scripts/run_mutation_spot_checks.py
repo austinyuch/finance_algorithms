@@ -75,10 +75,10 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="showcase-claim-boundary",
         path="quantlab/showcase/api.py",
-        original='return str(metadata.get("claim_boundary") or "no_alpha_claim")',
-        mutated='return str(metadata.get("claim_boundary") or "alpha_claim")',
+        original='if claim != "no_alpha_claim":\n        raise ValueError("showcase records must explicitly preserve claim_boundary=no_alpha_claim")',
+        mutated='if False and claim != "no_alpha_claim":\n        raise ValueError("showcase records must explicitly preserve claim_boundary=no_alpha_claim")',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_f_1_showcase_api.py::test_dashboard_summary_conservative_defaults_and_no_mutation"),
+                      "tests/quantlab/test_f_1_showcase_api.py::test_showcase_api_rejects_missing_claim_boundary_metadata"),
     ),
     MutationSpec(
         name="d2-forecast-claim-boundary",
@@ -183,6 +183,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         mutated='if artifact.get("checksum") == _checksum(entries):',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_e_1_experiment_registry.py::test_experiment_registry_writes_checksum_snapshot_and_detects_tampering"),
+    ),
+    MutationSpec(
+        name="e-evidence-explicit-claim-boundary",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if payload.get("claim_boundary") != "no_alpha_claim":\n        raise ValueError(f"{label} must explicitly preserve no_alpha_claim")',
+        mutated='if False and payload.get("claim_boundary") != "no_alpha_claim":\n        raise ValueError(f"{label} must explicitly preserve no_alpha_claim")',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_serving_smoke_evidence_rejects_unhealthy_or_alpha_claim"),
     ),
     MutationSpec(
         name="d-model-evaluation-alpha-gate",
@@ -419,7 +427,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**69/69 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**70/70 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -531,7 +539,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"251 passed"',
+        original='"253 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -539,7 +547,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"251 passed"',
+        original='"253 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -547,7 +555,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="251 passed",
+        original="253 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),

@@ -44,9 +44,13 @@ def test_model_family_evaluation_rejects_alpha_claim_and_missing_baseline():
 
     bad = _record("bad", "BadStrategy", 1.0)
     bad["strategy_metadata"] = {"claim_boundary": "alpha_claim"}
+    missing = _record("missing", "MissingClaimStrategy", 1.0)
+    missing["strategy_metadata"] = {}
 
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_model_family_evaluation({"bad": [bad]})
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_model_family_evaluation({"bad": [missing]})
     with pytest.raises(ValueError, match="baseline"):
         build_model_family_evaluation({"regime": [_record("run", "RegimeAllocationStrategy", 1.0)]})
 
