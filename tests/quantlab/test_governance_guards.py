@@ -83,3 +83,14 @@ def test_next_steps_reflects_post_merge_scheduled_observer_state():
     assert "PR #29" in text
     assert "PR #30" in text
     assert "schedule_run_count=0" in text
+
+
+def test_next_steps_reflects_post_merge_governance_sync_state():
+    """NEXT_STEPS should advance after the post-merge governance sync has landed."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "Open/promote `spec/post-merge-scheduled-observer-sync`" not in text
+    assert "PR #31" in text
+    assert "PR #32" in text
+    assert "E Tier3" in text
+    assert "serving, retraining, and automated drift monitoring" in text

@@ -15,4 +15,4 @@
 | 9 | **平行結果不一致** | 母 seed 衍生子 seed,平行==序列 | `test_a0_3`/`test_a0_5` PBT-4 |
 | 10 | **測試假綠** | mutation spot checks kill representative domain/governance mutations; current configured suite is 26/26, including root Torch dependency, stale governance evidence, and scheduled-run observer guards | `scripts/run_mutation_spot_checks.py`; `quantlab/TESTS.md` |
 
-驗證指令:`uv run pytest -q`(193 passed, 1 skipped; PyTorch LSTM optional lane skipped in default env)· `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports`(clean)· `uv run lint-imports`(KEPT)· `uv run python scripts/run_mutation_spot_checks.py --only governance-stale-scheduled-observer-promotion`(killed; full configured suite now 26/26)
+驗證指令:`uv run pytest -q`(194 passed, 1 skipped; PyTorch LSTM optional lane skipped in default env)· `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports`(clean)· `uv run lint-imports`(KEPT)· `uv run python scripts/run_mutation_spot_checks.py --only governance-stale-post-merge-sync-promotion`(killed; full configured suite now 26/26)
