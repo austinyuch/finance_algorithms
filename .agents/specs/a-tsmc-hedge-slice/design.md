@@ -61,7 +61,7 @@ LSTM / baselines ─────────────────────
 | FMEA-A-02 | LSTM 只報 in-sample 漂亮 | false green | 一律 OOS-net、對笨 baseline 並排 | A-2/A-5 |
 | FMEA-A-03 | 篩選用到未來資料 | lookahead | 只用 `history(asof)`,A0 PIT 守門 | A-1 |
 | FMEA-A-04 | 對衝宣稱降風險但實未降 | overclaim | A-4 顯式測 vol_hedge<vol_target | A-4 |
-| FMEA-A-05 | torch 滲入回測核心 | 破壞框架無感 | import-linter 契約 + AST 測試 | (residual PR#3) |
+| FMEA-A-05 | torch 滲入回測核心 | 破壞框架無感 | import-linter 契約 + AST 測試 | closed by `test_a0_0_contract`, `test_import_linter_contract_kept`, and root Torch dependency guard |
 
 ## 4. REQ → Design / Test
 | REQ | Design | Test |

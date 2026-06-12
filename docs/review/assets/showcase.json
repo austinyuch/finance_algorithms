@@ -16,7 +16,7 @@
     "tests": [
       "249 passed",
       "frontend tests 32 passed",
-      "Python mutation 64/64 killed",
+      "Python mutation 66/66 killed",
       "frontend mutation 15/15 killed",
       "F Next.js coverage 91.05%",
       "frontend audit 0 vulnerabilities",

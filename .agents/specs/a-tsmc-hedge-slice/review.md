@@ -26,7 +26,7 @@
 ## Residual / 刻意降級(非阻塞)
 
 - 資料合成(真實源屬 Epic B);LSTM 單次訓練(週期重訓/超參搜尋待後);成本僅周轉型;
-  框架隔離以 AST 測試守住(import-linter 待正式化);三框架真機 GPU 驗證待辦。
+  框架隔離已由 AST 測試與 import-linter 契約共同守住;三框架真機 GPU 驗證仍屬 optional lane。
 
 ## 交棒
 

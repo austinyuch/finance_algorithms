@@ -197,7 +197,7 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
-        "Current evidence is **64/64 configured/killed**.\n",
+        "Current evidence is **66/66 configured/killed**.\n",
         encoding="utf-8",
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
@@ -236,7 +236,7 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     assert artifact["evidence"]["tests"] == [
         "249 passed",
         "frontend tests 32 passed",
-        "Python mutation 64/64 killed",
+        "Python mutation 66/66 killed",
         "frontend mutation 15/15 killed",
         "F Next.js coverage 91.05%",
         "frontend audit 0 vulnerabilities",
