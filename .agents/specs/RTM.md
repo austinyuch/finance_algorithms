@@ -14,12 +14,12 @@
 |---|---|---|---|---|
 | A0 | Lookahead-safe vectorized backtest with OOS-net metrics, walk-forward, parallel run, tracking | `quantlab/{contracts,data,engine,parallel,tracking}` | `test_a0_0..5`; mutation 5/5; CR-A0 regime scheduling | **PASSED** |
 | A | TSMC hedge slice ranked vs baselines | `quantlab/strategies/`, `scripts/run_tsmc_hedge_slice.py` | `test_a_1..5` (83 tests); live leaderboard transcript | **PASSED** (synthetic; `no_alpha_claim`) |
-| B | PIT vintage loader, FRED proxies, as-of alignment, `pit_strictness`, source-health, snapshot run report + ops gate | `quantlab/data/`, `scripts/{daily_snapshot,snapshot_ops_gate}.py` | `test_b_1..5`; `test_daily_snapshot.py` (19); CR-B5/B7..B11 | **PASSED (repo-side)**; residual `ISSUE-B3-001` (Stooq) |
+| B | PIT vintage loader, FRED proxies, as-of alignment, `pit_strictness`, source-health, snapshot run report + ops gate | `quantlab/data/`, `scripts/{daily_snapshot,snapshot_ops_gate}.py`, `.github/workflows/daily-snapshot.yml` | `test_b_1..5`; `test_daily_snapshot.py` (24); CR-B5/B7..B11; Actions run `27387041974` | **PASSED (repo-side + workflow_dispatch)**; residual `ISSUE-B3-001` (Stooq), cron event proof pending |
 | C | Optimizer, multi-period allocation, regime rebalance selector, pyramid-entry adapter | `quantlab/portfolio/` | `test_c_1..5` (123) | **PASSED** |
 | D | First-regime, return/risk forecast, robust optimizer, family evaluator — OOS-net baselines | `quantlab/models/`, `quantlab/research/` | `test_d_1,3,4,5,6`; real-data regime benchmark | **PASSED** (`no_alpha_claim`) |
 | E | Experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge | `quantlab/mlops/`, `quantlab/showcase/` | `test_e_1` (7); trace 97.3% | **PASSED** (registry-only) |
 | F | Showcase read API, Next.js dashboard, demo hardening, public/static showcase | `quantlab/showcase/`, `frontend/` | `test_f_1`; `frontend` npm test (23); static export | **CONDITIONAL** · `local_demo_only` |
-| F/B/E ops | Browser visual diff, public-hosting probe, schedule run proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/out/*`, `frontend/visual-baselines/browser-visual.png` | `browser-visual.png` `proven`; repo-baseline pixel diff `0 / 1,296,000`; probe HTTP 200; mutation 22/22 + frontend 9/9 | **PASSED** (ops-visual-drift-artifacts + f-browser-pixel-baseline) |
+| F/B/E ops | Browser visual diff, public-hosting probe, schedule run proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/out/*`, `frontend/visual-baselines/browser-visual.png`, `.github/workflows/daily-snapshot.yml` | `browser-visual.png` `proven`; repo-baseline pixel diff `0 / 1,296,000`; probe HTTP 200; Actions `workflow_dispatch` run `27387041974`; mutation 22/22 + frontend 9/9 | **PASSED** (ops-visual-drift-artifacts + f-browser-pixel-baseline + b-live-scheduled-snapshot-proof) |
 | G | Source-contract-first local alt-data loader (two optional slices) | `quantlab/data/` alt-data loader | `test_g_1` (7); PBT + mutation | **PASSED** (default-disabled) |
 | Legacy | Arithmetic/geometric pyramid order sizing API | `invest_algorithms/` | `tests/test_algo_pyramid.py` | stable legacy baseline |
 
@@ -40,8 +40,8 @@
 
 - No CI-managed visual baseline history beyond the committed repo baseline —
   residual in `f-browser-pixel-baseline/review.md`.
-- No live **scheduled** GitHub Actions run artifact yet — residual in
-  `ops-visual-drift-artifacts/review.md`.
+- GitHub Actions `workflow_dispatch` proof exists (`27387041974`); autonomous
+  cron-triggered `event=schedule` proof remains pending.
 - Real-data backtest — deferred until ≥2 price assets accumulate
   (`run_vintage_slice.py`).
 - Stooq source contract — `ISSUE-B3-001` (folded into CR-B7/B8/B9).

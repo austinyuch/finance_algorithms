@@ -134,7 +134,7 @@ npm run smoke                  <span style="color:#7d90b0"># 本地 HTTP smoke�
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、ops-visual-drift-artifacts/review.md<br>
-      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）。<b>殘留：</b>無 live <em>scheduled</em> run artifact；export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
+      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；GitHub Actions <code>workflow_dispatch</code> schedule proof 已有 run <code>27387041974</code>。<b>殘留：</b>尚無 autonomous cron <code>event=schedule</code> run；export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
     </div>
   </section>
 
@@ -156,7 +156,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
-      <tr><td>無 live <em>scheduled</em> GitHub Actions run artifact</td><td>Medium</td><td>ops-visual-drift-artifacts/review.md</td></tr>
+      <tr><td>尚無 autonomous cron <code>event=schedule</code> GitHub Actions run</td><td>Medium</td><td>b-live-scheduled-snapshot-proof/review.md</td></tr>
       <tr><td>Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 <code>not_proven</code></td><td>Low</td><td>frontend/out/index.html</td></tr>
       <tr><td>Vintage 真實資料回測延後（&lt;2 價格資產）</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>

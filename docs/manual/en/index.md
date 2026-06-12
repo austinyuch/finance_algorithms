@@ -155,9 +155,11 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
 > - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
->   mismatched pixels at threshold `0.001`). Residual: no live
->   *scheduled* run artifact yet. Public-hosting probe is `proven` HTTP 200, but
->   the export's embedded readiness panel remains conservative (`not_proven`) by contract.
+>   mismatched pixels at threshold `0.001`); GitHub Actions `workflow_dispatch`
+>   schedule proof exists as run `27387041974`. Residual: no autonomous
+>   cron-triggered `event=schedule` run yet. Public-hosting probe is `proven`
+>   HTTP 200, but the export's embedded readiness panel remains conservative
+>   (`not_proven`) by contract.
 
 ---
 
@@ -199,7 +201,7 @@ baseline** — preserved unchanged.
 | Gap | Severity | Source |
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
-| No live *scheduled* GitHub Actions run artifact captured | Medium | `ops-visual-drift-artifacts/review.md` (residual) |
+| No autonomous cron-triggered `event=schedule` GitHub Actions run observed | Medium | `b-live-scheduled-snapshot-proof/review.md` |
 | Static export's readiness panel remains conservative (`not_proven`) by dashboard contract | Low | `frontend/out/index.html` |
 | Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |
