@@ -208,6 +208,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
+        name="e-tier3-cli-serving-validator",
+        path="scripts/tier3_readiness_gate.py",
+        original="validate_production_serving_evidence(serving)",
+        mutated="None  # validator bypassed by mutation",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_tier3_readiness_gate_cli.py::test_tier3_readiness_gate_cli_rejects_spoofed_production_map"),
+    ),
+    MutationSpec(
         name="d-result-store-evaluation-source",
         path="quantlab/models/evaluation.py",
         original='"source": "local_result_store"',
