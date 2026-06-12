@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 188 passed, 1 skipped
+uv run pytest -q             # sanity: expect 190 passed, 1 skipped
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -154,7 +154,7 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
-> - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
+> - Resolved: visual diff is repo-baseline pixel-backed (`505 / 1,296,000`
 >   mismatched pixels at threshold `0.001`); GitHub Actions `workflow_dispatch`
 >   schedule proof exists as run `27387041974`. Residual: no autonomous
 >   cron-triggered `event=schedule` run yet. Public-hosting probe is `proven`
@@ -190,11 +190,11 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **188 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane; mypy is clean over **51** files; mutation spot checks are **23/23 killed**, including the root Torch dependency mutation.
+- Test suite is now **190 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **51** files; mutation spot checks are **24/24 configured**, including root Torch dependency and stale governance evidence mutations.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
-- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `0 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `505 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
 
