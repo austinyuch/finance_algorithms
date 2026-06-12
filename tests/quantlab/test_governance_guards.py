@@ -70,6 +70,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "231 passed",
         "237 passed",
         "23 frontend tests",
+        "27 frontend tests",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
