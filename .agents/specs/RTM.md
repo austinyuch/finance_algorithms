@@ -20,7 +20,7 @@
 | D | First-regime, return/risk forecast, robust optimizer, family evaluator — OOS-net baselines | `quantlab/models/`, `quantlab/research/` | `test_d_1,3,4,5,6`; real-data regime benchmark | **PASSED** (`no_alpha_claim`) |
 | E | Experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge, Tier3 readiness gate, local serving/retraining/automated drift monitoring smoke evidence, production-tier evidence gate, governed production evidence probes, strict readiness proof CLI | `quantlab/mlops/`, `quantlab/showcase/`, `scripts/tier3_readiness_gate.py` | `test_e_1` (27); `test_tier3_readiness_gate_cli` (4); `e-tier3-readiness-gate`, `e-serving-smoke-health-gate`, `e-retraining-smoke-status-gate`, `e-tier3-production-tier-gate`, `e-automated-drift-status-gate`, `e-production-serving-endpoint-gate`, `e-production-retraining-status-gate`, and `e-tier3-cli-serving-validator` mutations killed; focused `experiment_registry` line coverage 100% | **PASSED** (local smoke only; production proof requires external payloads) |
 | F | Showcase read API, Next.js dashboard, demo hardening, public/static showcase | `quantlab/showcase/`, `frontend/` | `test_f_1`; `frontend` npm test (23); static export | **CONDITIONAL** · `local_demo_only` |
-| F/B/E ops | Browser visual diff, public-hosting probe, deployment manifest/probe/content-hash/contract consistency, schedule run proof, scoped/live quorum snapshot proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/scripts/export-public-demo.tsx`, `docs/{deployment-manifest,public-hosting-probe}.json`, `frontend/visual-baselines/browser-visual.png`, `.github/workflows/daily-snapshot.yml`, `scripts/{daily_snapshot,source_quorum_proof,stooq_contract_proof}.py` | `browser-visual.png` `proven`; repo-baseline pixel diff `221 / 1,296,000`; probe HTTP 200 plus deployed manifest HTTP 200, `dataHash`, and matching manifest contract metadata; `docs/deployment-manifest.json` records `hostingEvidence.status=proven` with `hashStatus=matched` and `manifestContractStatus=matched`; Actions `schedule` run `27392471359`; CR-B12 live write smoke; CR-B19 broad FRED/Yahoo/NOAA quorum proof; CR-B20 Stooq proof fails closed on HTTP 404; Python mutation 45/45 configured/killed + frontend 11/11 | **PASSED** (ops-visual-drift-artifacts + f-browser-pixel-baseline + b-live-scheduled-snapshot-proof + promotion-boundary guard + CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-B19 + CR-B20) |
+| F/B/E ops | Browser visual diff, public-hosting probe, deployment manifest/probe/content-hash/contract consistency, schedule run proof, scoped/live quorum snapshot proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/scripts/export-public-demo.tsx`, `docs/{deployment-manifest,public-hosting-probe}.json`, `frontend/visual-baselines/browser-visual.png`, `.github/workflows/daily-snapshot.yml`, `scripts/{daily_snapshot,source_quorum_proof,stooq_contract_proof}.py` | `browser-visual.png` `proven`; repo-baseline pixel diff `221 / 1,296,000`; probe HTTP 200 plus deployed manifest HTTP 200 and matching manifest contract metadata; current branch `docs/deployment-manifest.json` is `configured_not_observed` with `hashStatus=mismatched` until Pages deploys the refreshed dashboard evidence `dataHash`; Actions `schedule` run `27392471359`; CR-B12 live write smoke; CR-B19 broad FRED/Yahoo/NOAA quorum proof; CR-B20 Stooq proof fails closed on HTTP 404; Python mutation 45/45 configured/killed + frontend 12/12 | **PASSED** (ops-visual-drift-artifacts + f-browser-pixel-baseline + b-live-scheduled-snapshot-proof + promotion-boundary guard + CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-004 + CR-B19 + CR-B20) |
 | G | Source-contract-first local alt-data loader (two optional slices) | `quantlab/data/` alt-data loader | `test_g_1` (7); PBT + mutation | **PASSED** (default-disabled) |
 | Legacy | Arithmetic/geometric pyramid order sizing API | `invest_algorithms/` | `tests/test_algo_pyramid.py` | stable legacy baseline |
 
@@ -31,12 +31,12 @@
 | Python suite | `uv run pytest -q` | **236 passed** |
 | Type check | `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` | clean, 55 files |
 | Architecture | `uv run lint-imports` | KEPT (73 files, 177 deps) |
-| Frontend unit | `cd frontend && npm test` | 26 passed |
+| Frontend unit | `cd frontend && npm test` | 27 passed |
 | Frontend supply chain | `npm audit --omit=dev` | 0 vulnerabilities |
 | E registry line coverage | `uv run pytest --cov=quantlab.mlops.experiment_registry --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py` | 27 passed; 100% line coverage |
 | Python mutation | `uv run python scripts/run_mutation_spot_checks.py` | 45/45 configured mutations killed, including CR-B12 `snapshot-scoped-source-health`, CR-B19 `b-source-quorum-proof-exit-gate` / `b-source-quorum-proof-file-gate`, CR-B20 `b-stooq-proof-exit-gate` / `b-stooq-proof-file-gate`, governance `governance-stale-next-steps-alert`, `governance-stale-post-merge-sync-promotion`, `governance-stale-cron-proof-pending`, `governance-exhaustive-pr-ledger-regression`, CR-FPS-001 `public-hosting-manifest-status-regression`, CR-FPS-002 `public-hosting-manifest-hash-regression`, and CR-FPS-003 `public-hosting-manifest-contract-regression` |
 | Browser visual | `cd frontend && npm run visual:browser` | `proven`; repo-baseline pixel diff `221 / 1,296,000` at threshold `0.001` |
-| Public-hosting probe | `cd frontend && npm run probe:public-demo` | HTTP 200 plus deployed manifest HTTP 200, matching `dataHash`, and matching manifest contract metadata `proven` |
+| Public-hosting probe | `cd frontend && npm run probe:public-demo` | HTTP 200 plus deployed manifest HTTP 200 and matching manifest contract metadata; current branch dataHash is not yet deployed, so manifest remains `configured_not_observed` |
 
 ## Open verification gaps (owned elsewhere)
 
@@ -53,9 +53,10 @@
 - Stooq source contract — `ISSUE-B3-001` (folded into CR-B7/B8/B9/B20; still blocked/default-disabled).
 
 > Resolved 2026-06-11/12: live chromium-headless browser screenshot
-> (`browser-visual.png` `proven`) and public-hosting probe (HTTP 200 plus deployed `dataHash` and manifest-contract parity `proven`)
-> now exist; the earlier `not_proven` / `configured_not_observed` claims are
-> superseded by `ops-visual-drift-artifacts/review.md`.
+> (`browser-visual.png` `proven`) and public-hosting probe (HTTP 200 plus
+> deployed manifest contract metadata) now exist. The current branch-local
+> dashboard evidence refresh changes `dataHash`, so hosted parity remains
+> `configured_not_observed` until Pages deploys the new artifact.
 
 Doc reconciliation on 2026-06-12 surfaced **no new unowned issues**; all gaps
 trace to an existing spec/CR/review or `ISSUE_LOG.md`.
