@@ -133,6 +133,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "12 frontend mutations",
         "mutation 12/12 killed",
         "frontend mutation 12/12",
+        "28 frontend tests",
+        "28 tests pass",
+        "13 frontend mutations",
+        "mutation 13/13 killed",
+        "frontend mutation 13/13",
         "221 / 1,296,000",
         "221/1,296,000",
         "latest 221",
@@ -205,9 +210,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     assert "241 passed" in manual_guide
     assert "241 passed" in review_guide
     assert "Python suite now <b>241 passed</b>" in review_html
-    assert "Tests  28 passed (28)" in frontend_gate
-    assert "Frontend <b>28 tests pass</b>" in review_html
+    assert "Tests  29 passed (29)" in frontend_gate
+    assert "Frontend <b>29 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
+    assert "28 tests pass" not in review_html
     assert "Success: no issues found in 57 source files" in mypy_gate
     assert "Analyzed 74 files, 185 dependencies." in lint_gate
     assert audit_text.strip() == "found 0 vulnerabilities"
@@ -353,6 +359,8 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert isinstance(hosting.get("observedAt"), str)
     assert hosting["observedAt"].endswith("Z")
     assert hosting.get("manifestContractStatus") == "matched"
+    assert hosting.get("freshnessStatus") == "fresh"
+    assert hosting.get("maxAgeHours") == 24
     assert hosting.get("expectedDataHash") == manifest.get("dataHash")
     assert hosting.get("deployedTargetUrl") == manifest.get("targetUrl")
     assert hosting.get("deployedArtifactKind") == manifest.get("artifactKind")
@@ -382,8 +390,9 @@ def test_demo_risk_taxonomy_names_current_public_hosting_authority():
     """Stakeholder warning taxonomy must point at committed parity evidence."""
     text = (ROOT / "docs/DEMO_RISK_WARNING_TAXONOMY.md").read_text(encoding="utf-8")
 
-    assert "CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007" in text
+    assert "CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007 + CR-FPS-008" in text
     assert "standalone probe parity" in text
+    assert "freshness" in text
     assert "docs/deployment-manifest.json" in text
     assert "docs/public-hosting-probe.json" in text
     assert "frontend/out/public-hosting-probe.json" not in text

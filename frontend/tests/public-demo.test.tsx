@@ -27,6 +27,9 @@ function deployedManifestContract() {
 }
 
 describe("F public static showcase proof", () => {
+  const freshNow = "2026-06-11T15:00:00Z";
+  const freshObservedAt = "2026-06-11T14:50:00Z";
+
   it("keeps the committed public-hosting probe unproven while deployed dataHash is stale", () => {
     const manifest = JSON.parse(
       readFileSync(new URL("../../docs/deployment-manifest.json", import.meta.url), "utf8"),
@@ -72,17 +75,40 @@ describe("F public static showcase proof", () => {
       pagesConfigured: true,
       pagesStatus: "built",
       httpStatus: 200,
-      observedAt: "2026-06-11T14:50:00Z",
+      observedAt: freshObservedAt,
       deployedDataHash: expectedHash,
       ...deployedManifestContract(),
-    });
+    }, { now: freshNow });
 
     expect(manifest.hostingEvidence.status).toBe("proven");
     expect(manifest.hostingEvidence.pagesStatus).toBe("built");
     expect(manifest.hostingEvidence.httpStatus).toBe(200);
-    expect(manifest.hostingEvidence.observedAt).toBe("2026-06-11T14:50:00Z");
+    expect(manifest.hostingEvidence.observedAt).toBe(freshObservedAt);
+    expect(manifest.hostingEvidence.freshnessStatus).toBe("fresh");
     expect(manifest.hostingEvidence.deployedDataHash).toBe(expectedHash);
     expect(manifest.hostingEvidence.expectedDataHash).toBe(expectedHash);
+    expect(manifest.hostingEvidence.hashStatus).toBe("matched");
+    expect(manifest.hostingEvidence.manifestContractStatus).toBe("matched");
+  });
+
+  it("keeps otherwise matching public hosting unobserved when probe evidence is stale", () => {
+    const dashboard = getShowcaseDashboard();
+    const expectedHash = buildPublicDemoManifest(dashboard).dataHash;
+    const manifest = buildPublicDemoManifest(dashboard, {
+      pagesConfigured: true,
+      pagesStatus: "built",
+      httpStatus: 200,
+      observedAt: "2026-06-09T14:50:00Z",
+      deployedDataHash: expectedHash,
+      ...deployedManifestContract(),
+    }, {
+      now: "2026-06-11T15:00:00Z",
+      maxAgeHours: 24,
+    });
+
+    expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
+    expect(manifest.hostingEvidence.freshnessStatus).toBe("stale");
+    expect(manifest.hostingEvidence.deployedDataHash).toBe(expectedHash);
     expect(manifest.hostingEvidence.hashStatus).toBe("matched");
     expect(manifest.hostingEvidence.manifestContractStatus).toBe("matched");
   });
@@ -106,13 +132,14 @@ describe("F public static showcase proof", () => {
       pagesConfigured: true,
       pagesStatus: "built",
       httpStatus: 200,
-      observedAt: "2026-06-11T14:50:00Z",
+      observedAt: freshObservedAt,
       deployedDataHash: staleHash,
       ...deployedManifestContract(),
-    });
+    }, { now: freshNow });
 
     expect(staleHash).not.toBe(expectedHash);
     expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
+    expect(manifest.hostingEvidence.freshnessStatus).toBe("fresh");
     expect(manifest.hostingEvidence.deployedDataHash).toBe(staleHash);
     expect(manifest.hostingEvidence.expectedDataHash).toBe(expectedHash);
     expect(manifest.hostingEvidence.hashStatus).toBe("mismatched");
@@ -127,13 +154,14 @@ describe("F public static showcase proof", () => {
       pagesConfigured: true,
       pagesStatus: "built",
       httpStatus: 200,
-      observedAt: "2026-06-11T14:50:00Z",
+      observedAt: freshObservedAt,
       deployedDataHash: expectedHash,
       ...deployedManifestContract(),
       deployedClaimBoundary: "alpha_claim" as never,
-    });
+    }, { now: freshNow });
 
     expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
+    expect(manifest.hostingEvidence.freshnessStatus).toBe("fresh");
     expect(manifest.hostingEvidence.hashStatus).toBe("matched");
     expect(manifest.hostingEvidence.manifestContractStatus).toBe("mismatched");
   });
@@ -336,9 +364,10 @@ describe("F public static showcase proof", () => {
           pagesConfigured: true,
           pagesStatus: "built",
           httpStatus,
+          observedAt: freshObservedAt,
           deployedDataHash: expectedDataHash,
           ...deployedManifestContract(),
-        }, expectedDataHash);
+        }, expectedDataHash, { now: freshNow });
         expect(evidence.status).not.toBe("proven");
       }),
     );
@@ -356,9 +385,10 @@ describe("F public static showcase proof", () => {
             pagesConfigured: true,
             pagesStatus: "built",
             httpStatus: 200,
+            observedAt: freshObservedAt,
             deployedDataHash,
             ...deployedManifestContract(),
-          }, expectedDataHash);
+          }, expectedDataHash, { now: freshNow });
           expect(evidence.status).toBe(deployedDataHash === expectedDataHash ? "proven" : "configured_not_observed");
         },
       ),

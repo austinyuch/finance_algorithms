@@ -3,8 +3,10 @@ import { createHash } from "node:crypto";
 import type { ShowcaseDashboard } from "./showcase-contract";
 
 export const PUBLIC_SHOWCASE_URL = "https://austinyuch.github.io/finance_algorithms/";
+export const PUBLIC_HOSTING_EVIDENCE_MAX_AGE_HOURS = 24;
 
 export type PublicHostingStatus = "not_configured" | "configured_not_observed" | "proven";
+export type PublicHostingFreshnessStatus = "fresh" | "stale" | "missing" | "invalid";
 
 export interface PublicHostingProbe {
   pagesConfigured: boolean;
@@ -30,6 +32,8 @@ export interface PublicDemoManifest {
     observedAt?: string;
     deployedDataHash?: string;
     expectedDataHash?: string;
+    freshnessStatus?: PublicHostingFreshnessStatus;
+    maxAgeHours?: number;
     hashStatus?: "matched" | "mismatched" | "missing" | "not_checked";
     deployedTargetUrl?: string;
     deployedArtifactKind?: string;
@@ -88,8 +92,35 @@ export interface PixelMismatchResult {
   mismatchRatio: number;
 }
 
+export interface PublicHostingFreshnessOptions {
+  now?: Date | string;
+  maxAgeHours?: number;
+}
+
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+function publicHostingFreshness(
+  observedAt: string | undefined,
+  options: PublicHostingFreshnessOptions = {},
+): { freshnessStatus: PublicHostingFreshnessStatus; maxAgeHours: number } {
+  const maxAgeHours = options.maxAgeHours ?? PUBLIC_HOSTING_EVIDENCE_MAX_AGE_HOURS;
+  if (!observedAt) {
+    return { freshnessStatus: "missing", maxAgeHours };
+  }
+  const observedMs = Date.parse(observedAt);
+  const nowMs =
+    options.now instanceof Date
+      ? options.now.getTime()
+      : typeof options.now === "string"
+        ? Date.parse(options.now)
+        : Date.now();
+  if (!Number.isFinite(observedMs) || !Number.isFinite(nowMs) || observedMs > nowMs) {
+    return { freshnessStatus: "invalid", maxAgeHours };
+  }
+  const ageHours = (nowMs - observedMs) / (1000 * 60 * 60);
+  return { freshnessStatus: ageHours <= maxAgeHours ? "fresh" : "stale", maxAgeHours };
 }
 
 export function dashboardSections(dashboard: ShowcaseDashboard): string[] {
@@ -109,6 +140,7 @@ export function dashboardSections(dashboard: ShowcaseDashboard): string[] {
 export function classifyPublicHostingEvidence(
   probe?: PublicHostingProbe,
   expectedDataHash?: string,
+  freshnessOptions: PublicHostingFreshnessOptions = {},
 ): PublicDemoManifest["hostingEvidence"] {
   if (!probe?.pagesConfigured) {
     return {
@@ -128,8 +160,9 @@ export function classifyPublicHostingEvidence(
     deployedTargetUrl: probe.deployedTargetUrl,
     deployedArtifactKind: probe.deployedArtifactKind,
     deployedClaimBoundary: probe.deployedClaimBoundary,
-    deployedDashboardClaim: probe.deployedDashboardClaim,
+      deployedDashboardClaim: probe.deployedDashboardClaim,
   };
+  const freshness = publicHostingFreshness(probe.observedAt, freshnessOptions);
   const hashStatus =
     expectedDataHash === undefined
       ? "not_checked"
@@ -155,15 +188,21 @@ export function classifyPublicHostingEvidence(
             probe.deployedDashboardClaim === "local_demo_only"
           ? "matched"
           : "mismatched";
-  if (probe.httpStatus === 200 && hashStatus === "matched" && manifestContractStatus === "matched") {
-    return { ...base, hashStatus, manifestContractStatus, status: "proven" };
+  if (
+    probe.httpStatus === 200 &&
+    hashStatus === "matched" &&
+    manifestContractStatus === "matched" &&
+    freshness.freshnessStatus === "fresh"
+  ) {
+    return { ...base, ...freshness, hashStatus, manifestContractStatus, status: "proven" };
   }
-  return { ...base, hashStatus, manifestContractStatus, status: "configured_not_observed" };
+  return { ...base, ...freshness, hashStatus, manifestContractStatus, status: "configured_not_observed" };
 }
 
 export function buildPublicDemoManifest(
   dashboard: ShowcaseDashboard,
   hostingProbe?: PublicHostingProbe,
+  freshnessOptions: PublicHostingFreshnessOptions = {},
 ): PublicDemoManifest {
   if (dashboard.claimBoundary !== "no_alpha_claim") {
     throw new Error("public demo manifest must preserve no_alpha_claim");
@@ -175,7 +214,7 @@ export function buildPublicDemoManifest(
   return {
     targetUrl: PUBLIC_SHOWCASE_URL,
     artifactKind: "github_pages_static_showcase",
-    hostingEvidence: classifyPublicHostingEvidence(hostingProbe ?? { pagesConfigured: true }, dataHash),
+    hostingEvidence: classifyPublicHostingEvidence(hostingProbe ?? { pagesConfigured: true }, dataHash, freshnessOptions),
     claimBoundary: "no_alpha_claim",
     dashboardClaim: dashboard.demoReadiness.claim,
     sections: dashboardSections(dashboard),

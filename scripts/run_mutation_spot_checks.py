@@ -418,8 +418,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="public-hosting-taxonomy-authority-regression",
         path="docs/DEMO_RISK_WARNING_TAXONOMY.md",
-        original="CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007",
-        mutated="CR-FPS-001 + CR-FPS-002 + CR-FPS-003",
+        original="CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007 + CR-FPS-008",
+        mutated="CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_demo_risk_taxonomy_names_current_public_hosting_authority"),
     ),

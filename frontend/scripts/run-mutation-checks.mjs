@@ -37,7 +37,7 @@ const mutations = [
   {
     name: "frontend-dashboard-stale-gate-evidence",
     path: "lib/showcase-payload.json",
-    original: '"frontend mutation 13/13 killed"',
+    original: '"frontend mutation 14/14 killed"',
     mutated: '"mutation 9/9 killed"',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
   },
@@ -51,23 +51,30 @@ const mutations = [
   {
     name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
-    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
-    mutated: "probe.httpStatus !== 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
+    original: "probe.httpStatus === 200 &&\n    hashStatus === \"matched\" &&\n    manifestContractStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"",
+    mutated: "probe.httpStatus !== 200 &&\n    hashStatus === \"matched\" &&\n    manifestContractStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
   },
   {
     name: "frontend-public-demo-hosting-hash-gate",
     path: "lib/public-demo.ts",
-    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
-    mutated: "probe.httpStatus === 200 && hashStatus !== \"missing\" && manifestContractStatus === \"matched\"",
+    original: "probe.httpStatus === 200 &&\n    hashStatus === \"matched\" &&\n    manifestContractStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"",
+    mutated: "probe.httpStatus === 200 &&\n    hashStatus !== \"missing\" &&\n    manifestContractStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "deployed data hashes"]
   },
   {
     name: "frontend-public-demo-hosting-manifest-contract-gate",
     path: "lib/public-demo.ts",
-    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\")",
-    mutated: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
+    original: "if (\n    probe.httpStatus === 200 &&\n    hashStatus === \"matched\" &&\n    manifestContractStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"\n  )",
+    mutated: "if (\n    probe.httpStatus === 200 &&\n    hashStatus === \"matched\" &&\n    freshness.freshnessStatus === \"fresh\"\n  )",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "weakens claim metadata"]
+  },
+  {
+    name: "frontend-public-demo-hosting-freshness-gate",
+    path: "lib/public-demo.ts",
+    original: 'freshness.freshnessStatus === "fresh"',
+    mutated: 'true',
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "probe evidence is stale"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",

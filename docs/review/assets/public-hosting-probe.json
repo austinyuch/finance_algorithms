@@ -5,13 +5,13 @@
   "httpStatus": 200,
   "deployedManifestStatus": 200,
   "deployedDataHash": "035b8509a2a08b2b1abc3101902ec3d9cf5b3470c533d926e045c9deaf4f8d4e",
-  "expectedDataHash": "c8eb6ba77e840a53b1e87cc44077a0c62e74826f9d9439dd7b19feb2e82902ec",
+  "expectedDataHash": "9b698d3bd35c29d4ccf22e9d820810e41df853d16e234ab92b31f7ad0a90b8d2",
   "hashStatus": "mismatched",
   "deployedTargetUrl": "https://austinyuch.github.io/finance_algorithms/",
   "deployedArtifactKind": "github_pages_static_showcase",
   "deployedClaimBoundary": "no_alpha_claim",
   "deployedDashboardClaim": "local_demo_only",
   "manifestContractStatus": "matched",
-  "observedAt": "2026-06-12T18:11:13.218Z",
+  "observedAt": "2026-06-12T18:26:38.827Z",
   "claimBoundary": "no_alpha_claim"
 }

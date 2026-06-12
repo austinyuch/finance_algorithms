@@ -48,7 +48,7 @@ Authoritative gates (recorded in the manual evidence panel):
 uv run pytest -q                                   # 241 passed (2026-06-12)
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports # clean, 57 files
 uv run lint-imports                                # engine/data KEPT
-(cd frontend && npm test && npm audit --omit=dev)  # 28 passed, 0 vulnerabilities
+(cd frontend && npm test && npm audit --omit=dev)  # 29 passed, 0 vulnerabilities
 ```
 
 ## 4. Evidence capture (Web UI lane — secondary)
