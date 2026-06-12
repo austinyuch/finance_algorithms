@@ -215,6 +215,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_dependency_security.py::test_default_project_dependencies_exclude_torch"),
     ),
+    MutationSpec(
+        name="governance-stale-next-steps-alert",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="Dependabot alert #7 fixed",
+        mutated="Dependabot alert #7 post-merge rescan pending",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_torch_alert_state"),
+    ),
 )
 
 

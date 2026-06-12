@@ -4,9 +4,10 @@
 
 ## Current State (2026-06-12)
 
-- **Current branch lane:** `spec/a-torch-default-dependency-isolation` is implemented locally from `main` baseline after `dev` was squash-promoted into `main` as PR #23 (`46fd8ce`).
+- **Current branch lane:** `spec/governance-evidence-refresh` is reconciling stale current-state governance evidence after the Torch dependency isolation promotion.
+- **Recently merged:** `a-torch-default-dependency-isolation` landed in `dev` via PR #24 (`e726fac`) and in `main` via PR #26 (`fcbdc23`). Dependabot alert #7 fixed (`fixed_at=2026-06-12T01:19:57Z`) for `uv.lock` / `torch`.
 - **Stakeholder docs published (2026-06-12):** bilingual user manual `docs/manual/{en,zh-tw}/index.{md,html}` and executive review `docs/review/index.html`, plus generation guides (`docs/MANUAL_GENERATION_GUIDE.md`, `docs/REVIEW_GENERATION_GUIDE.md`), shared evidence/warning contracts (`docs/{FEATURES,EVIDENCE_METADATA_CONTRACT,DEMO_RISK_WARNING_TAXONOMY}.md`), and traceability bridge `.agents/specs/RTM.md`. Live CLI demos captured under `docs/manual/assets/`; gate transcripts under `docs/review/assets/`; the chromium-headless `browser-visual.png`, `browser-visual-diff.json`, and `public-hosting-probe.json` (HTTP 200) copied into tracked doc assets (`frontend/out/` is gitignored). Readiness copied from each `review.md`; remaining ops residual = no autonomous cron-triggered scheduled-run artifact.
-- **Latest evidence:** `uv run pytest -q` → **188 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports` → clean(51 files); `uv run lint-imports` → KEPT; Python mutation spot checks **23/23 killed**, including `root-torch-default-dependency`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
+- **Latest evidence:** `uv run pytest -q` → **190 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports` → clean(51 files); `uv run lint-imports` → KEPT; Python mutation spot checks **24/24 killed**, including `root-torch-default-dependency` and `governance-stale-next-steps-alert`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
 - **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`; PR #19 squash-merged to `main` as `59c8884` and merged into `dev` as `e1b081c`.
 - **Latest external Actions proof:** `daily-snapshot.yml` failed before fix as run `27386918387` because `github.run_started_at` expanded empty. Fixed branch run `27387041974` on `spec/b-live-scheduled-snapshot-proof` succeeded via `workflow_dispatch` and uploaded `snapshot-schedule-proof`; proof JSON records `dry=22`, `exit_code=0`, `evidence_tier=smoke`, `retention=append_only`, `trigger=workflow_dispatch`.
 - **ISSUE-B3-001 handled in advance:**
@@ -53,31 +54,30 @@
   - B scheduled ops: append-only schedule report helper and latest pointer are unit-tested.
   - D evaluation: family evaluator can consume real `LocalResultStore` records.
   - B Stooq: source-contract decision helper keeps blocked/default-disabled posture until live close rows are proven.
-- **Ops/visual/drift artifacts lane:** [ops-visual-drift-artifacts](./ops-visual-drift-artifacts/) is **Implemented · Review PASSED** locally.
+- **Ops/visual/drift artifacts lane:** [ops-visual-drift-artifacts](./ops-visual-drift-artifacts/) is **Implemented · Review PASSED**.
   - B scheduled ops proof: workflow config and proof builder record workflow/trigger/command/exit status, smoke/live tier, and append-only retention.
   - F visual diff: browser visual evidence now emits thresholded diff status while preserving screenshot hash proof.
   - E drift assessment: metric-delta drift report is assessed-not-automated, with `serving_status=not_serving` and `retraining_status=not_configured`.
   - B source-contract reopen: Stooq remains default-disabled; live close rows only allow `eligible_for_opt_in_review`.
   - D artifact expansion: model-family evaluation can be wrapped in checksumed JSON with row-count and OOS-net authority validation.
-- **F browser pixel baseline lane:** [f-browser-pixel-baseline](./f-browser-pixel-baseline/) is **Implemented · Review PASSED** locally.
+- **F browser pixel baseline lane:** [f-browser-pixel-baseline](./f-browser-pixel-baseline/) is **Implemented · Review PASSED**.
   - Replaced hash-derived visual mismatch with a committed PNG baseline and real pixel mismatch ratio.
-  - Latest browser visual diff: `0 / 1,296,000` mismatched pixels, `mismatchRatio=0`, threshold `0.001`.
+  - Latest browser visual diff: `505 / 1,296,000` mismatched pixels, `mismatchRatio=0.0003896604938271605`, threshold `0.001`.
   - Dashboard remains fixture-driven / `local_demo_only`; this closes the visual-diff false-green residual only.
-- **B live scheduled snapshot proof lane:** [b-live-scheduled-snapshot-proof](./b-live-scheduled-snapshot-proof/) is **Implemented · Review PASSED** locally.
+- **B live scheduled snapshot proof lane:** [b-live-scheduled-snapshot-proof](./b-live-scheduled-snapshot-proof/) is **Implemented · Review PASSED**.
   - Fixed the GitHub Actions workflow timestamp bug exposed by failed run `27386918387`.
   - Real Actions run `27387041974` succeeded with artifact `snapshot-schedule-proof`.
   - Boundary: proves `workflow_dispatch` smoke-tier Actions execution, not autonomous cron firing.
-- **A Torch default dependency isolation lane:** [a-torch-default-dependency-isolation](./a-torch-default-dependency-isolation/) is **Implemented · Review PASSED** locally.
+- **A Torch default dependency isolation lane:** [a-torch-default-dependency-isolation](./a-torch-default-dependency-isolation/) is **Implemented · Review PASSED** and merged to `dev`/`main`.
   - Removed unpatched `torch<=2.12.0` from default root `pyproject.toml` / `uv.lock` after Dependabot alert #7 reported no patched version.
   - `scripts/run_tsmc_hedge_slice.py` now degrades honestly without Torch and emits an optional PyTorch-lane notice.
-  - Boundary: closes root default dependency reachability; GitHub Dependabot alert state still needs post-merge rescan.
+  - Boundary: root default dependency reachability is closed; GitHub Dependabot alert #7 is fixed as of `2026-06-12T01:19:57Z`.
 
 ## Recommended Next Action
 
-1. Commit/push `spec/a-torch-default-dependency-isolation` and open a PR to `dev`, then promote to `main` after review.
-2. Recheck GitHub Dependabot alert #7 after merge to confirm default-branch rescan closes the root `uv.lock` Torch alert.
-3. Next highest-value gap: observe an autonomous cron-triggered `event=schedule` Actions run, or explicitly keep it pending until the next scheduled window.
-4. Keep E Tier3 at artifact-manifest-only until serving, retraining, and automated drift monitoring have separate live evidence.
+1. Finish `spec/governance-evidence-refresh`: guard current governance surfaces against stale gate counts / stale local-lane instructions, refresh `NEXT_STEPS.md`, `ISSUE_LOG.md`, `SPECS.md`, `RTM.md`, and `quantlab/CORRECTNESS_CHECKLIST.md`, then run targeted governance tests.
+2. Next highest-value runtime gap: observe an autonomous cron-triggered `event=schedule` Actions run, or explicitly keep it pending until the next scheduled window.
+3. Keep E Tier3 at artifact-manifest-only until serving, retraining, and automated drift monitoring have separate live evidence.
 
 ## Scheduled Ops
 
