@@ -28,10 +28,14 @@ repo 端的資料平台能力完成且有測試:vintage 橋接、FRED 價格代�
 ## CR 收斂
 - **CR-B5(pit_strictness)→ Implemented**(additive schema overlay on a0;re-codegen + 全型別檢查通過,無漂移)。SPECS.md Open CR 收斂。
 - **CR-B7/CR-B8/CR-B9 source policy → Implemented**:invalid FRED gold proxy removed, Yahoo fallback added, and Stooq made opt-in after repeated 404s.
+- **CR-B10 source health → Implemented(repo-side)**:source status summaries are explicit and do not re-enable blocked Stooq defaults.
+- **CR-B11 snapshot run report → Implemented(repo-side)**:`daily_snapshot.py --report-json` emits machine-readable counts, per-source outcomes, and source-health posture while preserving graceful degradation.
+- **CR-B12 scoped live write smoke → Implemented(repo-side + local live smoke)**:`daily_snapshot.py --out-root --fred-series FEDFUNDS --yahoo-symbols '' --no-noaa` wrote one real public FRED source, and the second run skipped the existing same-day file.
 
 ## Residual / 刻意降級
 - is_approximate lag 估算(無 vintage 源的 pre-collection 歷史)為前瞻能力,目前資料皆 `is_approximate=false`;待 bulk backfill 時落實 lag 表(政策 Decision 3）。
 - Stooq/個股 bulk fetch:real-machine(上述 handoff);Stooq default source disabled until a working contract is selected.
+- Broad default source success remains unproven; CR-B12 proves scoped append-only live write mechanics only.
 
 ## 交棒
 真實價格累積後,Epic A slice 可由 `build_provider_from_vintage(..., fred_price_series=...)` 換真實 provider 重跑。Epic C(組合最佳化)可在此資料平台上接續。

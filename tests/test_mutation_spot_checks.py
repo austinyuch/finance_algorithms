@@ -76,6 +76,7 @@ def test_mutation_runner_list_smoke():
     assert "e-tier3-cli-serving-validator" in result.stdout
     assert "b-source-health-claim-boundary" in result.stdout
     assert "snapshot-report-stooq-default" in result.stdout
+    assert "snapshot-scoped-source-health" in result.stdout
     assert "showcase-experiment-readiness" in result.stdout
     assert "g-alt-data-pit-gate" in result.stdout
     assert "root-torch-default-dependency" in result.stdout
@@ -158,6 +159,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "e-tier3-cli-serving-validator" in out
     assert "b-source-health-claim-boundary" in out
     assert "snapshot-report-stooq-default" in out
+    assert "snapshot-scoped-source-health" in out
     assert "showcase-experiment-readiness" in out
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out

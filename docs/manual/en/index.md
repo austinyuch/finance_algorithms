@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 214 passed, 1 skipped
+uv run pytest -q             # sanity: expect 216 passed, 1 skipped
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -189,7 +189,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **214 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **51** files; mutation spot checks are **35/35 configured**, including root Torch dependency and stale governance evidence mutations.
+- Test suite is now **216 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **36/36 configured/killed**, including root Torch dependency, stale governance evidence mutations, and CR-B12 scoped source-health overclaim protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.

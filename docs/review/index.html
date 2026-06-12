@@ -121,7 +121,7 @@
       <div class="card"><h3>🏛️ Legacy pyramid API</h3><p>Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
     </div>
 
-    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, which is fixture-driven (<code>MOCK_DOMINANT_EVIDENCE</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>), repo-baseline pixel diff (<code>browser-visual-diff.json</code>), public-hosting probe (HTTP 200), and GitHub Actions autonomous <code>event=schedule</code> dry-run proof (run <code>27392471359</code>) are now <code>proven</code>. Residual: live append-only writes remain governed separately.</div>
+    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, which is fixture-driven (<code>MOCK_DOMINANT_EVIDENCE</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>), repo-baseline pixel diff (<code>browser-visual-diff.json</code>), public-hosting probe (HTTP 200), GitHub Actions autonomous <code>event=schedule</code> dry-run proof (run <code>27392471359</code>), and CR-B12 scoped live write smoke are now <code>proven</code>. Residual: broad default source availability and Stooq remain governed separately.</div>
     <p style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
     <img class="preview" style="height:auto;display:block" src="assets/dashboard-browser-visual.png" alt="Chromium-headless screenshot of the QuantLab dashboard">
   </section>
@@ -152,12 +152,13 @@ flowchart LR
       <div>
         <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-12)</h3>
         <ul class="clean">
-          <li>Python suite now <b>214 passed, 1 skipped</b>; mypy clean over 53 files; mutation spot checks <b>35/35 configured</b>, including root Torch dependency and stale governance evidence mutations <span class="sev sL">gate</span></li>
+          <li>Python suite now <b>216 passed, 1 skipped</b>; mypy clean over 53 files; mutation spot checks <b>36/36 configured</b>, including root Torch dependency and stale governance evidence mutations <span class="sev sL">gate</span></li>
           <li>Frontend <b>23 tests pass</b>, coverage 91.42%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
           <li><b>Public-hosting probe proven</b> HTTP 200 (<code>public-hosting-probe.json</code>) <span class="sev sL">hosting</span></li>
           <li><b>Visual diff repo-baseline pixel-backed</b> (<code>505 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>) <span class="sev sL">visual</span></li>
           <li><b>Autonomous schedule proof captured</b> (Actions run <code>27392471359</code>, artifact <code>snapshot-schedule-proof</code>) <span class="sev sL">ops</span></li>
+          <li><b>Scoped live snapshot write smoke proven</b> (CR-B12: <code>fred_FEDFUNDS</code> write, then same-day skip) <span class="sev sL">ops</span></li>
           <li>First committed <code>docs/</code> manual + review + generation guides <span class="sev sL">docs</span></li>
           <li>Import-linter contract KEPT (engine/data framework-agnostic) <span class="sev sL">arch</span></li>
         </ul>
@@ -166,7 +167,7 @@ flowchart LR
         <h3>⏳ Still open</h3>
         <ul class="clean">
           <li>No CI-managed visual baseline history beyond the repo baseline <span class="sev sL">Low</span></li>
-          <li>Live append-only snapshot writes remain governed separately from dry-run schedule proof <span class="sev sL">Low</span></li>
+          <li>Broad default source availability remains separate from scoped live-write proof <span class="sev sL">Low</span></li>
           <li>Static export's readiness panel remains conservative (<code>not_proven</code>) by dashboard contract <span class="sev sL">Low</span></li>
           <li>Live-data backtest deferred until &ge;2 real price assets accumulate <span class="sev sL">Low</span></li>
           <li>Stooq source blocked — external/source-contract (<code>ISSUE-B3-001</code>) <span class="sev sL">Low</span></li>
@@ -180,7 +181,7 @@ flowchart LR
     <h2 class="sec">Roadmap</h2>
     <p class="sub">Next milestones, in order.</p>
     <div class="timeline">
-      <div><b>Now</b> — Manual + review docs published; gates refreshed (214 passed / 1 skipped, frontend 23, frontend audit 0); browser visual + pixel diff + public-hosting probe proven; autonomous cron dry-run proof captured; default Python lock excludes Torch.</div>
+      <div><b>Now</b> — Manual + review docs published; gates refreshed (216 passed / 1 skipped, frontend 23, frontend audit 0); browser visual + pixel diff + public-hosting probe proven; autonomous cron dry-run proof and CR-B12 scoped live-write smoke captured; default Python lock excludes Torch.</div>
       <div><b>Next</b> — Keep cron observer evidence fresh after future schedule runs; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
       <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
       <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>

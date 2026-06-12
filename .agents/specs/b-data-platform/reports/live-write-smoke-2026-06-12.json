@@ -1,0 +1,77 @@
+{
+  "artifact_kind": "snapshot_live_write_smoke",
+  "available_date": "2026-06-12",
+  "claim_boundary": "scoped_live_write_smoke_not_full_source_availability",
+  "commands": [
+    "uv run python scripts/daily_snapshot.py --out-root /tmp/quantlab-live-write-smoke/vintage --fred-series FEDFUNDS --yahoo-symbols '' --no-noaa --report-json /tmp/quantlab-live-write-smoke/snapshot-report.json",
+    "uv run python scripts/daily_snapshot.py --out-root /tmp/quantlab-live-write-smoke/vintage --fred-series FEDFUNDS --yahoo-symbols '' --no-noaa --report-json /tmp/quantlab-live-write-smoke/snapshot-report-second.json",
+    "uv run python scripts/snapshot_ops_gate.py /tmp/quantlab-live-write-smoke/snapshot-report.json",
+    "uv run python scripts/snapshot_ops_gate.py /tmp/quantlab-live-write-smoke/snapshot-report-second.json"
+  ],
+  "evidence_tier": "local_live_smoke",
+  "first_run": {
+    "counts": {
+      "dry": 0,
+      "fail": 0,
+      "ok": 1,
+      "skip": 0
+    },
+    "dry_run": false,
+    "jobs": [
+      {
+        "safe_id": "fred_FEDFUNDS",
+        "source_id": "fred:FEDFUNDS",
+        "status": "ok"
+      }
+    ],
+    "ops_gate_status": "clean"
+  },
+  "second_run": {
+    "counts": {
+      "dry": 0,
+      "fail": 0,
+      "ok": 0,
+      "skip": 1
+    },
+    "dry_run": false,
+    "jobs": [
+      {
+        "safe_id": "fred_FEDFUNDS",
+        "source_id": "fred:FEDFUNDS",
+        "status": "skip"
+      }
+    ],
+    "ops_gate_status": "clean"
+  },
+  "live_written_file": {
+    "safe_id": "fred_FEDFUNDS",
+    "sha256": "ec9d760c103dfeb4d30bd3ccea0007a3c5ad101385d8638809fe5a8cedeec659"
+  },
+  "scope": {
+    "fred_series": [
+      "FEDFUNDS"
+    ],
+    "include_noaa": false,
+    "stooq_symbols": [],
+    "yahoo_symbols": []
+  },
+  "source_health": {
+    "claim_boundary": "source_contract_status_only",
+    "fred": {
+      "default_enabled": true,
+      "reason": "configured fredgraph source",
+      "status": "available",
+      "symbols": [
+        "FEDFUNDS"
+      ]
+    },
+    "stooq": {
+      "default_enabled": false,
+      "reason": "disabled by source-contract policy after observed 404s",
+      "status": "blocked",
+      "symbols": [
+        "*"
+      ]
+    }
+  }
+}
