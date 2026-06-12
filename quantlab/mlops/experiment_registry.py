@@ -190,8 +190,13 @@ _TIER3_READY_EVIDENCE_KEYS = [
 ]
 
 
-def _is_proven_evidence(value: Mapping[str, Any] | None) -> bool:
-    return isinstance(value, Mapping) and value.get("status") == "proven"
+def _is_production_evidence(value: Mapping[str, Any] | None, target: str) -> bool:
+    return (
+        isinstance(value, Mapping)
+        and value.get("status") == "proven"
+        and value.get("readiness_evidence_for") == target
+        and value.get("evidence_tier") == "production"
+    )
 
 
 def build_tier3_readiness_gate(
@@ -209,7 +214,7 @@ def build_tier3_readiness_gate(
     }
     missing = [
         key for key in _TIER3_READY_EVIDENCE_KEYS
-        if not _is_proven_evidence(evidence[key])
+        if not _is_production_evidence(evidence[key], key)
     ]
     return {
         "artifact_kind": "tier3_readiness_gate",
@@ -257,6 +262,7 @@ def build_serving_smoke_evidence(
         "artifact_kind": "serving_smoke_evidence",
         "claim_boundary": "no_alpha_claim",
         "readiness_evidence_for": "serving_evidence",
+        "evidence_tier": "local_smoke",
         "status": "proven",
         "serving_status": "local_smoke",
         "experiment_id": entry.experiment_id,
@@ -277,6 +283,8 @@ def validate_serving_smoke_evidence(evidence: Mapping[str, Any]) -> None:
         raise ValueError("serving smoke evidence must preserve no_alpha_claim")
     if evidence.get("readiness_evidence_for") != "serving_evidence":
         raise ValueError("serving smoke evidence has wrong readiness target")
+    if evidence.get("evidence_tier") != "local_smoke":
+        raise ValueError("serving smoke evidence must remain local_smoke tier")
     if evidence.get("status") != "proven":
         raise ValueError("serving smoke evidence must be proven")
     if evidence.get("serving_status") != "local_smoke":
@@ -319,6 +327,7 @@ def build_retraining_smoke_evidence(
         "artifact_kind": "retraining_smoke_evidence",
         "claim_boundary": "no_alpha_claim",
         "readiness_evidence_for": "retraining_evidence",
+        "evidence_tier": "local_smoke",
         "status": "proven",
         "retraining_status": "local_smoke",
         "experiment_id": entry.experiment_id,
@@ -340,6 +349,8 @@ def validate_retraining_smoke_evidence(evidence: Mapping[str, Any]) -> None:
         raise ValueError("retraining smoke evidence must preserve no_alpha_claim")
     if evidence.get("readiness_evidence_for") != "retraining_evidence":
         raise ValueError("retraining smoke evidence has wrong readiness target")
+    if evidence.get("evidence_tier") != "local_smoke":
+        raise ValueError("retraining smoke evidence must remain local_smoke tier")
     if evidence.get("status") != "proven":
         raise ValueError("retraining smoke evidence must be proven")
     if evidence.get("retraining_status") != "local_smoke":
@@ -350,6 +361,75 @@ def validate_retraining_smoke_evidence(evidence: Mapping[str, Any]) -> None:
     for key in ["experiment_id", "observed_at", "run_id", "request_digest", "result_digest"]:
         if not str(evidence.get(key) or "").strip():
             raise ValueError(f"retraining smoke evidence missing {key}")
+
+
+def build_automated_drift_monitoring_evidence(
+    entry: ExperimentEntry,
+    *,
+    monitor: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    monitor_request: Mapping[str, Any],
+    observed_at: str,
+    runner: str = "in_process",
+) -> dict[str, Any]:
+    """Build local automated drift-monitoring smoke evidence from a monitor callable."""
+    if entry.claim_boundary != "no_alpha_claim":
+        raise ValueError("automated drift monitoring only accepts no_alpha_claim entries")
+    if not observed_at.strip():
+        raise ValueError("automated drift monitoring requires observed_at")
+    request = _json_native(dict(monitor_request))
+    if not isinstance(request, Mapping) or not request:
+        raise ValueError("automated drift monitoring requires a non-empty monitor_request")
+    result = _json_native(dict(monitor(request)))
+    if not isinstance(result, Mapping) or not result:
+        raise ValueError("automated drift monitoring requires a non-empty result")
+    if result.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
+        raise ValueError("automated drift monitoring result must preserve no_alpha_claim")
+    if result.get("status") not in {"stable", "drift_detected"}:
+        raise ValueError("automated drift monitoring status must be stable or drift_detected")
+    deltas = result.get("metric_deltas")
+    if not isinstance(deltas, Mapping) or not deltas:
+        raise ValueError("automated drift monitoring requires metric_deltas")
+    return {
+        "artifact_kind": "automated_drift_monitoring_evidence",
+        "claim_boundary": "no_alpha_claim",
+        "readiness_evidence_for": "automated_drift_monitoring_evidence",
+        "evidence_tier": "local_smoke",
+        "status": "proven",
+        "monitoring_status": "local_automated_smoke",
+        "drift_status": str(result["status"]),
+        "experiment_id": entry.experiment_id,
+        "model_family": entry.model_family,
+        "strategy_name": entry.strategy_name,
+        "observed_at": observed_at,
+        "runner": runner,
+        "metric_deltas": {str(key): float(value) for key, value in deltas.items()},
+        "threshold": float(result.get("threshold", request.get("threshold", 0.0))),
+        "request_digest": _digest_payload(request),
+        "result_digest": _digest_payload(result),
+    }
+
+
+def validate_automated_drift_monitoring_evidence(evidence: Mapping[str, Any]) -> None:
+    if evidence.get("artifact_kind") != "automated_drift_monitoring_evidence":
+        raise ValueError("unknown automated drift monitoring evidence artifact")
+    if evidence.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("automated drift monitoring evidence must preserve no_alpha_claim")
+    if evidence.get("readiness_evidence_for") != "automated_drift_monitoring_evidence":
+        raise ValueError("automated drift monitoring evidence has wrong readiness target")
+    if evidence.get("evidence_tier") != "local_smoke":
+        raise ValueError("automated drift monitoring evidence must remain local_smoke tier")
+    if evidence.get("status") != "proven":
+        raise ValueError("automated drift monitoring evidence must be proven")
+    if evidence.get("monitoring_status") != "local_automated_smoke":
+        raise ValueError("automated drift monitoring evidence must remain local_automated_smoke")
+    if evidence.get("drift_status") not in {"stable", "drift_detected"}:
+        raise ValueError("unknown automated drift monitoring drift status")
+    deltas = evidence.get("metric_deltas")
+    if not isinstance(deltas, Mapping) or not deltas:
+        raise ValueError("automated drift monitoring evidence requires metric_deltas")
+    for key in ["experiment_id", "observed_at", "request_digest", "result_digest"]:
+        if not str(evidence.get(key) or "").strip():
+            raise ValueError(f"automated drift monitoring evidence missing {key}")
 
 
 def build_drift_report_skeleton(

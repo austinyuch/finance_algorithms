@@ -3,6 +3,7 @@
 from quantlab.mlops.experiment_registry import (
     ExperimentEntry,
     ExperimentRegistry,
+    build_automated_drift_monitoring_evidence,
     build_drift_assessment_report,
     build_drift_report_skeleton,
     build_retraining_smoke_evidence,
@@ -11,6 +12,7 @@ from quantlab.mlops.experiment_registry import (
     build_tier3_run_manifest,
     load_registry_snapshot,
     register_result_store_runs,
+    validate_automated_drift_monitoring_evidence,
     validate_drift_assessment_report,
     validate_retraining_smoke_evidence,
     validate_serving_smoke_evidence,
@@ -21,6 +23,7 @@ from quantlab.mlops.experiment_registry import (
 __all__ = [
     "ExperimentEntry",
     "ExperimentRegistry",
+    "build_automated_drift_monitoring_evidence",
     "build_drift_assessment_report",
     "build_drift_report_skeleton",
     "build_retraining_smoke_evidence",
@@ -29,6 +32,7 @@ __all__ = [
     "build_tier3_run_manifest",
     "load_registry_snapshot",
     "register_result_store_runs",
+    "validate_automated_drift_monitoring_evidence",
     "validate_drift_assessment_report",
     "validate_retraining_smoke_evidence",
     "validate_serving_smoke_evidence",
