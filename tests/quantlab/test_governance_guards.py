@@ -82,8 +82,6 @@ def test_next_steps_reflects_post_merge_scheduled_observer_state():
     assert "Commit/push `spec/scheduled-run-observer`" not in text
     assert "promote it through `dev`/`main`" not in text
     assert "observer should keep status `pending`" not in text
-    assert "PR #29" in text
-    assert "PR #30" in text
     assert "schedule_run_count=0" not in text
     assert "27392471359" in text
     assert "schedule_run_count=1" in text
@@ -94,8 +92,6 @@ def test_next_steps_reflects_post_merge_governance_sync_state():
     text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
 
     assert "Open/promote `spec/post-merge-scheduled-observer-sync`" not in text
-    assert "PR #31" in text
-    assert "PR #32" in text
     assert "E Tier3" in text
     assert "serving, retraining, and automated drift monitoring" in text
 
@@ -110,102 +106,36 @@ def test_next_steps_reflects_post_merge_e_gate_state():
     assert "Current branch lane:** `spec/e-tier3-retraining-evidence`" not in text
     assert "Current branch lane:** `spec/e-tier3-production-evidence-gate`" not in text
     assert "Current branch lane:** `spec/e-tier3-readiness-proof-cli`" not in text
-    assert "PR #35" in text
-    assert "PR #36" in text
-    assert "PR #39" in text
-    assert "PR #40" in text
-    assert "PR #44" in text
-    assert "PR #45" in text
-    assert "PR #48" in text
-    assert "PR #49" in text
-    assert "PR #55" in text
-    assert "PR #56" in text
     assert "not_ready" in text
 
 
-def test_next_steps_reflects_post_merge_live_write_smoke_state():
-    """NEXT_STEPS should reflect CR-B12 after both dev and main promotions."""
+def test_next_steps_uses_non_self_staling_promotion_boundary():
+    """NEXT_STEPS should not be an exhaustive squash-PR ledger."""
     text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
 
     assert "Current branch lane:** none after `e-tier3-readiness-proof-cli` promotion" not in text
     assert "Current branch lane:** none after CR-B12 promotion" not in text
     assert "Current branch lane:** none after CR-B13 promotion" not in text
     assert "Current branch lane:** none after CR-B14 promotion" not in text
-    assert "Current branch lane:** none." in text
-    assert "PR #61" in text
-    assert "PR #62" in text
-    assert "PR #61 squash-merged CR-B12 scoped live write smoke to `dev` as `0f3af09`" in text
-    assert "PR #62 squash-merged CR-B12 scoped live write smoke to `main` as `4f2f58a`" in text
-
-
-def test_next_steps_reflects_post_merge_cr_b13_state():
-    """NEXT_STEPS should retain CR-B13 promotion proof without making it current."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
-
-    assert "CR-B13 post live-write governance sync is implemented locally" not in text
     assert "Current branch lane:** none after CR-B13 promotion" not in text
-    assert "PR #63 squash-merged CR-B13 post live-write governance sync to `dev` as `8c5b3f1`" in text
-    assert "PR #64 squash-merged CR-B13 post live-write governance sync to `main` as `aea683f`" in text
-    assert "8c5b3f1" in text
-    assert "aea683f" in text
-
-
-def test_next_steps_reflects_post_merge_cr_b14_state():
-    """NEXT_STEPS should retain CR-B14/CR-B15 proof without a self-staling current lane."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
-
-    assert "CR-B14 post CR-B13 governance sync is implemented locally" not in text
-    assert "CR-B15 post CR-B14 governance sync is implemented locally" not in text
-    assert "Current branch lane:** none after CR-B14 promotion" not in text
-    assert "Current branch lane:** none after CR-B15 promotion" not in text
-    assert "Current branch lane:** none." in text
-    assert "PR #65 squash-merged CR-B14 post CR-B13 governance sync to `dev` as `05485cc`" in text
-    assert "PR #66 squash-merged CR-B14 post CR-B13 governance sync to `main` as `c1e1591`" in text
-    assert "PR #67 squash-merged CR-B15 post CR-B14 governance sync to `dev` as `8b72a51`" in text
-    assert "PR #68 squash-merged CR-B15 post CR-B14 governance sync to `main` as `508187e`" in text
-    assert "05485cc" in text
-    assert "c1e1591" in text
-    assert "8b72a51" in text
-    assert "508187e" in text
-
-
-def test_next_steps_reflects_post_merge_cr_b16_state():
-    """NEXT_STEPS should retain CR-B16 promotion proof after dev/main squash PRs."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
-
-    assert "CR-B16 post CR-B15 governance sync is implemented locally" not in text
     assert "Current branch lane:** none after CR-B16 promotion" not in text
-    assert "Current branch lane:** none." in text
-    assert "PR #69 squash-merged CR-B16 governance sync to `dev` as `474e17f`" in text
-    assert "PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`" in text
-    assert "474e17f" in text
-    assert "c35571e" in text
-
-
-def test_next_steps_reflects_post_merge_cr_b17_state():
-    """NEXT_STEPS should retain CR-B17 promotion proof after dev/main squash PRs."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
-
-    assert "CR-B17 governance sync is implemented locally" not in text
     assert "Current branch lane:** none after CR-B17 promotion" not in text
-    assert "Current branch lane:** none." in text
-    assert "PR #71 squash-merged CR-B17 governance sync to `dev` as `be0cafc`" in text
-    assert "PR #72 squash-merged CR-B17 governance sync to `main` as `20175f7`" in text
-    assert "be0cafc" in text
-    assert "20175f7" in text
-
-
-def test_next_steps_reflects_post_merge_cr_fps001_state():
-    """NEXT_STEPS should retain CR-FPS-001 promotion proof after dev/main squash PRs."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
-
-    assert "CR-FPS-001 hosting manifest proof sync is implemented locally" not in text
     assert "Current branch lane:** none after CR-FPS-001 promotion" not in text
     assert "Current branch lane:** none." in text
-    assert "PR #73 squash-merged CR-FPS-001 public hosting manifest proof sync to `dev` as `031b500`" in text
-    assert "PR #74 squash-merged CR-FPS-001 public hosting manifest proof sync to `main` as `d1e65b3`" in text
-    assert "031b500" in text
-    assert "d1e65b3" in text
+    assert "CR-B12 scoped live write smoke is implemented locally" not in text
+    assert "CR-B13 post live-write governance sync is implemented locally" not in text
+    assert "CR-B14 post CR-B13 governance sync is implemented locally" not in text
+    assert "CR-B15 post CR-B14 governance sync is implemented locally" not in text
+    assert "CR-B16 post CR-B15 governance sync is implemented locally" not in text
+    assert "CR-B17 governance sync is implemented locally" not in text
+    assert "CR-FPS-001 hosting manifest proof sync is implemented locally" not in text
+    assert "- **Merged:**" not in text
+    assert "squash-merged" not in text
+    assert "PR #75" not in text
+    assert "PR #76" not in text
+    assert "**Promotion proof boundary:**" in text
+    assert "do not append every squash PR to this rolling memo" in text
+    assert "GitHub PR state and spec-local reports" in text
 
 
 def test_public_hosting_manifest_carries_observed_proof():
