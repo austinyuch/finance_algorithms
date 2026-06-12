@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -10,14 +11,113 @@ from quantlab.showcase.api import ShowcaseReadAPI, build_dashboard_summary
 from quantlab.tracking import LocalResultStore
 
 
-_EVIDENCE_TESTS = [
-    "247 passed",
-    "Python mutation 63/63 killed",
+_FALLBACK_EVIDENCE_TESTS = [
+    "249 passed",
+    "Python mutation 64/64 killed",
     "frontend mutation 15/15 killed",
     "F Next.js coverage 91.05%",
     "E-lite coverage 100%",
     "B source-health/Stooq proof coverage 90%",
 ]
+
+
+def _read_required_text(root: Path, relative_path: str) -> str:
+    path = root / relative_path
+    if not path.exists():
+        raise FileNotFoundError(f"missing showcase evidence artifact: {relative_path}")
+    return path.read_text(encoding="utf-8")
+
+
+def _read_required_json(root: Path, relative_path: str) -> Mapping[str, Any]:
+    path = root / relative_path
+    if not path.exists():
+        raise FileNotFoundError(f"missing showcase evidence artifact: {relative_path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"showcase evidence artifact must be a JSON object: {relative_path}")
+    return data
+
+
+def _extract_count(pattern: str, text: str, *, label: str) -> int:
+    match = re.search(pattern, text)
+    if not match:
+        raise ValueError(f"missing {label} evidence count")
+    return int(match.group(1))
+
+
+def _extract_ratio(pattern: str, text: str, *, label: str) -> str:
+    match = re.search(pattern, text)
+    if not match:
+        raise ValueError(f"missing {label} evidence")
+    return match.group(1)
+
+
+def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
+    """Read current dashboard evidence from committed proof artifacts.
+
+    ``evidence_root=None`` is retained for direct unit-level callers that only
+    exercise the read API scenario. Production/static payload generation passes
+    the repository root and fails closed if proof artifacts are missing.
+    """
+    if evidence_root is None:
+        return list(_FALLBACK_EVIDENCE_TESTS)
+
+    root = Path(evidence_root)
+    pytest_text = _read_required_text(root, "docs/review/assets/gate-pytest.txt")
+    frontend_text = _read_required_text(root, "docs/review/assets/gate-frontend-test.txt")
+    audit_text = _read_required_text(root, "docs/review/assets/gate-frontend-audit.txt")
+    mutation_text = _read_required_text(
+        root,
+        ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md",
+    )
+    fbp_review = _read_required_text(root, ".agents/specs/f-browser-pixel-baseline/review.md")
+    visual_diff = _read_required_json(root, "docs/browser-visual-diff.json")
+    public_probe = _read_required_json(root, "docs/public-hosting-probe.json")
+
+    pytest_count = _extract_count(r"(\d+) passed", pytest_text, label="pytest")
+    frontend_count = _extract_count(r"Tests\s+(\d+) passed", frontend_text, label="frontend test")
+    mutation_ratio = _extract_ratio(
+        r"\*\*(\d+/\d+) configured/killed\*\*",
+        mutation_text,
+        label="Python mutation",
+    )
+    frontend_mutation = _extract_ratio(
+        r"Frontend mutation: \*\*(\d+/\d+) killed\*\*",
+        fbp_review,
+        label="frontend mutation",
+    )
+    frontend_coverage = _extract_ratio(
+        r"Frontend coverage: \*\*(\d+(?:\.\d+)?)% line coverage\*\*",
+        fbp_review,
+        label="frontend coverage",
+    )
+
+    if "found 0 vulnerabilities" not in audit_text:
+        raise ValueError("frontend audit evidence is not clean")
+    if visual_diff.get("status") != "passed":
+        raise ValueError("browser visual diff evidence is not passed")
+    if visual_diff.get("claimBoundary") != "no_alpha_claim":
+        raise ValueError("browser visual diff evidence must preserve no_alpha_claim")
+    if public_probe.get("claimBoundary") != "no_alpha_claim":
+        raise ValueError("public hosting probe evidence must preserve no_alpha_claim")
+    if public_probe.get("status") not in {"configured_not_observed", "proven"}:
+        raise ValueError("public hosting probe evidence has unsupported status")
+
+    mismatched = int(visual_diff["mismatchedPixels"])
+    total = int(visual_diff["totalPixels"])
+    probe_status = str(public_probe["status"])
+    hash_status = str(public_probe.get("hashStatus", "unknown"))
+
+    return [
+        f"{pytest_count} passed",
+        f"frontend tests {frontend_count} passed",
+        f"Python mutation {mutation_ratio} killed",
+        f"frontend mutation {frontend_mutation} killed",
+        f"F Next.js coverage {frontend_coverage}%",
+        "frontend audit 0 vulnerabilities",
+        f"browser visual diff {mismatched}/{total} passed",
+        f"public hosting {probe_status} (hash {hash_status})",
+    ]
 
 
 def _metric(sharpe: float) -> dict[str, Any]:
@@ -75,7 +175,12 @@ def _experiment_row(row: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _frontend_payload(summary: Mapping[str, Any], *, source_record_count: int) -> dict[str, Any]:
+def _frontend_payload(
+    summary: Mapping[str, Any],
+    *,
+    source_record_count: int,
+    evidence_tests: list[str],
+) -> dict[str, Any]:
     warnings = list(summary.get("warnings") or [])
     if "local_runtime_only" not in warnings:
         warnings.append("local_runtime_only")
@@ -91,7 +196,7 @@ def _frontend_payload(summary: Mapping[str, Any], *, source_record_count: int) -
         "warnings": warnings,
         "evidence": {
             "readiness": "local_runtime_only",
-            "tests": list(_EVIDENCE_TESTS),
+            "tests": list(evidence_tests),
         },
         "demoReadiness": {
             "publicHosting": "not_proven",
@@ -107,7 +212,11 @@ def _frontend_payload(summary: Mapping[str, Any], *, source_record_count: int) -
     }
 
 
-def build_canonical_dashboard_artifact(work_dir: str | Path) -> dict[str, Any]:
+def build_canonical_dashboard_artifact(
+    work_dir: str | Path,
+    *,
+    evidence_root: str | Path | None = None,
+) -> dict[str, Any]:
     """Build the frontend dashboard artifact from real local stores.
 
     The scenario remains a deterministic local demo, but the payload is generated
@@ -149,11 +258,20 @@ def build_canonical_dashboard_artifact(work_dir: str | Path) -> dict[str, Any]:
             api.leaderboard(),
             experiments=api.experiments(),
         )
-        return _frontend_payload(summary, source_record_count=len(api.leaderboard()))
+        return _frontend_payload(
+            summary,
+            source_record_count=len(api.leaderboard()),
+            evidence_tests=_current_evidence_tests(evidence_root),
+        )
 
 
-def write_canonical_dashboard_artifact(target: str | Path, work_dir: str | Path) -> dict[str, Any]:
-    artifact = build_canonical_dashboard_artifact(work_dir)
+def write_canonical_dashboard_artifact(
+    target: str | Path,
+    work_dir: str | Path,
+    *,
+    evidence_root: str | Path | None = None,
+) -> dict[str, Any]:
+    artifact = build_canonical_dashboard_artifact(work_dir, evidence_root=evidence_root)
     output = Path(target)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(

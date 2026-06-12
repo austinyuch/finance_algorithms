@@ -8,6 +8,7 @@ RED/GREEN/REFACTOR trace:
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from pathlib import Path
 
 import pytest
@@ -176,6 +177,79 @@ def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
         "forecast-run",
         "baseline-run",
     ]
+
+
+def _write_current_evidence_root(root: Path) -> None:
+    (root / "docs/review/assets").mkdir(parents=True)
+    (root / ".agents/specs/a0-backtest-foundation/reports").mkdir(parents=True)
+    (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
+    (root / "docs").mkdir(exist_ok=True)
+    (root / "docs/review/assets/gate-pytest.txt").write_text(
+        "249 passed in 20.00s\n",
+        encoding="utf-8",
+    )
+    (root / "docs/review/assets/gate-frontend-test.txt").write_text(
+        " Test Files  3 passed (3)\n      Tests  32 passed (32)\n",
+        encoding="utf-8",
+    )
+    (root / "docs/review/assets/gate-frontend-audit.txt").write_text(
+        "found 0 vulnerabilities\n",
+        encoding="utf-8",
+    )
+    (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
+        "Current evidence is **64/64 configured/killed**.\n",
+        encoding="utf-8",
+    )
+    (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
+        "- Frontend coverage: **91.05% line coverage**.\n"
+        "- Frontend mutation: **15/15 killed**.\n",
+        encoding="utf-8",
+    )
+    (root / "docs/browser-visual-diff.json").write_text(
+        json.dumps({
+            "artifactKind": "browser_visual_diff",
+            "claimBoundary": "no_alpha_claim",
+            "status": "passed",
+            "mismatchedPixels": 1049,
+            "totalPixels": 1296000,
+        }),
+        encoding="utf-8",
+    )
+    (root / "docs/public-hosting-probe.json").write_text(
+        json.dumps({
+            "claimBoundary": "no_alpha_claim",
+            "status": "configured_not_observed",
+            "hashStatus": "mismatched",
+        }),
+        encoding="utf-8",
+    )
+
+
+def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    evidence_root = tmp_path / "evidence"
+    _write_current_evidence_root(evidence_root)
+
+    artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
+
+    assert artifact["evidence"]["tests"] == [
+        "249 passed",
+        "frontend tests 32 passed",
+        "Python mutation 64/64 killed",
+        "frontend mutation 15/15 killed",
+        "F Next.js coverage 91.05%",
+        "frontend audit 0 vulnerabilities",
+        "browser visual diff 1049/1296000 passed",
+        "public hosting configured_not_observed (hash mismatched)",
+    ]
+
+
+def test_canonical_showcase_artifact_fails_closed_without_evidence_artifacts(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    with pytest.raises(FileNotFoundError, match="gate-pytest"):
+        build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=tmp_path / "missing")
 
 
 def test_showcase_api_tests_do_not_reintroduce_retired_fixture_marker():

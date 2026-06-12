@@ -95,6 +95,7 @@ def test_mutation_runner_list_smoke():
     assert "b-scheduled-observer-manual-pending" in result.stdout
     assert "manual-showcase-payload-sync-regression" in result.stdout
     assert "frontend-showcase-payload-sync-regression" in result.stdout
+    assert "f-showcase-evidence-artifact-source" in result.stdout
     assert "review-pytest-gate-transcript-regression" in result.stdout
     assert "review-frontend-count-shorthand-regression" in result.stdout
     assert "review-audit-gate-transcript-regression" in result.stdout

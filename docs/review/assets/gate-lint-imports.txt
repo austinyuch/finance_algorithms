@@ -13,7 +13,7 @@
 Contracts
 ---------
 
-Analyzed 74 files, 185 dependencies.
+Analyzed 75 files, 186 dependencies.
 ------------------------------------
 
 Backtest core (engine/data) is framework-agnostic KEPT

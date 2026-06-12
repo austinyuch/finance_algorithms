@@ -23,7 +23,7 @@ def main() -> int:
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="quantlab-showcase-") as tmp:
-        write_canonical_dashboard_artifact(Path(args.out), Path(tmp))
+        write_canonical_dashboard_artifact(Path(args.out), Path(tmp), evidence_root=ROOT)
     return 0
 
 

@@ -111,6 +111,9 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "245 passed",
         "246 passed",
         "246 suite evidence",
+        "247 passed",
+        "247 suite evidence",
+        "248 passed",
         "included in 245 passed",
         "242 passed",
         "241 passed",
@@ -179,6 +182,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 62/62",
         "mutation spot checks 62/62",
         "mutation spot-checks are **62/62",
+        "63/63 configured",
+        "63/63 Python mutation",
+        "Python mutation 63/63",
+        "mutation spot checks 63/63",
+        "mutation spot-checks are **63/63",
         "6/6 configured",
         "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
@@ -255,8 +263,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "0.0008109567901234568",
         "1041 / 1,296,000",
         "1041/1,296,000",
+        "1049/1296000",
         "0.0008032407407407408",
         "be7d0618d726253c38af6eb3ab005372848f715f7872efe0fbb63f36a48b9d02",
+        "9c2e5fe8651694969deafe256918c113c9f189823102da3554840bfe644bc4f3",
         "1036 / 1,296,000",
         "1036/1,296,000",
         "0.0007993827160493827",
@@ -327,17 +337,17 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "247 passed" in pytest_gate
-    assert "247 passed" in manual_guide
-    assert "247 passed" in review_guide
-    assert "Python suite now <b>247 passed</b>" in review_html
+    assert "249 passed" in pytest_gate
+    assert "249 passed" in manual_guide
+    assert "249 passed" in review_guide
+    assert "Python suite now <b>249 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
     assert "28 tests pass" not in review_html
     assert "29 tests pass" not in review_html
     assert "Success: no issues found in 57 source files" in mypy_gate
-    assert "Analyzed 74 files, 185 dependencies." in lint_gate
+    assert "Analyzed 75 files, 186 dependencies." in lint_gate
     assert audit_text.strip() == "found 0 vulnerabilities"
     assert audit_gate["metadata"]["vulnerabilities"]["total"] == 0
 
@@ -362,7 +372,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1049
+    assert browser_diff["mismatchedPixels"] == 1089
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
