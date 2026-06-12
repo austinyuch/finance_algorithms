@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -179,3 +180,31 @@ def test_next_steps_reflects_post_merge_cr_b16_state():
     assert "PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`" in text
     assert "474e17f" in text
     assert "c35571e" in text
+
+
+def test_next_steps_reflects_post_merge_cr_b17_state():
+    """NEXT_STEPS should retain CR-B17 promotion proof after dev/main squash PRs."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "CR-B17 governance sync is implemented locally" not in text
+    assert "Current branch lane:** none after CR-B17 promotion" not in text
+    assert "Current branch lane:** none." in text
+    assert "PR #71 squash-merged CR-B17 governance sync to `dev` as `be0cafc`" in text
+    assert "PR #72 squash-merged CR-B17 governance sync to `main` as `20175f7`" in text
+    assert "be0cafc" in text
+    assert "20175f7" in text
+
+
+def test_public_hosting_manifest_carries_observed_proof():
+    """The committed public demo manifest must carry the observed Pages proof."""
+    manifest = json.loads((ROOT / "docs/deployment-manifest.json").read_text(encoding="utf-8"))
+    hosting = manifest.get("hostingEvidence") or {}
+
+    assert manifest.get("targetUrl") == "https://austinyuch.github.io/finance_algorithms/"
+    assert manifest.get("claimBoundary") == "no_alpha_claim"
+    assert hosting.get("sourcePath") == "docs/"
+    assert hosting.get("publishMode") == "github_pages_branch_source"
+    assert hosting.get("status") == "proven"
+    assert hosting.get("httpStatus") == 200
+    assert isinstance(hosting.get("observedAt"), str)
+    assert hosting["observedAt"].endswith("Z")

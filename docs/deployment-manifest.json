@@ -4,7 +4,9 @@
   "hostingEvidence": {
     "sourcePath": "docs/",
     "publishMode": "github_pages_branch_source",
-    "status": "configured_not_observed"
+    "httpStatus": 200,
+    "observedAt": "2026-06-12T05:55:42.617Z",
+    "status": "proven"
   },
   "claimBoundary": "no_alpha_claim",
   "dashboardClaim": "local_demo_only",
@@ -15,5 +17,5 @@
     "experiments",
     "evidence"
   ],
-  "dataHash": "cace125a474066f00891a8692187b68e3a3b1318f39d797b841cc2a6c90e2e21"
+  "dataHash": "0a0a38aa7beb1544087659c1959e59d182152722e09ab523939229341724ac5f"
 }

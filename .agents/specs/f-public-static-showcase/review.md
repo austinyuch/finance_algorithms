@@ -4,6 +4,8 @@
 
 Implemented · Review PASSED (configured static showcase + visual contract baseline).
 
+Post-baseline CR: [CR-FPS-001](./change-requests/cr-fps-001-hosting-manifest-proof-sync.md) supersedes the original hosted-availability note for the committed `docs/` artifact: `docs/public-hosting-probe.json` is tracked as HTTP 200 proof and `docs/deployment-manifest.json` now records `hostingEvidence.status=proven`.
+
 ## Evidence
 
 - `cd frontend && npm test -- --run tests/dashboard.test.tsx tests/public-demo.test.tsx` -> 14 passed.
@@ -12,7 +14,7 @@ Implemented · Review PASSED (configured static showcase + visual contract basel
 
 ## Claim Boundary
 
-The public URL target is configured as `https://austinyuch.github.io/finance_algorithms/`, but hosted availability is `configured_not_observed` until Pages source settings are enabled for `docs/` on the target branch and the URL is checked.
+The public URL target is `https://austinyuch.github.io/finance_algorithms/`. The baseline review originally closed before hosted availability was observed; CR-FPS-001 now records the committed static `docs/` artifact as hosted proof (`HTTP 200`, `no_alpha_claim`). The dashboard itself remains `local_demo_only` / fixture-backed and is not a live QuantLab service.
 
 ## Residual Risk
 

@@ -346,10 +346,26 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-cr-b16-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="PR #69 squash-merged CR-B16 governance sync to `dev` as `474e17f`; PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`.",
+        original="PR #69 squash-merged CR-B16 governance sync to `dev` as `474e17f`; PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`;",
         mutated="CR-B16 post CR-B15 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b16_state"),
+    ),
+    MutationSpec(
+        name="governance-stale-cr-b17-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="PR #71 squash-merged CR-B17 governance sync to `dev` as `be0cafc`; PR #72 squash-merged CR-B17 governance sync to `main` as `20175f7`.",
+        mutated="CR-B17 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b17_state"),
+    ),
+    MutationSpec(
+        name="public-hosting-manifest-status-regression",
+        path="docs/deployment-manifest.json",
+        original='"status": "proven"',
+        mutated='"status": "configured_not_observed"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
     ),
     MutationSpec(
         name="b-scheduled-observer-manual-pending",
