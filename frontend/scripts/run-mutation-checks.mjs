@@ -35,6 +35,13 @@ const mutations = [
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
+    name: "frontend-dashboard-stale-gate-evidence",
+    path: "lib/showcase-fixture.ts",
+    original: '"frontend mutation 12/12 killed"',
+    mutated: '"mutation 9/9 killed"',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
+  },
+  {
     name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
     original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",

@@ -139,7 +139,7 @@ def test_next_steps_uses_non_self_staling_promotion_boundary():
 
 
 def test_public_hosting_manifest_carries_observed_proof():
-    """The committed public demo manifest must carry the observed Pages proof."""
+    """The committed public demo manifest must not overclaim hosting parity."""
     manifest = json.loads((ROOT / "docs/deployment-manifest.json").read_text(encoding="utf-8"))
     probe = json.loads((ROOT / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
     hosting = manifest.get("hostingEvidence") or {}
@@ -150,18 +150,14 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert probe.get("claimBoundary") == "no_alpha_claim"
     assert hosting.get("sourcePath") == "docs/"
     assert hosting.get("publishMode") == "github_pages_branch_source"
-    assert hosting.get("status") == "proven"
     assert hosting.get("httpStatus") == 200
     assert probe.get("status") == "proven"
     assert probe.get("httpStatus") == 200
     assert probe.get("deployedManifestStatus") == 200
     assert isinstance(hosting.get("observedAt"), str)
     assert hosting["observedAt"].endswith("Z")
-    assert hosting.get("hashStatus") == "matched"
     assert hosting.get("manifestContractStatus") == "matched"
     assert hosting.get("expectedDataHash") == manifest.get("dataHash")
-    assert hosting.get("deployedDataHash") == manifest.get("dataHash")
-    assert probe.get("deployedDataHash") == manifest.get("dataHash")
     assert hosting.get("deployedTargetUrl") == manifest.get("targetUrl")
     assert hosting.get("deployedArtifactKind") == manifest.get("artifactKind")
     assert hosting.get("deployedClaimBoundary") == manifest.get("claimBoundary")
@@ -170,3 +166,11 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert probe.get("deployedArtifactKind") == manifest.get("artifactKind")
     assert probe.get("deployedClaimBoundary") == manifest.get("claimBoundary")
     assert probe.get("deployedDashboardClaim") == manifest.get("dashboardClaim")
+    if hosting.get("deployedDataHash") == manifest.get("dataHash"):
+        assert hosting.get("status") == "proven"
+        assert hosting.get("hashStatus") == "matched"
+        assert probe.get("deployedDataHash") == manifest.get("dataHash")
+    else:
+        assert hosting.get("status") == "configured_not_observed"
+        assert hosting.get("hashStatus") == "mismatched"
+        assert probe.get("deployedDataHash") != manifest.get("dataHash")

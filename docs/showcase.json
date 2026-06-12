@@ -57,10 +57,11 @@
     "readiness": "local_runtime_only",
     "tests": [
       "236 passed",
-      "mutation 9/9 killed",
-      "F Next.js coverage 91.42%",
-      "E-lite coverage 97.3%",
-      "B source-health coverage 97.6%"
+      "Python mutation 45/45 killed",
+      "frontend mutation 12/12 killed",
+      "F Next.js coverage 91.81%",
+      "E-lite coverage 100%",
+      "B source-health/Stooq proof coverage 90%"
     ]
   },
   "demoReadiness": {
