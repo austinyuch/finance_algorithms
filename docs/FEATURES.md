@@ -21,7 +21,7 @@ experimentation capability*, **not** alpha. Every model slice declares
 | 3 | **Data platform** (vintage PIT loader, FRED price proxies, as-of alignment, `pit_strictness`, source-health, snapshot run report + ops gate) | B | CLI / data | PASSED (repo-side) | `scripts/daily_snapshot.py`, `snapshot_ops_gate.py` | Stooq opt-in/blocked (`ISSUE-B3-001`); Yahoo fallback live-proven for `2330.TW`/`^TWII` |
 | 4 | **Portfolio core** (optimizer, multi-period allocation, regime rebalance selector, pyramid-entry adapter) | C | library | PASSED | `test_c_1..5` | maxDD bound is ex-post; additive to legacy `algo_pyramid` |
 | 5 | **Model families** (first-regime classifier, return/risk forecaster, robust optimizer, family evaluator) | D | library / CLI | PASSED | `test_d_*`, OOS-net baselines | Deterministic methodology slices; `no_alpha_claim` |
-| 6 | **MLOps E-lite** (experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge, Tier3 readiness gate) | E | library / read API | PASSED | `test_e_1`, registry JSONL, readiness gate | Artifact-only; gate blocks Tier3 ready without serving/retraining/automated drift evidence |
+| 6 | **MLOps E-lite** (experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge, Tier3 readiness gate, local serving smoke evidence) | E | library / read API | PASSED | `test_e_1`, registry JSONL, readiness gate, serving smoke evidence | Local smoke only; gate blocks Tier3 ready without retraining and automated drift evidence |
 | 7 | **Showcase read API + dashboard** (ShowcaseReadAPI, dashboard summary, HTML render, Next.js app, `/api/showcase`, demo hardening, static showcase) | F | read API + Web UI | CONDITIONAL · `local_demo_only` | `frontend/` static export, `npm test` | Fixture-driven; see ops-visual-drift residuals below |
 | 7b | **Ops visual drift artifacts** (chromium-headless browser screenshot, browser visual diff gate, public-hosting probe, schedule run proof, scheduled-run observer, E drift report) | F/B/E ops | Web UI + ops | PASSED | `browser-visual.png`, `browser-visual-diff.json`, probe HTTP 200, Actions run `27387041974`, scheduled observer artifact | Visual diff is repo-baseline pixel-backed (`505 / 1,296,000` pixels mismatched at threshold `0.001`); `workflow_dispatch` schedule proof exists, observer records autonomous cron `event=schedule` proof pending |
 | 8 | **Alt-data slices** (source-contract-first local CSV loader, two optional slices) | G | library | PASSED | `test_g_1` | Optional, default-disabled, `available_date <= asof` |
@@ -29,11 +29,11 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 ## Latest authoritative gate evidence (2026-06-12)
 
-- `uv run pytest -q` → **197 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
+- `uv run pytest -q` → **200 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
 - `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports` → clean, **52 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (71 files, 174 deps)
 - `frontend` `npm test` → **23 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
-- Python mutation spot checks → **28/28 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-post-merge-sync-promotion`, `governance-stale-e-gate-promotion`, `e-tier3-readiness-gate`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
+- Python mutation spot checks → **29/29 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-post-merge-sync-promotion`, `governance-stale-e-gate-promotion`, `e-tier3-readiness-gate`, `e-serving-smoke-health-gate`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
 - `npm run visual:browser` → chromium-headless screenshot `proven`
   (`frontend/out/browser-visual.png`); `npm run probe:public-demo` → **HTTP 200 proven**
   (`frontend/out/public-hosting-probe.json`), per

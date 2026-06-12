@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 
 @dataclass(frozen=True)
@@ -222,6 +222,71 @@ def build_tier3_readiness_gate(
         "retraining_evidence": evidence["retraining_evidence"],
         "automated_drift_monitoring_evidence": evidence["automated_drift_monitoring_evidence"],
     }
+
+
+def _digest_payload(value: Mapping[str, Any]) -> str:
+    return hashlib.sha256(_canonical_json(_json_native(value)).encode("utf-8")).hexdigest()
+
+
+def build_serving_smoke_evidence(
+    entry: ExperimentEntry,
+    *,
+    health_check: Callable[[], Mapping[str, Any]],
+    predict: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    sample_request: Mapping[str, Any],
+    observed_at: str,
+    endpoint: str = "in_process",
+) -> dict[str, Any]:
+    """Build local serving smoke evidence from a real health + predict call."""
+    if entry.claim_boundary != "no_alpha_claim":
+        raise ValueError("serving smoke only accepts no_alpha_claim entries")
+    if not observed_at.strip():
+        raise ValueError("serving smoke requires observed_at")
+    request = _json_native(dict(sample_request))
+    if not isinstance(request, Mapping) or not request:
+        raise ValueError("serving smoke requires a non-empty sample_request")
+    health = _json_native(dict(health_check()))
+    if str(health.get("status") or "").lower() != "ok":
+        raise ValueError("serving smoke requires a healthy endpoint")
+    prediction = _json_native(dict(predict(request)))
+    if not isinstance(prediction, Mapping) or not prediction:
+        raise ValueError("serving smoke requires a non-empty prediction")
+    if prediction.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
+        raise ValueError("serving smoke prediction must preserve no_alpha_claim")
+    return {
+        "artifact_kind": "serving_smoke_evidence",
+        "claim_boundary": "no_alpha_claim",
+        "readiness_evidence_for": "serving_evidence",
+        "status": "proven",
+        "serving_status": "local_smoke",
+        "experiment_id": entry.experiment_id,
+        "model_family": entry.model_family,
+        "strategy_name": entry.strategy_name,
+        "observed_at": observed_at,
+        "endpoint": endpoint,
+        "health": health,
+        "request_digest": _digest_payload(request),
+        "prediction_digest": _digest_payload(prediction),
+    }
+
+
+def validate_serving_smoke_evidence(evidence: Mapping[str, Any]) -> None:
+    if evidence.get("artifact_kind") != "serving_smoke_evidence":
+        raise ValueError("unknown serving smoke evidence artifact")
+    if evidence.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("serving smoke evidence must preserve no_alpha_claim")
+    if evidence.get("readiness_evidence_for") != "serving_evidence":
+        raise ValueError("serving smoke evidence has wrong readiness target")
+    if evidence.get("status") != "proven":
+        raise ValueError("serving smoke evidence must be proven")
+    if evidence.get("serving_status") != "local_smoke":
+        raise ValueError("serving smoke evidence must remain local_smoke")
+    health = evidence.get("health")
+    if not isinstance(health, Mapping) or str(health.get("status") or "").lower() != "ok":
+        raise ValueError("serving smoke evidence requires healthy health payload")
+    for key in ["experiment_id", "observed_at", "request_digest", "prediction_digest"]:
+        if not str(evidence.get(key) or "").strip():
+            raise ValueError(f"serving smoke evidence missing {key}")
 
 
 def build_drift_report_skeleton(
