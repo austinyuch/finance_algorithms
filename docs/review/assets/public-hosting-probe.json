@@ -3,6 +3,12 @@
   "status": "proven",
   "pagesConfigured": true,
   "httpStatus": 200,
-  "observedAt": "2026-06-11T15:52:45.361Z",
+  "deployedManifestStatus": 200,
+  "deployedDataHash": "98ce5c660b826cb91c59ddbcc407e9bc1e262de91c89d3096c470f0bb64f84e4",
+  "deployedTargetUrl": "https://austinyuch.github.io/finance_algorithms/",
+  "deployedArtifactKind": "github_pages_static_showcase",
+  "deployedClaimBoundary": "no_alpha_claim",
+  "deployedDashboardClaim": "local_demo_only",
+  "observedAt": "2026-06-12T10:43:33.967Z",
   "claimBoundary": "no_alpha_claim"
 }

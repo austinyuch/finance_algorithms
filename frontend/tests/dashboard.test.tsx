@@ -37,6 +37,15 @@ describe("F Next.js showcase dashboard", () => {
     expect(payload.demoReadiness.visualRegression).toBe("not_proven");
   });
 
+  it("keeps dashboard gate evidence aligned with current governed proof", () => {
+    const payload = getShowcaseDashboard();
+
+    expect(payload.evidence.tests).toContain("frontend mutation 12/12 killed");
+    expect(payload.evidence.tests).toContain("F Next.js coverage 91.81%");
+    expect(payload.evidence.tests).not.toContain("mutation 9/9 killed");
+    expect(payload.evidence.tests).not.toContain("F Next.js coverage 91.42%");
+  });
+
   it("rejects malformed claim boundaries", () => {
     const payload = { ...getShowcaseDashboard(), claimBoundary: "alpha_claim" };
 

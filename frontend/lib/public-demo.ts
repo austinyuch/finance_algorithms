@@ -11,6 +11,11 @@ export interface PublicHostingProbe {
   pagesStatus?: string;
   httpStatus?: number;
   observedAt?: string;
+  deployedDataHash?: string;
+  deployedTargetUrl?: string;
+  deployedArtifactKind?: string;
+  deployedClaimBoundary?: string;
+  deployedDashboardClaim?: string;
 }
 
 export interface PublicDemoManifest {
@@ -23,6 +28,14 @@ export interface PublicDemoManifest {
     pagesStatus?: string;
     httpStatus?: number;
     observedAt?: string;
+    deployedDataHash?: string;
+    expectedDataHash?: string;
+    hashStatus?: "matched" | "mismatched" | "missing" | "not_checked";
+    deployedTargetUrl?: string;
+    deployedArtifactKind?: string;
+    deployedClaimBoundary?: string;
+    deployedDashboardClaim?: string;
+    manifestContractStatus?: "matched" | "mismatched" | "missing" | "not_checked";
   };
   claimBoundary: "no_alpha_claim";
   dashboardClaim: "local_demo_only";
@@ -93,7 +106,10 @@ export function dashboardSections(dashboard: ShowcaseDashboard): string[] {
   return sections;
 }
 
-export function classifyPublicHostingEvidence(probe?: PublicHostingProbe): PublicDemoManifest["hostingEvidence"] {
+export function classifyPublicHostingEvidence(
+  probe?: PublicHostingProbe,
+  expectedDataHash?: string,
+): PublicDemoManifest["hostingEvidence"] {
   if (!probe?.pagesConfigured) {
     return {
       status: "not_configured",
@@ -107,11 +123,42 @@ export function classifyPublicHostingEvidence(probe?: PublicHostingProbe): Publi
     pagesStatus: probe.pagesStatus,
     httpStatus: probe.httpStatus,
     observedAt: probe.observedAt,
+    deployedDataHash: probe.deployedDataHash,
+    expectedDataHash,
+    deployedTargetUrl: probe.deployedTargetUrl,
+    deployedArtifactKind: probe.deployedArtifactKind,
+    deployedClaimBoundary: probe.deployedClaimBoundary,
+    deployedDashboardClaim: probe.deployedDashboardClaim,
   };
-  if (probe.httpStatus === 200) {
-    return { ...base, status: "proven" };
+  const hashStatus =
+    expectedDataHash === undefined
+      ? "not_checked"
+      : probe.deployedDataHash === undefined
+        ? "missing"
+        : probe.deployedDataHash === expectedDataHash
+          ? "matched"
+          : "mismatched";
+  const deployedManifestFields = [
+    probe.deployedTargetUrl,
+    probe.deployedArtifactKind,
+    probe.deployedClaimBoundary,
+    probe.deployedDashboardClaim,
+  ];
+  const manifestContractStatus =
+    expectedDataHash === undefined
+      ? "not_checked"
+      : deployedManifestFields.every((field) => field === undefined)
+        ? "missing"
+        : probe.deployedTargetUrl === PUBLIC_SHOWCASE_URL &&
+            probe.deployedArtifactKind === "github_pages_static_showcase" &&
+            probe.deployedClaimBoundary === "no_alpha_claim" &&
+            probe.deployedDashboardClaim === "local_demo_only"
+          ? "matched"
+          : "mismatched";
+  if (probe.httpStatus === 200 && hashStatus === "matched" && manifestContractStatus === "matched") {
+    return { ...base, hashStatus, manifestContractStatus, status: "proven" };
   }
-  return { ...base, status: "configured_not_observed" };
+  return { ...base, hashStatus, manifestContractStatus, status: "configured_not_observed" };
 }
 
 export function buildPublicDemoManifest(
@@ -124,14 +171,15 @@ export function buildPublicDemoManifest(
   if (dashboard.demoReadiness.publicHosting !== "not_proven") {
     throw new Error("public hosting remains unobserved until the deployed URL is checked");
   }
+  const dataHash = sha256(JSON.stringify(dashboard));
   return {
     targetUrl: PUBLIC_SHOWCASE_URL,
     artifactKind: "github_pages_static_showcase",
-    hostingEvidence: classifyPublicHostingEvidence(hostingProbe ?? { pagesConfigured: true }),
+    hostingEvidence: classifyPublicHostingEvidence(hostingProbe ?? { pagesConfigured: true }, dataHash),
     claimBoundary: "no_alpha_claim",
     dashboardClaim: dashboard.demoReadiness.claim,
     sections: dashboardSections(dashboard),
-    dataHash: sha256(JSON.stringify(dashboard)),
+    dataHash,
   };
 }
 

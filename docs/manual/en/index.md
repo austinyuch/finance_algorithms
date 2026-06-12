@@ -152,13 +152,13 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 `npm run dev` app applies `app/globals.css`.
 
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`, while public-hosting probe observed HTTP 200 plus deployed manifest contract metadata and the refreshed branch-local `dataHash` remains pending Pages deployment (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
 > - Resolved: visual diff is repo-baseline pixel-backed (`221 / 1,296,000`
 >   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
 >   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
->   probe is `proven` HTTP 200, but the export's embedded readiness panel
->   remains conservative (`not_proven`) by contract.
+>   probe observed HTTP 200 plus deployed manifest contract metadata, but the refreshed branch-local static export has a new
+>   `dataHash` that is not yet deployed; the export's embedded readiness panel remains conservative (`not_proven`) by contract.
 
 ---
 
@@ -189,10 +189,10 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **236 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **55** files; mutation spot checks are **43/43 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
+- Test suite is now **236 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **55** files; mutation spot checks are **45/45 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003 public-hosting manifest/probe/hash/contract drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
-- **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
+- **Public-hosting probe now records HTTP 200 plus deployed manifest contract metadata** (`public-hosting-probe.json`); the refreshed branch-local static export has a new `dataHash`, so branch-local parity remains pending Pages deployment and the manifest stays `configured_not_observed`.
 - **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `221 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
