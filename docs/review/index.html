@@ -121,7 +121,7 @@
       <div class="card"><h3>🏛️ Legacy pyramid API</h3><p>Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
     </div>
 
-    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, which is fixture-driven (<code>MOCK_DOMINANT_EVIDENCE</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>) and a public-hosting probe (HTTP 200) are now <code>proven</code>. Residual: the visual diff is hash-equality, not pixel-tolerance CI.</div>
+    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, which is fixture-driven (<code>MOCK_DOMINANT_EVIDENCE</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>), repo-baseline pixel diff (<code>browser-visual-diff.json</code>), and public-hosting probe (HTTP 200) are now <code>proven</code>. Residual: no live scheduled-run artifact.</div>
     <p style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
     <img class="preview" style="height:auto;display:block" src="assets/dashboard-browser-visual.png" alt="Chromium-headless screenshot of the QuantLab dashboard">
   </section>
@@ -153,9 +153,10 @@ flowchart LR
         <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-12)</h3>
         <ul class="clean">
           <li>Python suite grew <b>163 → 190 passed</b>; mypy clean over 50 files; mutation <b>22/22 killed</b> <span class="sev sL">gate</span></li>
-          <li>Frontend <b>20 tests pass</b>, coverage 92.13%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
+          <li>Frontend <b>23 tests pass</b>, coverage 91.42%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
           <li><b>Public-hosting probe proven</b> HTTP 200 (<code>public-hosting-probe.json</code>) <span class="sev sL">hosting</span></li>
+          <li><b>Visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>) <span class="sev sL">visual</span></li>
           <li>First committed <code>docs/</code> manual + review + generation guides <span class="sev sL">docs</span></li>
           <li>Import-linter contract KEPT (engine/data framework-agnostic) <span class="sev sL">arch</span></li>
         </ul>
@@ -163,9 +164,9 @@ flowchart LR
       <div>
         <h3>⏳ Still open</h3>
         <ul class="clean">
-          <li>Visual diff is <b>hash-equality</b>, not pixel-tolerance CI with stored baselines <span class="sev sM">Medium</span></li>
+          <li>No CI-managed visual baseline history beyond the repo baseline <span class="sev sL">Low</span></li>
           <li>No live <em>scheduled</em> GitHub Actions run artifact captured yet <span class="sev sM">Medium</span></li>
-          <li>Static export's embedded evidence panel shows stale <code>not_proven</code> text <span class="sev sL">Low</span></li>
+          <li>Static export's readiness panel remains conservative (<code>not_proven</code>) by dashboard contract <span class="sev sL">Low</span></li>
           <li>Live-data backtest deferred until &ge;2 real price assets accumulate <span class="sev sL">Low</span></li>
           <li>Stooq source blocked — external/source-contract (<code>ISSUE-B3-001</code>) <span class="sev sL">Low</span></li>
           <li>Full Tier3 MLOps (serving / retraining / drift) deferred by design <span class="sev sL">Low</span></li>
@@ -178,8 +179,8 @@ flowchart LR
     <h2 class="sec">Roadmap</h2>
     <p class="sub">Next milestones, in order.</p>
     <div class="timeline">
-      <div><b>Now</b> — Manual + review docs published; gates refreshed (190/20/0, mutation 22/22); browser visual + public-hosting probe proven.</div>
-      <div><b>Next</b> — Upgrade visual diff from hash-equality to pixel-tolerance CI with stored baselines; capture a live scheduled-run artifact.</div>
+      <div><b>Now</b> — Manual + review docs published; gates refreshed (190/20/0, mutation 22/22); browser visual + pixel diff + public-hosting probe proven.</div>
+      <div><b>Next</b> — Capture a live scheduled-run artifact; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
       <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
       <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>
     </div>

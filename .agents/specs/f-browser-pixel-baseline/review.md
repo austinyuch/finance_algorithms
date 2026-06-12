@@ -1,0 +1,57 @@
+# Review
+
+## Verdict
+
+**Review PASSED for repo-side pixel visual-diff closure.**
+
+Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still uses fixture-backed showcase data and `local_demo_only` labels. This lane closes the visual-diff false-green residual only.
+
+## Scores
+
+| Dimension | Score |
+|---|---:|
+| Requirements fit | 9.3 |
+| Design consistency | 9.2 |
+| Code quality | 9.0 |
+| Test/evidence quality | 9.2 |
+| Overall | 9.18 |
+
+## Requirement Acceptance
+
+- `REQ-FBP-001`: **Accepted.** `browser-visual-smoke.mjs` compares actual PNG pixels against `frontend/visual-baselines/browser-visual.png`, emits pixel counts, and fails closed on dimension drift or threshold breach.
+- `REQ-FBP-002`: **Accepted.** Current registries and stakeholder docs describe the visual gate as repo-baseline pixel-backed and retain remaining residuals conservatively.
+
+## Live-Demo Readiness
+
+- Gate result: **CONDITIONAL**
+- Coverage tier: **hybrid**
+- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence (`0 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29`).
+- Still fixture-backed: dashboard data from `frontend/lib/showcase-fixture.ts`; no live backend/live market data dashboard path is claimed.
+- No auth surface exists in this dashboard slice.
+
+## Verification Coverage
+
+- Focused frontend tests: **16 passed**.
+- Frontend coverage: **23 tests passed**, **91.42% line coverage**.
+- Frontend mutation: **9/9 killed**.
+- Browser visual smoke: **passed**, repo-baseline pixel diff `0 / 1,296,000`.
+- Static showcase fixture evidence was refreshed to current counts while preserving `local_demo_only` / `not_proven` readiness boundaries.
+- Build/smoke/audit: **passed**, `npm audit --json` 0 vulnerabilities.
+
+## FMEA Coverage
+
+- `FMEA-FBP-1` hash equality presented as visual diff: **mitigated** by PNG pixel comparison and PBT.
+- `FMEA-FBP-2` baseline missing/dimension drift ignored: **mitigated** by required baseline PNG and dimension-drift failure.
+- `FMEA-FBP-3` docs retain old residual: **mitigated** by registry and stakeholder doc refresh; historical ops review remains unchanged as source history.
+
+## Governance
+
+- Branch lane: `spec/f-browser-pixel-baseline`.
+- Authority order used: implementation/report and current test evidence -> folder-level `quantlab/TESTS.md` -> workspace `.agents/specs/TESTS.md` / `RTM.md` / `SPECS.md` derived snapshots.
+- No runtime allocation was required; `npm run smoke` started and exited its own local Next server.
+
+## Residual Risk
+
+- CI-managed visual baseline history is not implemented; the current baseline is repo-committed.
+- Live scheduled snapshot workflow proof remains separate and open.
+- Dashboard evidence remains `MOCK_DOMINANT_EVIDENCE` for data content and must not be described as full production backend readiness.

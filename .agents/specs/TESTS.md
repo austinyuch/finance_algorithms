@@ -2,7 +2,7 @@
 
 > Derived summary only. Row-level authority lives in [quantlab/TESTS.md](../../quantlab/TESTS.md); final readiness verdicts live in each spec's `review.md`.
 
-Last refreshed: 2026-06-11.
+Last refreshed: 2026-06-12.
 
 ## Canonical Commands
 
@@ -31,7 +31,7 @@ cd frontend && npm run smoke
 | `d-first-regime-model` / `d-return-risk-forecast-model` | `quantlab/TESTS.md` | D tests for PIT signal, OOS-net baseline integration, D-3 real-source-format benchmark, and D2 return/risk forecast model | D2 targeted `uv run pytest -q tests/quantlab/test_d_4_return_risk_forecast.py` → 4 passed; D2 trace line coverage 87.1%; D2 mutation killed |
 | `d-robust-portfolio-optimization-model` / `d-model-family-evaluation` / `next-gaps-1-6-tier3-public` / `ops-visual-drift-artifacts` | `quantlab/TESTS.md` | D3 robust optimizer plus D family OOS-net evaluator, `LocalResultStore` read wrapper, and checksumed evaluation artifact | D evaluator targeted 7 passed; ops-visual-drift fallback trace coverage 100% for `evaluation`; mutations killed |
 | `e-mlops-tier3-lite` / `e-f-registry-dashboard-bridge` / `e-registry-durability-bridge` / `next-gaps-1-6-tier3-public` / `ops-visual-drift-artifacts` | `quantlab/TESTS.md` | E-lite experiment lineage/config registry tests, checksum snapshot, result-store bridge, non-serving Tier3 artifact manifest, drift skeleton/assessment, and F dashboard registry read bridge | E targeted 12 passed; ops-visual-drift fallback trace coverage 100% for `experiment_registry`; mutations killed |
-| `f-showcase-read-api-dashboard` / `f-nextjs-showcase-dashboard` / `f-demo-hardening` / `f-public-demo-readiness` / `f-public-static-showcase` / `next-gaps-1-6-tier3-public` / `ops-visual-drift-artifacts` | `quantlab/TESTS.md`; `frontend/tests/dashboard.test.tsx`; `frontend/tests/public-demo.test.tsx` | F Python read API plus real Next.js dashboard route/component tests, static public showcase export, hosted public Pages proof, browser visual evidence/diff, visual contract baseline, integration, and production HTTP smoke | Python F 5 passed; Next.js F 20 passed, 92.13% coverage, npm audit 0 vulnerabilities, 8 frontend mutations killed, visual/browser visual/build/smoke/public probe passed |
+| `f-showcase-read-api-dashboard` / `f-nextjs-showcase-dashboard` / `f-demo-hardening` / `f-public-demo-readiness` / `f-public-static-showcase` / `next-gaps-1-6-tier3-public` / `ops-visual-drift-artifacts` / `f-browser-pixel-baseline` | `quantlab/TESTS.md`; `frontend/tests/dashboard.test.tsx`; `frontend/tests/public-demo.test.tsx` | F Python read API plus real Next.js dashboard route/component tests, static public showcase export, hosted public Pages proof, browser visual evidence/diff, visual contract baseline, repo-baseline pixel diff gate, integration, and production HTTP smoke | Python F 5 passed; Next.js F 23 passed, 91.42% line coverage, npm audit 0 vulnerabilities, 9 frontend mutations killed, visual/browser visual pixel diff/build/smoke/public probe passed |
 | `g-alt-data-first-slice` / `g-alt-data-second-slice` | `quantlab/TESTS.md` | Optional alt-data source contracts, second default-disabled contract, bundle loader, and PIT-safe local CSV loader | G targeted tests 7 passed; changed pure-Python coverage 100%; mutation killed |
 | legacy `invest_algorithms` | `quantlab/TESTS.md` | 33 pyramid calculator regression tests | `uv run pytest -q` included in 190 passed |
 | governance guards | `quantlab/TESTS.md` | 2 import/drift guard tests | `uv run pytest -q` included in 190 passed; `uv run lint-imports` KEPT |

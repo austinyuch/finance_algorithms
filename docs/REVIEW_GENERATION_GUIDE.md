@@ -35,16 +35,17 @@ Project is Backend/CLI-dominant Hybrid. Captured live (2026-06-12):
 uv run pytest -q                     # 190 passed   → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ --ignore-missing-imports   # clean 50 files → gate-mypy.txt
 uv run lint-imports                  # KEPT          → gate-lint-imports.txt
-(cd frontend && npm test)            # 20 passed     → gate-frontend-test.txt
+(cd frontend && npm test)            # 23 passed     → gate-frontend-test.txt
 (cd frontend && npm audit --omit=dev)# 0 vulns       → gate-frontend-audit.txt
 ```
 
 Frontend visual evidence = a real chromium-headless screenshot
 (`frontend/out/browser-visual.png`, `npm run visual:browser`, status `proven`)
-plus the committed static export, with the public-hosting probe
+plus the committed static export, the repo-baseline pixel diff
+(`browser-visual-diff.json`), and the public-hosting probe
 (`npm run probe:public-demo` → HTTP 200 `proven`). The review embeds the
-screenshot as `live_screenshot` and discloses residuals (hash-equality diff, no
-live scheduled-run artifact). A long-running port-bound server still needs a
+screenshot as `live_screenshot` and discloses the remaining ops residual: no
+live scheduled-run artifact. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
 
 ## 5. Gap analysis policy

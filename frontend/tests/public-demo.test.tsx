@@ -11,6 +11,7 @@ import {
   buildPublicDemoManifest,
   buildVisualSnapshot,
   classifyPublicHostingEvidence,
+  computePixelMismatchRatio,
   dashboardSections,
 } from "../lib/public-demo";
 import { getShowcaseDashboard } from "../lib/showcase-fixture";
@@ -92,13 +93,50 @@ describe("F public static showcase proof", () => {
     });
     const current = { ...baseline, screenshotHash: "b".repeat(64) };
 
-    const failed = buildBrowserVisualDiffEvidence({ baseline, current, mismatchRatio: 0.02, maxMismatchRatio: 0.01 });
-    const passed = buildBrowserVisualDiffEvidence({ baseline, current, mismatchRatio: 0.005, maxMismatchRatio: 0.01 });
+    const failed = buildBrowserVisualDiffEvidence({
+      baseline,
+      current,
+      mismatchedPixels: 2,
+      totalPixels: 100,
+      mismatchRatio: 0.02,
+      maxMismatchRatio: 0.01,
+    });
+    const passed = buildBrowserVisualDiffEvidence({
+      baseline,
+      current,
+      mismatchedPixels: 5,
+      totalPixels: 1000,
+      mismatchRatio: 0.005,
+      maxMismatchRatio: 0.01,
+    });
 
     expect(failed.status).toBe("failed");
     expect(passed.status).toBe("passed");
     expect(failed.baselineHash).toBe("a".repeat(64));
     expect(failed.currentHash).toBe("b".repeat(64));
+  });
+
+  it("computes browser visual mismatch ratio from pixels", () => {
+    const baseline = new Uint8Array([
+      0, 0, 0, 255,
+      255, 255, 255, 255,
+      10, 20, 30, 255,
+      40, 50, 60, 255,
+    ]);
+    const current = new Uint8Array(baseline);
+    current[4] = 0;
+
+    expect(computePixelMismatchRatio({ baseline, current, width: 2, height: 2 }).mismatchRatio).toBe(0.25);
+  });
+
+  it("rejects browser visual pixel comparison when dimensions or buffer sizes drift", () => {
+    const baseline = new Uint8Array([0, 0, 0, 255]);
+    const current = new Uint8Array([0, 0, 0, 255]);
+
+    expect(() => computePixelMismatchRatio({ baseline, current, width: 0, height: 1 })).toThrow(/dimensions/);
+    expect(() => computePixelMismatchRatio({ baseline, current: new Uint8Array(8), width: 1, height: 1 })).toThrow(
+      /buffer size/,
+    );
   });
 
   it("rejects static visual contract drift", () => {
@@ -186,7 +224,14 @@ describe("F public static showcase proof", () => {
       observedAt: "2026-06-11T15:00:00Z",
     });
     expect(() =>
-      buildBrowserVisualDiffEvidence({ baseline, current: baseline, mismatchRatio: -0.1, maxMismatchRatio: 0.01 }),
+      buildBrowserVisualDiffEvidence({
+        baseline,
+        current: baseline,
+        mismatchedPixels: 0,
+        totalPixels: 1,
+        mismatchRatio: -0.1,
+        maxMismatchRatio: 0.01,
+      }),
     ).toThrow(/mismatch ratio/);
   });
 
@@ -232,12 +277,32 @@ describe("F public static showcase proof", () => {
           const evidence = buildBrowserVisualDiffEvidence({
             baseline,
             current: baseline,
+            mismatchedPixels: Math.round(mismatchRatio * 10000),
+            totalPixels: 10000,
             mismatchRatio,
             maxMismatchRatio,
           });
           expect(evidence.status).toBe(mismatchRatio <= maxMismatchRatio ? "passed" : "failed");
         },
       ),
+    );
+  });
+
+  it("PBT: pixel mismatch ratio equals changed-pixel count over total pixels", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 24 }), fc.integer({ min: 0, max: 24 }), (totalPixels, changedSeed) => {
+        const changedPixels = changedSeed % (totalPixels + 1);
+        const baseline = new Uint8Array(totalPixels * 4);
+        const current = new Uint8Array(totalPixels * 4);
+        for (let pixel = 0; pixel < changedPixels; pixel += 1) {
+          current[pixel * 4] = 255;
+        }
+
+        const result = computePixelMismatchRatio({ baseline, current, width: totalPixels, height: 1 });
+        expect(result.totalPixels).toBe(totalPixels);
+        expect(result.mismatchedPixels).toBe(changedPixels);
+        expect(result.mismatchRatio).toBe(changedPixels / totalPixels);
+      }),
     );
   });
 });

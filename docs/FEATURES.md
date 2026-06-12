@@ -23,7 +23,7 @@ experimentation capability*, **not** alpha. Every model slice declares
 | 5 | **Model families** (first-regime classifier, return/risk forecaster, robust optimizer, family evaluator) | D | library / CLI | PASSED | `test_d_*`, OOS-net baselines | Deterministic methodology slices; `no_alpha_claim` |
 | 6 | **MLOps E-lite** (experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge) | E | library / read API | PASSED | `test_e_1`, registry JSONL | Registry-only; no serving/retraining/drift |
 | 7 | **Showcase read API + dashboard** (ShowcaseReadAPI, dashboard summary, HTML render, Next.js app, `/api/showcase`, demo hardening, static showcase) | F | read API + Web UI | CONDITIONAL · `local_demo_only` | `frontend/` static export, `npm test` | Fixture-driven; see ops-visual-drift residuals below |
-| 7b | **Ops visual drift artifacts** (chromium-headless browser screenshot, browser visual diff gate, public-hosting probe, schedule run proof, E drift report) | F/B/E ops | Web UI + ops | PASSED | `browser-visual.png`, probe HTTP 200 | Visual diff is **hash-equality** (not pixel-tolerance CI); no live *scheduled* run artifact yet |
+| 7b | **Ops visual drift artifacts** (chromium-headless browser screenshot, browser visual diff gate, public-hosting probe, schedule run proof, E drift report) | F/B/E ops | Web UI + ops | PASSED | `browser-visual.png`, `browser-visual-diff.json`, probe HTTP 200 | Visual diff is repo-baseline pixel-backed (`0 / 1,296,000` pixels mismatched at threshold `0.001`); no live *scheduled* run artifact yet |
 | 8 | **Alt-data slices** (source-contract-first local CSV loader, two optional slices) | G | library | PASSED | `test_g_1` | Optional, default-disabled, `available_date <= asof` |
 | 9 | **Legacy pyramid calculator** (arithmetic + geometric order sizing) | — | FastAPI | stable legacy baseline | `tests/test_algo_pyramid.py` | Immutable; preserved unchanged |
 
@@ -32,14 +32,14 @@ experimentation capability*, **not** alpha. Every model slice declares
 - `uv run pytest -q` → **190 passed** (up from 163 at the prior memo)
 - `uv run mypy quantlab/ --ignore-missing-imports` → clean, **50 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (71 files, 174 deps)
-- `frontend` `npm test` → **20 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
-- Python mutation spot checks → **22/22 killed**; frontend coverage **92.13%**, mutation 8/8 killed
+- `frontend` `npm test` → **23 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
+- Python mutation spot checks → **22/22 killed**; frontend coverage **91.42%**, mutation 9/9 killed
 - `npm run visual:browser` → chromium-headless screenshot `proven`
   (`frontend/out/browser-visual.png`); `npm run probe:public-demo` → **HTTP 200 proven**
   (`frontend/out/public-hosting-probe.json`), per
   `.agents/specs/ops-visual-drift-artifacts/review.md`
 
 These counts are the basis for the "gaps resolved since last check" sections of
-the manual and review. Residual on the visual lane: the diff gate is
-deterministic **hash-equality**, not pixel-tolerance CI; and no live *scheduled*
-GitHub Actions run artifact has been captured yet.
+the manual and review. Visual diff is now repo-baseline pixel-backed; the
+remaining ops residual is that no live *scheduled* GitHub Actions run artifact
+has been captured yet.
