@@ -48,22 +48,65 @@ def test_contract_interfaces_no_drift():
 def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
     """Current governance surfaces must not advertise superseded readiness evidence."""
     current_surfaces = [
+        ROOT / ".agents/specs/SPECS.md",
         ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/RTM.md",
+        ROOT / ".agents/specs/TESTS.md",
         ROOT / ".agents/specs/ISSUE_LOG.md",
         ROOT / "quantlab/CORRECTNESS_CHECKLIST.md",
+        ROOT / "quantlab/TESTS.md",
+        ROOT / "docs/FEATURES.md",
+        ROOT / "docs/manual/en/index.md",
+        ROOT / "docs/manual/en/index.html",
+        ROOT / "docs/manual/zh-tw/index.md",
+        ROOT / "docs/manual/zh-tw/index.html",
+        ROOT / "docs/review/index.html",
     ]
     stale_markers = [
         "190 pytest",
         "20 frontend",
         "22 mutation",
         "66 passed",
+        "237 passed",
         "mutation spot-check 5/5",
+        "236 passed",
+        "included in 236 passed",
+        "clean over 55 files",
+        "55 source files",
+        "73 files, 177 deps",
+        "91.81% line coverage",
+        "12 frontend mutations",
+        "mutation 12/12 killed",
+        "frontend mutation 12/12",
+        "221 / 1,296,000",
+        "221/1,296,000",
+        "latest 221",
+        "refreshed to 236",
+        "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
 
     for path in current_surfaces:
         text = path.read_text(encoding="utf-8")
         for marker in stale_markers:
             assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale marker: {marker}"
+
+
+def test_current_visual_evidence_assets_are_synchronized():
+    """Stakeholder review assets must match the current browser visual evidence."""
+    browser_visual = json.loads((ROOT / "docs/browser-visual.json").read_text(encoding="utf-8"))
+    review_browser_visual = json.loads(
+        (ROOT / "docs/review/assets/browser-visual.json").read_text(encoding="utf-8")
+    )
+    browser_diff = json.loads((ROOT / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    review_browser_diff = json.loads(
+        (ROOT / "docs/review/assets/browser-visual-diff.json").read_text(encoding="utf-8")
+    )
+
+    assert review_browser_visual == browser_visual
+    assert review_browser_diff == browser_diff
+    assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
+    assert browser_diff["mismatchedPixels"] == 1019
+    assert browser_diff["maxMismatchRatio"] == 0.001
 
 
 def test_next_steps_reflects_post_merge_torch_alert_state():
