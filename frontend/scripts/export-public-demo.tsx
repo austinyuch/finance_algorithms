@@ -1,12 +1,14 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { Dashboard } from "../components/Dashboard";
 import {
+  PUBLIC_SHOWCASE_URL,
   assertVisualSnapshotMatchesBaseline,
   buildPublicDemoManifest,
   buildVisualSnapshot,
+  type PublicHostingProbe,
 } from "../lib/public-demo";
 import { getShowcaseDashboard } from "../lib/showcase-fixture";
 
@@ -16,16 +18,56 @@ const outDir = process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR
   : join(root, "out");
 const baselinePath = join(root, "visual-baselines", "showcase.visual.json");
 
+function hostingProbeFromEnv(): PublicHostingProbe | undefined {
+  if (
+    process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT === undefined
+  ) {
+    return undefined;
+  }
+  return {
+    pagesConfigured: true,
+    pagesStatus: process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS,
+    httpStatus: process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS
+      ? Number(process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS)
+      : undefined,
+    observedAt: process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT,
+  };
+}
+
+function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
+  const probePath = join(outDir, "public-hosting-probe.json");
+  if (!existsSync(probePath)) {
+    return undefined;
+  }
+  const parsed = JSON.parse(readFileSync(probePath, "utf8")) as Record<string, unknown>;
+  if (parsed.targetUrl !== PUBLIC_SHOWCASE_URL) {
+    throw new Error("public hosting probe targetUrl does not match showcase URL");
+  }
+  if (parsed.claimBoundary !== "no_alpha_claim") {
+    throw new Error("public hosting probe must preserve no_alpha_claim");
+  }
+  if (parsed.status === "proven" && parsed.httpStatus !== 200) {
+    throw new Error("public hosting probe cannot be proven without HTTP 200");
+  }
+  if (parsed.status === "proven" && typeof parsed.observedAt !== "string") {
+    throw new Error("public hosting probe requires observedAt when proven");
+  }
+  return {
+    pagesConfigured: parsed.pagesConfigured === true,
+    pagesStatus: typeof parsed.pagesStatus === "string" ? parsed.pagesStatus : undefined,
+    httpStatus: typeof parsed.httpStatus === "number" ? parsed.httpStatus : undefined,
+    observedAt: typeof parsed.observedAt === "string" ? parsed.observedAt : undefined,
+  };
+}
+
 const dashboard = getShowcaseDashboard();
 const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
 const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>QuantLab Showcase</title></head><body>${html}</body></html>`;
 const manifest = buildPublicDemoManifest(dashboard, {
   pagesConfigured: true,
-  pagesStatus: process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS,
-  httpStatus: process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS
-    ? Number(process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS)
-    : undefined,
-  observedAt: process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT,
+  ...(hostingProbeFromEnv() ?? hostingProbeFromExistingArtifact()),
 });
 const snapshot = buildVisualSnapshot(html, dashboard);
 

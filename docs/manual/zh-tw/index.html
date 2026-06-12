@@ -67,7 +67,7 @@
   <section class="card" id="start">
     <h2>快速開始 / Starter Assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 依賴</span>
-uv run pytest -q             <span style="color:#7d90b0"># 預期 224 passed</span>
+uv run pytest -q             <span style="color:#7d90b0"># 預期 226 passed</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js 依賴</span></pre>
     <p>已 commit 的 seed／樣本資料：</p>
     <ul>
@@ -133,7 +133,7 @@ npm run smoke                  <span style="color:#7d90b0"># 本地 HTTP smoke�
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、ops-visual-drift-artifacts/review.md<br>
-      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>235 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；GitHub Actions autonomous <code>event=schedule</code> dry-run proof 已有 run <code>27392471359</code>。export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
+      <b>已解決：</b>public-hosting probe <code>proven</code> HTTP 200；已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>230 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；GitHub Actions autonomous <code>event=schedule</code> dry-run proof 已有 run <code>27392471359</code>。export 內嵌 readiness 面板依 contract 保守顯示 <code>not_proven</code>。
     </div>
   </section>
 
@@ -151,7 +151,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
-    <p><b>自上次檢查以來已解決（2026-06-11 → 2026-06-12）：</b>測試目前 <b>224 passed</b>，PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 53 檔 clean；mutation spot checks 41/41 configured/killed，包含 root Torch dependency、延伸到 CR-B16 promotion drift 的 stale governance evidence mutations 與 CR-B12 scoped source-health overclaim 防護；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>public-hosting probe proven</b> HTTP 200；<b>visual diff repo-baseline pixel-backed</b>（<code>235 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；<b>scoped live snapshot write smoke</b> 已由 CR-B12 證明。</p>
+    <p><b>自上次檢查以來已解決（2026-06-11 → 2026-06-12）：</b>測試目前 <b>226 passed</b>，PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 53 檔 clean；mutation spot checks 43/43 configured/killed，包含 root Torch dependency、延伸到 CR-B17 promotion drift 的 stale governance evidence mutations、CR-FPS-001 public-hosting manifest/probe drift 與 CR-B12 scoped source-health overclaim 防護；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>public-hosting probe proven</b> HTTP 200；<b>visual diff repo-baseline pixel-backed</b>（<code>230 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；<b>scoped live snapshot write smoke</b> 已由 CR-B12 證明。</p>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
