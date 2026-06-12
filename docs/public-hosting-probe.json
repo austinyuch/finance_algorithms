@@ -5,6 +5,10 @@
   "httpStatus": 200,
   "deployedManifestStatus": 200,
   "deployedDataHash": "98ce5c660b826cb91c59ddbcc407e9bc1e262de91c89d3096c470f0bb64f84e4",
-  "observedAt": "2026-06-12T08:35:25.840Z",
+  "deployedTargetUrl": "https://austinyuch.github.io/finance_algorithms/",
+  "deployedArtifactKind": "github_pages_static_showcase",
+  "deployedClaimBoundary": "no_alpha_claim",
+  "deployedDashboardClaim": "local_demo_only",
+  "observedAt": "2026-06-12T10:38:00.408Z",
   "claimBoundary": "no_alpha_claim"
 }

@@ -8,6 +8,10 @@ async function main() {
   let httpStatus = 0;
   let deployedManifestStatus = 0;
   let deployedDataHash;
+  let deployedTargetUrl;
+  let deployedArtifactKind;
+  let deployedClaimBoundary;
+  let deployedDashboardClaim;
   try {
     const response = await fetch(targetUrl, { redirect: "follow" });
     httpStatus = response.status;
@@ -22,12 +26,29 @@ async function main() {
       if (typeof manifest.dataHash === "string") {
         deployedDataHash = manifest.dataHash;
       }
+      if (typeof manifest.targetUrl === "string") {
+        deployedTargetUrl = manifest.targetUrl;
+      }
+      if (typeof manifest.artifactKind === "string") {
+        deployedArtifactKind = manifest.artifactKind;
+      }
+      if (typeof manifest.claimBoundary === "string") {
+        deployedClaimBoundary = manifest.claimBoundary;
+      }
+      if (typeof manifest.dashboardClaim === "string") {
+        deployedDashboardClaim = manifest.dashboardClaim;
+      }
     }
   } catch {
     deployedManifestStatus = 0;
   }
+  const manifestContractMatches =
+    deployedTargetUrl === targetUrl &&
+    deployedArtifactKind === "github_pages_static_showcase" &&
+    deployedClaimBoundary === "no_alpha_claim" &&
+    deployedDashboardClaim === "local_demo_only";
   const observedAt = new Date().toISOString();
-  const status = httpStatus === 200 && deployedDataHash ? "proven" : "configured_not_observed";
+  const status = httpStatus === 200 && deployedDataHash && manifestContractMatches ? "proven" : "configured_not_observed";
   const evidence = {
     targetUrl,
     status,
@@ -35,6 +56,10 @@ async function main() {
     httpStatus,
     deployedManifestStatus,
     deployedDataHash,
+    deployedTargetUrl,
+    deployedArtifactKind,
+    deployedClaimBoundary,
+    deployedDashboardClaim,
     observedAt,
     claimBoundary: "no_alpha_claim",
   };

@@ -23,7 +23,11 @@ function hostingProbeFromEnv(): PublicHostingProbe | undefined {
     process.env.QUANTLAB_PUBLIC_HOSTING_PAGES_STATUS === undefined &&
     process.env.QUANTLAB_PUBLIC_HOSTING_HTTP_STATUS === undefined &&
     process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT === undefined &&
-    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DATA_HASH === undefined
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DATA_HASH === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_TARGET_URL === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_ARTIFACT_KIND === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_CLAIM_BOUNDARY === undefined &&
+    process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DASHBOARD_CLAIM === undefined
   ) {
     return undefined;
   }
@@ -35,6 +39,10 @@ function hostingProbeFromEnv(): PublicHostingProbe | undefined {
       : undefined,
     observedAt: process.env.QUANTLAB_PUBLIC_HOSTING_OBSERVED_AT,
     deployedDataHash: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DATA_HASH,
+    deployedTargetUrl: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_TARGET_URL,
+    deployedArtifactKind: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_ARTIFACT_KIND,
+    deployedClaimBoundary: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_CLAIM_BOUNDARY,
+    deployedDashboardClaim: process.env.QUANTLAB_PUBLIC_HOSTING_DEPLOYED_DASHBOARD_CLAIM,
   };
 }
 
@@ -59,12 +67,28 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   if (parsed.status === "proven" && typeof parsed.deployedDataHash !== "string") {
     throw new Error("public hosting probe requires deployedDataHash when proven");
   }
+  if (parsed.status === "proven" && parsed.deployedTargetUrl !== PUBLIC_SHOWCASE_URL) {
+    throw new Error("public hosting probe requires matching deployedTargetUrl when proven");
+  }
+  if (parsed.status === "proven" && parsed.deployedArtifactKind !== "github_pages_static_showcase") {
+    throw new Error("public hosting probe requires deployedArtifactKind when proven");
+  }
+  if (parsed.status === "proven" && parsed.deployedClaimBoundary !== "no_alpha_claim") {
+    throw new Error("public hosting probe requires no_alpha_claim deployedClaimBoundary when proven");
+  }
+  if (parsed.status === "proven" && parsed.deployedDashboardClaim !== "local_demo_only") {
+    throw new Error("public hosting probe requires local_demo_only deployedDashboardClaim when proven");
+  }
   return {
     pagesConfigured: parsed.pagesConfigured === true,
     pagesStatus: typeof parsed.pagesStatus === "string" ? parsed.pagesStatus : undefined,
     httpStatus: typeof parsed.httpStatus === "number" ? parsed.httpStatus : undefined,
     observedAt: typeof parsed.observedAt === "string" ? parsed.observedAt : undefined,
     deployedDataHash: typeof parsed.deployedDataHash === "string" ? parsed.deployedDataHash : undefined,
+    deployedTargetUrl: typeof parsed.deployedTargetUrl === "string" ? parsed.deployedTargetUrl : undefined,
+    deployedArtifactKind: typeof parsed.deployedArtifactKind === "string" ? parsed.deployedArtifactKind : undefined,
+    deployedClaimBoundary: typeof parsed.deployedClaimBoundary === "string" ? parsed.deployedClaimBoundary : undefined,
+    deployedDashboardClaim: typeof parsed.deployedDashboardClaim === "string" ? parsed.deployedDashboardClaim : undefined,
   };
 }
 

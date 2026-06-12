@@ -37,16 +37,23 @@ const mutations = [
   {
     name: "frontend-public-demo-hosting-classifier",
     path: "lib/public-demo.ts",
-    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
-    mutated: "if (probe.httpStatus !== 200 && hashStatus === \"matched\")",
+    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
+    mutated: "probe.httpStatus !== 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx"]
   },
   {
     name: "frontend-public-demo-hosting-hash-gate",
     path: "lib/public-demo.ts",
-    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
-    mutated: "if (probe.httpStatus === 200 && hashStatus !== \"missing\")",
+    original: "probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\"",
+    mutated: "probe.httpStatus === 200 && hashStatus !== \"missing\" && manifestContractStatus === \"matched\"",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "deployed data hashes"]
+  },
+  {
+    name: "frontend-public-demo-hosting-manifest-contract-gate",
+    path: "lib/public-demo.ts",
+    original: "if (probe.httpStatus === 200 && hashStatus === \"matched\" && manifestContractStatus === \"matched\")",
+    mutated: "if (probe.httpStatus === 200 && hashStatus === \"matched\")",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "weakens claim metadata"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",
