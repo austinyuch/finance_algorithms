@@ -210,15 +210,43 @@ def test_tier3_readiness_gate_requires_all_live_evidence(tmp_path):
         serving_evidence={"status": "proven", "url": "http://127.0.0.1:9000/health"},
         retraining_evidence={"status": "proven", "run_id": "train-1"},
     )
-    ready = build_tier3_readiness_gate(
+    arbitrary_maps = build_tier3_readiness_gate(
         manifest,
         serving_evidence={"status": "proven", "url": "http://127.0.0.1:9000/health"},
         retraining_evidence={"status": "proven", "run_id": "train-1"},
         automated_drift_monitoring_evidence={"status": "proven", "monitor_id": "drift-1"},
     )
+    ready = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence={
+            "status": "proven",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+        },
+        retraining_evidence={
+            "status": "proven",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+        },
+        automated_drift_monitoring_evidence={
+            "status": "proven",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+        },
+    )
 
     assert partial["readiness"] == "not_ready"
-    assert partial["missing_evidence"] == ["automated_drift_monitoring_evidence"]
+    assert partial["missing_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+    assert arbitrary_maps["readiness"] == "not_ready"
+    assert arbitrary_maps["missing_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
     assert ready["readiness"] == "tier3_ready"
     assert ready["missing_evidence"] == []
     assert ready["required_evidence"] == [
@@ -256,9 +284,11 @@ def test_serving_smoke_evidence_proves_only_serving_slice(tmp_path):
     validate_serving_smoke_evidence(evidence)
     assert evidence["status"] == "proven"
     assert evidence["serving_status"] == "local_smoke"
+    assert evidence["evidence_tier"] == "local_smoke"
     assert evidence["readiness_evidence_for"] == "serving_evidence"
     assert gate["readiness"] == "not_ready"
     assert gate["missing_evidence"] == [
+        "serving_evidence",
         "retraining_evidence",
         "automated_drift_monitoring_evidence",
     ]
@@ -328,10 +358,108 @@ def test_retraining_smoke_evidence_proves_only_retraining_slice(tmp_path):
     validate_retraining_smoke_evidence(evidence)
     assert evidence["status"] == "proven"
     assert evidence["retraining_status"] == "local_smoke"
+    assert evidence["evidence_tier"] == "local_smoke"
     assert evidence["readiness_evidence_for"] == "retraining_evidence"
     assert evidence["oos_net_metrics"] == {"sharpe": 1.1, "max_drawdown": -0.07}
     assert gate["readiness"] == "not_ready"
-    assert gate["missing_evidence"] == ["automated_drift_monitoring_evidence"]
+    assert gate["missing_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+
+
+def test_automated_drift_monitoring_local_evidence_does_not_make_tier3_ready(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_automated_drift_monitoring_evidence,
+        build_retraining_smoke_evidence,
+        build_serving_smoke_evidence,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+        validate_automated_drift_monitoring_evidence,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+    serving = build_serving_smoke_evidence(
+        entry,
+        health_check=lambda: {"status": "ok"},
+        predict=lambda request: {"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6, "B": 0.4}},
+        sample_request={"features": {"momentum": 0.6}},
+        observed_at="2026-06-12T02:30:00Z",
+    )
+    retraining = build_retraining_smoke_evidence(
+        entry,
+        retrain=lambda request: {
+            "status": "completed",
+            "run_id": "train-1",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.1}],
+        },
+        training_request={"lookback": 12},
+        observed_at="2026-06-12T03:00:00Z",
+    )
+    drift = build_automated_drift_monitoring_evidence(
+        entry,
+        monitor=lambda request: {
+            "status": "stable",
+            "claim_boundary": "no_alpha_claim",
+            "metric_deltas": {"oos_net_sharpe": 0.02},
+            "threshold": request["threshold"],
+        },
+        monitor_request={"threshold": 0.05, "window": "2026-06-12"},
+        observed_at="2026-06-12T04:00:00Z",
+    )
+    gate = build_tier3_readiness_gate(
+        manifest,
+        serving_evidence=serving,
+        retraining_evidence=retraining,
+        automated_drift_monitoring_evidence=drift,
+    )
+
+    validate_automated_drift_monitoring_evidence(drift)
+    assert drift["status"] == "proven"
+    assert drift["monitoring_status"] == "local_automated_smoke"
+    assert drift["evidence_tier"] == "local_smoke"
+    assert drift["readiness_evidence_for"] == "automated_drift_monitoring_evidence"
+    assert gate["readiness"] == "not_ready"
+    assert gate["missing_evidence"] == [
+        "serving_evidence",
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+
+
+def test_automated_drift_monitoring_rejects_overclaim_or_bad_status(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, build_automated_drift_monitoring_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    with pytest.raises(ValueError, match="stable or drift_detected"):
+        build_automated_drift_monitoring_evidence(
+            entry,
+            monitor=lambda request: {"status": "unknown", "claim_boundary": "no_alpha_claim", "metric_deltas": {"x": 0.1}},
+            monitor_request={"threshold": 0.05},
+            observed_at="2026-06-12T04:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_automated_drift_monitoring_evidence(
+            entry,
+            monitor=lambda request: {"status": "stable", "claim_boundary": "alpha_claim", "metric_deltas": {"x": 0.1}},
+            monitor_request={"threshold": 0.05},
+            observed_at="2026-06-12T04:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="metric_deltas"):
+        build_automated_drift_monitoring_evidence(
+            entry,
+            monitor=lambda request: {"status": "stable", "claim_boundary": "no_alpha_claim", "metric_deltas": {}},
+            monitor_request={"threshold": 0.05},
+            observed_at="2026-06-12T04:00:00Z",
+        )
 
 
 def test_retraining_smoke_evidence_rejects_failed_alpha_or_missing_oos(tmp_path):
@@ -374,12 +502,14 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
 
     from quantlab.mlops import (
         ExperimentRegistry,
+        build_automated_drift_monitoring_evidence,
         build_drift_assessment_report,
         build_drift_report_skeleton,
         build_retraining_smoke_evidence,
         build_serving_smoke_evidence,
         build_tier3_run_manifest,
         register_result_store_runs,
+        validate_automated_drift_monitoring_evidence,
         validate_drift_assessment_report,
         validate_registry_snapshot,
         validate_retraining_smoke_evidence,
@@ -453,11 +583,24 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
         {"artifact_kind": "bad"},
         {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "alpha_claim"},
         {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
-        {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "serving_evidence", "status": "planned"},
         {
             "artifact_kind": "serving_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "production",
+        },
+        {
+            "artifact_kind": "serving_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "serving_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "serving_status": "production",
         },
@@ -465,6 +608,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "artifact_kind": "serving_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "serving_status": "local_smoke",
             "health": {"status": "degraded"},
@@ -473,6 +617,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "artifact_kind": "serving_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "serving_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "serving_status": "local_smoke",
             "health": {"status": "ok"},
@@ -505,11 +650,24 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
         {"artifact_kind": "bad"},
         {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "alpha_claim"},
         {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
-        {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "retraining_evidence", "status": "planned"},
         {
             "artifact_kind": "retraining_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "production",
+        },
+        {
+            "artifact_kind": "retraining_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "retraining_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "retraining_status": "production",
         },
@@ -517,6 +675,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "artifact_kind": "retraining_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "retraining_status": "local_smoke",
             "oos_net_metrics": {},
@@ -525,6 +684,7 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
             "artifact_kind": "retraining_smoke_evidence",
             "claim_boundary": "no_alpha_claim",
             "readiness_evidence_for": "retraining_evidence",
+            "evidence_tier": "local_smoke",
             "status": "proven",
             "retraining_status": "local_smoke",
             "oos_net_metrics": {"sharpe": 1.0},
@@ -545,6 +705,15 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
         build_drift_assessment_report(entry, reference_metrics={"x": 1}, current_metrics={"x": 1}, threshold=0.1, observed_at=" ")
     with pytest.raises(ValueError, match="overlapping"):
         build_drift_assessment_report(entry, reference_metrics={"x": 1}, current_metrics={"y": 1}, threshold=0.1, observed_at="2026-06-12T00:00:00Z")
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_automated_drift_monitoring_evidence(alpha_entry, monitor=lambda request: {"status": "stable"}, monitor_request={"x": 1}, observed_at="2026-06-12T04:00:00Z")
+    with pytest.raises(ValueError, match="observed_at"):
+        build_automated_drift_monitoring_evidence(entry, monitor=lambda request: {"status": "stable"}, monitor_request={"x": 1}, observed_at=" ")
+    with pytest.raises(ValueError, match="monitor_request"):
+        build_automated_drift_monitoring_evidence(entry, monitor=lambda request: {"status": "stable"}, monitor_request={}, observed_at="2026-06-12T04:00:00Z")
+    with pytest.raises(ValueError, match="result"):
+        build_automated_drift_monitoring_evidence(entry, monitor=lambda request: {}, monitor_request={"x": 1}, observed_at="2026-06-12T04:00:00Z")
 
     for report in [
         {"artifact_kind": "bad"},
@@ -577,6 +746,68 @@ def test_experiment_registry_defensive_validation_branches(tmp_path):
     ]:
         with pytest.raises(ValueError):
             validate_drift_assessment_report(report)
+
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "automated_drift_monitoring_evidence", "claim_boundary": "alpha_claim"},
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "wrong",
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "production",
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "planned",
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "proven",
+            "monitoring_status": "production",
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "proven",
+            "monitoring_status": "local_automated_smoke",
+            "drift_status": "unknown",
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "proven",
+            "monitoring_status": "local_automated_smoke",
+            "drift_status": "stable",
+            "metric_deltas": {},
+        },
+        {
+            "artifact_kind": "automated_drift_monitoring_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "automated_drift_monitoring_evidence",
+            "evidence_tier": "local_smoke",
+            "status": "proven",
+            "monitoring_status": "local_automated_smoke",
+            "drift_status": "stable",
+            "metric_deltas": {"x": 0.1},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_automated_drift_monitoring_evidence(evidence)
 
     store = LocalResultStore(tmp_path / "runs.sqlite")
     alpha_run = store.log({
@@ -655,6 +886,43 @@ def test_pbt_drift_status_matches_absolute_threshold(tmp_path, reference, delta,
     )
 
     assert report["status"] == ("drift_detected" if abs(delta) > threshold else "stable")
+
+
+@given(
+    delta=st.floats(min_value=-1, max_value=1, allow_nan=False, allow_infinity=False),
+    threshold=st.floats(min_value=0.001, max_value=1, allow_nan=False, allow_infinity=False),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_automated_drift_monitoring_digest_and_status_are_deterministic(tmp_path, delta, threshold):
+    from quantlab.mlops import ExperimentRegistry, build_automated_drift_monitoring_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    def monitor(request):
+        return {
+            "status": "drift_detected" if abs(delta) > request["threshold"] else "stable",
+            "claim_boundary": "no_alpha_claim",
+            "metric_deltas": {"oos_net_sharpe": float(delta)},
+            "threshold": float(request["threshold"]),
+        }
+
+    first = build_automated_drift_monitoring_evidence(
+        entry,
+        monitor=monitor,
+        monitor_request={"threshold": threshold},
+        observed_at="2026-06-12T04:00:00Z",
+    )
+    second = build_automated_drift_monitoring_evidence(
+        entry,
+        monitor=monitor,
+        monitor_request={"threshold": threshold},
+        observed_at="2026-06-12T04:00:00Z",
+    )
+
+    assert first["request_digest"] == second["request_digest"]
+    assert first["result_digest"] == second["result_digest"]
+    assert first["drift_status"] == ("drift_detected" if abs(delta) > threshold else "stable")
+    assert first["claim_boundary"] == "no_alpha_claim"
 
 
 @given(count=st.integers(min_value=1, max_value=8))
