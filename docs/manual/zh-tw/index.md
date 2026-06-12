@@ -148,7 +148,7 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`，CR-FPS-006 regenerated payload 造成 branch-local public-hosting parity 暫為 `configured_not_observed`（`f-public-static-showcase/review.md`）
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
-> - 已解決：visual diff 為 repo-baseline pixel-backed（`1022 / 1,296,000`
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`1028 / 1,296,000`
 >   mismatched pixels，threshold `0.001`）；GitHub Actions autonomous
 >   `event=schedule` dry-run proof 已有 run `27392471359`。Public-hosting
 >   probe 已觀測 HTTP 200 與 deployed manifest contract metadata；export 內嵌 readiness 面板依 dashboard contract 仍保守顯示 `not_proven`，直到 Pages 服務 refreshed `dataHash` 後再更新 parity proof。
@@ -181,11 +181,11 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **239 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **57** 檔且 clean；mutation spot checks **48/48 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007 public-hosting manifest/probe/hash/contract/taxonomy drift、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。
+- 測試套件目前為 **239 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **57** 檔且 clean；mutation spot checks **49/49 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007 public-hosting manifest/probe/hash/contract/taxonomy drift、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；CR-FPS-006 regenerated local result-store payload 產生新的 `dataHash`，因此 branch-local deployment parity 正確維持 `configured_not_observed`，直到 Pages 服務 refreshed artifact。
-- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`1022 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`1028 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
 

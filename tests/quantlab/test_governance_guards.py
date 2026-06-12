@@ -82,6 +82,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 47/47",
         "mutation spot checks 47/47",
         "mutation spot-checks are **47/47",
+        "48/48 configured",
+        "48/48 Python mutation",
+        "Python mutation 48/48",
+        "mutation spot checks 48/48",
+        "mutation spot-checks are **48/48",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -100,6 +105,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1019/1,296,000",
         "0.0007862654320987655",
         "2bbe4348ca8c005bd6db5b472e7fa1c468fba1249c3288fe2319d1656131f493",
+        "1022 / 1,296,000",
+        "1022/1,296,000",
+        "0.0007885802469135803",
+        "38f9d1e6cc5d7a3dc9e395db41ee5dc5c2464e618062cf305f1f473db49d333e",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
@@ -124,7 +133,7 @@ def test_current_visual_evidence_assets_are_synchronized():
     assert review_browser_visual == browser_visual
     assert review_browser_diff == browser_diff
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1022
+    assert browser_diff["mismatchedPixels"] == 1028
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
@@ -228,15 +237,19 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert probe.get("deployedArtifactKind") == manifest.get("artifactKind")
     assert probe.get("deployedClaimBoundary") == manifest.get("claimBoundary")
     assert probe.get("deployedDashboardClaim") == manifest.get("dashboardClaim")
+    assert probe.get("expectedDataHash") == manifest.get("dataHash")
+    assert probe.get("manifestContractStatus") == "matched"
     if hosting.get("deployedDataHash") == manifest.get("dataHash"):
         assert hosting.get("status") == "proven"
         assert hosting.get("hashStatus") == "matched"
         assert probe.get("status") == "proven"
+        assert probe.get("hashStatus") == "matched"
         assert probe.get("deployedDataHash") == manifest.get("dataHash")
     else:
         assert hosting.get("status") == "configured_not_observed"
         assert hosting.get("hashStatus") == "mismatched"
         assert probe.get("status") == "configured_not_observed"
+        assert probe.get("hashStatus") == "mismatched"
         assert probe.get("deployedDataHash") != manifest.get("dataHash")
 
 
