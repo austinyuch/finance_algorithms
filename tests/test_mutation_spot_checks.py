@@ -72,6 +72,7 @@ def test_mutation_runner_list_smoke():
     assert "g-alt-data-pit-gate" in result.stdout
     assert "root-torch-default-dependency" in result.stdout
     assert "governance-stale-next-steps-alert" in result.stdout
+    assert "governance-stale-scheduled-observer-promotion" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
 
 
@@ -144,4 +145,5 @@ def test_main_list_prints_mutation_names(capsys):
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out
     assert "governance-stale-next-steps-alert" in out
+    assert "governance-stale-scheduled-observer-promotion" in out
     assert "b-scheduled-observer-manual-pending" in out
