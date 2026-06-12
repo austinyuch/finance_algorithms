@@ -71,6 +71,7 @@ def test_mutation_runner_list_smoke():
     assert "showcase-experiment-readiness" in result.stdout
     assert "g-alt-data-pit-gate" in result.stdout
     assert "root-torch-default-dependency" in result.stdout
+    assert "governance-stale-next-steps-alert" in result.stdout
 
 
 def test_selected_specs_rejects_unknown_name():
@@ -141,3 +142,4 @@ def test_main_list_prints_mutation_names(capsys):
     assert "showcase-experiment-readiness" in out
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out
+    assert "governance-stale-next-steps-alert" in out

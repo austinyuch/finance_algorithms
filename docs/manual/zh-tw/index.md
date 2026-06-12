@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 188 passed, 1 skipped
+uv run pytest -q             # 健檢：預期 190 passed, 1 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -148,7 +148,7 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual 與 public-hosting probe `PASSED`（`ops-visual-drift-artifacts/review.md`）
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard 資料為 fixture 驅動（`no_alpha_claim`）。
-> - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`505 / 1,296,000`
 >   mismatched pixels，threshold `0.001`）；GitHub Actions `workflow_dispatch`
 >   schedule proof 已有 run `27387041974`。殘留：尚無 autonomous
 >   cron-triggered `event=schedule` run。Public-hosting probe 已 `proven` HTTP
@@ -183,11 +183,11 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **188 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane）；mypy 現涵蓋 **51** 檔且 clean；mutation spot checks **23/23 killed**，包含 root Torch dependency mutation。
+- 測試套件目前為 **190 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **51** 檔且 clean；mutation spot checks **24/24 configured**，包含 root Torch dependency 與 stale governance evidence mutations。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。
-- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`0 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`505 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
 

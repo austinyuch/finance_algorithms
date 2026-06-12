@@ -41,3 +41,34 @@ def test_contract_interfaces_no_drift():
     impl = _protocol_surface(ROOT / "quantlab/contracts/interfaces.py")
     assert spec, "spec SSOT interfaces.py 應含 Protocol"
     assert spec == impl, f"contract 漂移:\nSSOT={spec}\nIMPL={impl}"
+
+
+def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
+    """Current governance surfaces must not advertise superseded readiness evidence."""
+    current_surfaces = [
+        ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/ISSUE_LOG.md",
+        ROOT / "quantlab/CORRECTNESS_CHECKLIST.md",
+    ]
+    stale_markers = [
+        "190 pytest",
+        "20 frontend",
+        "22 mutation",
+        "66 passed",
+        "mutation spot-check 5/5",
+    ]
+
+    for path in current_surfaces:
+        text = path.read_text(encoding="utf-8")
+        for marker in stale_markers:
+            assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale marker: {marker}"
+
+
+def test_next_steps_reflects_post_merge_torch_alert_state():
+    """NEXT_STEPS should be a live resume memo, not a stale local-lane checklist."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "Commit/push `spec/a-torch-default-dependency-isolation`" not in text
+    assert "implemented locally" not in text
+    assert "post-merge rescan pending" not in text
+    assert "Dependabot alert #7 fixed" in text

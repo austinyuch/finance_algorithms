@@ -1,8 +1,8 @@
 {
   "status": "proven",
   "claimBoundary": "no_alpha_claim",
-  "screenshotHash": "823f7a9df2a199d0432d2e448059f69dfe18401595f186149d50706c04a2c92f",
+  "screenshotHash": "696ba9d0146cd4d93f53fada617375f68e8ecf1d2666228cbd30aa96a9efc489",
   "viewport": "desktop-1440x900",
   "source": "chromium-headless",
-  "observedAt": "2026-06-11T15:52:44.744Z"
+  "observedAt": "2026-06-12T01:33:28.201Z"
 }
