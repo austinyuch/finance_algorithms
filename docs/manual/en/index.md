@@ -154,9 +154,10 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
-> - Residual: visual diff is **hash-equality**, not pixel-tolerance CI; no live
+> - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
+>   mismatched pixels at threshold `0.001`). Residual: no live
 >   *scheduled* run artifact yet. Public-hosting probe is `proven` HTTP 200, but
->   the export's embedded evidence panel still shows the older `not_proven` text.
+>   the export's embedded readiness panel remains conservative (`not_proven`) by contract.
 
 ---
 
@@ -191,14 +192,15 @@ baseline** — preserved unchanged.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `0 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual.
 
 **Open visual gaps:**
 
 | Gap | Severity | Source |
 |---|---|---|
-| Visual diff is **hash-equality**, not pixel-tolerance CI with stored baselines | Medium | `ops-visual-drift-artifacts/review.md` (residual) |
+| No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
 | No live *scheduled* GitHub Actions run artifact captured | Medium | `ops-visual-drift-artifacts/review.md` (residual) |
-| Static export's embedded evidence panel still shows stale `not_proven` text | Low | `frontend/out/index.html` |
+| Static export's readiness panel remains conservative (`not_proven`) by dashboard contract | Low | `frontend/out/index.html` |
 | Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |
 

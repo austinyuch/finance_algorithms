@@ -147,9 +147,10 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual 與 public-hosting probe `PASSED`（`ops-visual-drift-artifacts/review.md`）
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard 資料為 fixture 驅動（`no_alpha_claim`）。
-> - 殘留：visual diff 為 **hash-equality**，非 pixel-tolerance CI；尚無 live
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
+>   mismatched pixels，threshold `0.001`）。殘留：尚無 live
 >   *scheduled* run artifact。Public-hosting probe 已 `proven` HTTP 200，但 export
->   內嵌的 evidence 面板仍顯示較舊的 `not_proven` 文字。
+>   內嵌 readiness 面板依 dashboard contract 仍保守顯示 `not_proven`。
 
 ---
 
@@ -183,14 +184,15 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`0 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留。
 
 **未解決的視覺缺口：**
 
 | 缺口 | 嚴重度 | 來源 |
 |---|---|---|
-| Visual diff 為 **hash-equality**，非 pixel-tolerance CI／無儲存 baseline | Medium | `ops-visual-drift-artifacts/review.md`（殘留） |
+| 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | 尚無 live *scheduled* GitHub Actions run artifact | Medium | `ops-visual-drift-artifacts/review.md`（殘留） |
-| Static export 內嵌 evidence 面板仍顯示過時 `not_proven` 文字 | Low | `frontend/out/index.html` |
+| Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 `not_proven` | Low | `frontend/out/index.html` |
 | Vintage 真實資料回測仍延後（<2 價格資產） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |
 

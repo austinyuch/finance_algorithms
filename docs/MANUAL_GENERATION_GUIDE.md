@@ -48,7 +48,7 @@ Authoritative gates (recorded in the manual evidence panel):
 uv run pytest -q                                   # 190 passed (2026-06-12)
 uv run mypy quantlab/ --ignore-missing-imports     # clean, 50 files
 uv run lint-imports                                # engine/data KEPT
-(cd frontend && npm test && npm audit --omit=dev)  # 20 passed, 0 vulnerabilities
+(cd frontend && npm test && npm audit --omit=dev)  # 23 passed, 0 vulnerabilities
 ```
 
 ## 4. Evidence capture (Web UI lane — secondary)
@@ -73,7 +73,7 @@ intentionally unstyled). A long-running `next start` server still requires a
 registry-governed local port (`local-infra-registry-governance`); the headless
 smoke and static export need none, so they are the default evidence path. The
 dashboard's data remains fixture-driven (`MOCK_DOMINANT_EVIDENCE`,
-`no_alpha_claim`); the visual diff gate is hash-equality, not pixel-tolerance CI.
+`no_alpha_claim`); the visual diff gate is repo-baseline pixel-backed.
 
 ## 5. Runtime governance note
 

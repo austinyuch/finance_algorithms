@@ -18,8 +18,8 @@
 | C | Optimizer, multi-period allocation, regime rebalance selector, pyramid-entry adapter | `quantlab/portfolio/` | `test_c_1..5` (123) | **PASSED** |
 | D | First-regime, return/risk forecast, robust optimizer, family evaluator — OOS-net baselines | `quantlab/models/`, `quantlab/research/` | `test_d_1,3,4,5,6`; real-data regime benchmark | **PASSED** (`no_alpha_claim`) |
 | E | Experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge | `quantlab/mlops/`, `quantlab/showcase/` | `test_e_1` (7); trace 97.3% | **PASSED** (registry-only) |
-| F | Showcase read API, Next.js dashboard, demo hardening, public/static showcase | `quantlab/showcase/`, `frontend/` | `test_f_1`; `frontend` npm test (20); static export | **CONDITIONAL** · `local_demo_only` |
-| F/B/E ops | Browser visual diff, public-hosting probe, schedule run proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/out/*` | `browser-visual.png` `proven`; probe HTTP 200; mutation 22/22 | **PASSED** (ops-visual-drift-artifacts; hash-equality diff) |
+| F | Showcase read API, Next.js dashboard, demo hardening, public/static showcase | `quantlab/showcase/`, `frontend/` | `test_f_1`; `frontend` npm test (23); static export | **CONDITIONAL** · `local_demo_only` |
+| F/B/E ops | Browser visual diff, public-hosting probe, schedule run proof, E drift report | `frontend/scripts/{browser-visual-smoke,probe-public-demo}.mjs`, `frontend/out/*`, `frontend/visual-baselines/browser-visual.png` | `browser-visual.png` `proven`; repo-baseline pixel diff `0 / 1,296,000`; probe HTTP 200; mutation 22/22 + frontend 9/9 | **PASSED** (ops-visual-drift-artifacts + f-browser-pixel-baseline) |
 | G | Source-contract-first local alt-data loader (two optional slices) | `quantlab/data/` alt-data loader | `test_g_1` (7); PBT + mutation | **PASSED** (default-disabled) |
 | Legacy | Arithmetic/geometric pyramid order sizing API | `invest_algorithms/` | `tests/test_algo_pyramid.py` | stable legacy baseline |
 
@@ -30,16 +30,16 @@
 | Python suite | `uv run pytest -q` | **190 passed** |
 | Type check | `uv run mypy quantlab/ --ignore-missing-imports` | clean, 50 files |
 | Architecture | `uv run lint-imports` | KEPT (71 files, 174 deps) |
-| Frontend unit | `cd frontend && npm test` | 20 passed |
+| Frontend unit | `cd frontend && npm test` | 23 passed |
 | Frontend supply chain | `npm audit --omit=dev` | 0 vulnerabilities |
 | Python mutation | `uv run python scripts/run_mutation_spot_checks.py` | 22/22 killed |
-| Browser visual | `cd frontend && npm run visual:browser` | `proven` (chromium-headless) |
+| Browser visual | `cd frontend && npm run visual:browser` | `proven`; repo-baseline pixel diff `0 / 1,296,000` at threshold `0.001` |
 | Public-hosting probe | `cd frontend && npm run probe:public-demo` | HTTP 200 `proven` |
 
 ## Open verification gaps (owned elsewhere)
 
-- Visual diff is **hash-equality**, not pixel-tolerance CI with stored baselines —
-  residual in `ops-visual-drift-artifacts/review.md`.
+- No CI-managed visual baseline history beyond the committed repo baseline —
+  residual in `f-browser-pixel-baseline/review.md`.
 - No live **scheduled** GitHub Actions run artifact yet — residual in
   `ops-visual-drift-artifacts/review.md`.
 - Real-data backtest — deferred until ≥2 price assets accumulate
