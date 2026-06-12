@@ -392,6 +392,20 @@ def _broad_source_quorum_report() -> dict[str, object]:
     }
 
 
+def _broad_source_quorum_report_with_files(tmp_path: Path) -> dict[str, object]:
+    report = _broad_source_quorum_report()
+    out_dir = tmp_path / "vintage" / "2026-06-12"
+    out_dir.mkdir(parents=True)
+    jobs = report["jobs"]
+    assert isinstance(jobs, list)
+    for job in jobs:
+        safe_id = str(job["source_id"]).replace(":", "_").replace("^", "idx_")
+        job["safe_id"] = safe_id
+        (out_dir / f"{safe_id}.json").write_text(json.dumps({"source": job["source_id"]}), encoding="utf-8")
+    report["out_dir"] = str(out_dir)
+    return report
+
+
 def test_source_quorum_gate_cli_smoke(tmp_path, capsys):
     from scripts.snapshot_ops_gate import main
 
@@ -476,6 +490,119 @@ def test_source_quorum_gate_rejects_dry_or_failed_critical_sources():
         validate_source_quorum_report(dry)
     with pytest.raises(ValueError, match="missing broad source quorum"):
         validate_source_quorum_report(replayed_dry_rows)
+
+
+def test_source_quorum_proof_marks_valid_live_quorum_as_proven(tmp_path):
+    from scripts.source_quorum_proof import build_snapshot_command, build_source_quorum_proof, write_source_quorum_proof
+
+    command = build_snapshot_command(
+        report_json=tmp_path / "report.json",
+        out_root=tmp_path / "vintage",
+        python_executable="python",
+    )
+    proof = build_source_quorum_proof(
+        _broad_source_quorum_report_with_files(tmp_path),
+        snapshot_exit_code=0,
+        command=command,
+        observed_at="2026-06-12T00:00:00Z",
+    )
+    target = tmp_path / "source-quorum-proof.json"
+    write_source_quorum_proof(proof, target)
+
+    assert proof["artifact_kind"] == "source_quorum_proof"
+    assert proof["status"] == "proven"
+    assert proof["evidence_tier"] == "live_source_quorum"
+    assert proof["claim_boundary"] == "source_contract_status_only"
+    assert proof["groups"]["fred_macro"] == ["fred:FEDFUNDS"]
+    assert proof["snapshot_files"]["fred:FEDFUNDS"].endswith("fred_FEDFUNDS.json")
+    assert json.loads(target.read_text(encoding="utf-8"))["status"] == "proven"
+
+
+def test_source_quorum_proof_rejects_scoped_or_failed_attempts(tmp_path):
+    from scripts.source_quorum_proof import build_source_quorum_proof
+
+    scoped = {
+        "available_date": "2026-06-12",
+        "dry_run": False,
+        "counts": {"ok": 1, "skip": 0, "fail": 0, "dry": 0},
+        "jobs": [{"source_id": "fred:FEDFUNDS", "status": "ok"}],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "blocked", "default_enabled": False},
+        },
+    }
+    failed = _broad_source_quorum_report()
+
+    scoped_proof = build_source_quorum_proof(
+        scoped,
+        snapshot_exit_code=0,
+        command=["daily_snapshot"],
+        observed_at="2026-06-12T00:00:00Z",
+    )
+    failed_proof = build_source_quorum_proof(
+        failed,
+        snapshot_exit_code=1,
+        command=["daily_snapshot"],
+        observed_at="2026-06-12T00:00:00Z",
+    )
+
+    assert scoped_proof["status"] == "not_proven"
+    assert "missing broad source quorum" in scoped_proof["gate_error"]
+    assert failed_proof["status"] == "not_proven"
+    assert failed_proof["gate_error"] == "ValueError: snapshot command exited 1"
+
+
+def test_source_quorum_proof_rejects_replayed_report_without_snapshot_files(tmp_path):
+    from scripts.source_quorum_proof import build_source_quorum_proof
+
+    report = _broad_source_quorum_report_with_files(tmp_path)
+    for path in (tmp_path / "vintage" / "2026-06-12").glob("*.json"):
+        path.unlink()
+
+    proof = build_source_quorum_proof(
+        report,
+        snapshot_exit_code=0,
+        command=["daily_snapshot"],
+        observed_at="2026-06-12T00:00:00Z",
+    )
+
+    assert proof["status"] == "not_proven"
+    assert "missing snapshot file" in proof["gate_error"]
+
+
+def test_source_quorum_proof_cli_runs_quorum_scope_without_network(monkeypatch, tmp_path, capsys):
+    from scripts import source_quorum_proof
+
+    report_path = tmp_path / "snapshot-report.json"
+    proof_path = tmp_path / "source-quorum-proof.json"
+
+    class FakeCompleted:
+        returncode = 0
+
+    def fake_run(command, **kwargs):
+        assert "--fred-series" in command
+        assert source_quorum_proof.QUORUM_FRED_SERIES in command
+        assert "--yahoo-symbols" in command
+        assert source_quorum_proof.QUORUM_YAHOO_SYMBOLS in command
+        report_path.write_text(json.dumps(_broad_source_quorum_report_with_files(tmp_path)), encoding="utf-8")
+        return FakeCompleted()
+
+    monkeypatch.setattr(source_quorum_proof.subprocess, "run", fake_run)
+    rc = source_quorum_proof.main([
+        "--out-root",
+        str(tmp_path / "vintage"),
+        "--report-json",
+        str(report_path),
+        "--proof-json",
+        str(proof_path),
+        "--python",
+        "python",
+    ])
+    out = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert out["status"] == "proven"
+    assert json.loads(proof_path.read_text(encoding="utf-8"))["status"] == "proven"
 
 
 def test_schedule_report_records_retention_and_latest_pointer(tmp_path):

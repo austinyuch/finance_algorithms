@@ -45,7 +45,10 @@ uv run python scripts/snapshot_ops_gate.py report.json --require-source-quorum
 
 ## Boundary
 
-This CR does not make broad default source availability proven. It adds the
-gate that future live reports must pass before they can be described as broad
-daily snapshot source readiness. Stooq remains blocked/default-disabled until
-a working source contract is proven separately.
+This CR did not itself make broad default source availability proven. It added
+the gate that future live reports must pass before they can be described as
+broad daily snapshot source readiness.
+
+**Supersession note (2026-06-12):** CR-B19 later added the live proof wrapper
+and captured a passing FRED/Yahoo/NOAA quorum proof. Stooq remains
+blocked/default-disabled until a working source contract is proven separately.

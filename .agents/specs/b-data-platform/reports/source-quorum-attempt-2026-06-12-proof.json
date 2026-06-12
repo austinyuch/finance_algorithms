@@ -1,0 +1,45 @@
+{
+  "artifact_kind": "source_quorum_proof",
+  "available_date": "2026-06-12",
+  "claim_boundary": "source_contract_status_only",
+  "command": [
+    "python",
+    "scripts/daily_snapshot.py",
+    "--out-root",
+    "data/vintage/raw",
+    "--fred-series",
+    "FEDFUNDS,SP500,PCOPPUSDM",
+    "--yahoo-symbols",
+    "2330.TW,^TWII",
+    "--report-json",
+    ".agents/specs/b-data-platform/reports/source-quorum-attempt-2026-06-12-report.json"
+  ],
+  "counts": {
+    "dry": 0,
+    "fail": 0,
+    "ok": 0,
+    "skip": 6
+  },
+  "evidence_tier": "live_source_quorum",
+  "groups": {
+    "fred_macro": [
+      "fred:FEDFUNDS"
+    ],
+    "fred_price_proxy": [
+      "fred:SP500",
+      "fred:PCOPPUSDM"
+    ],
+    "noaa_macro": [
+      "noaa:oni"
+    ],
+    "yahoo_equity": [
+      "yahoo:2330.TW"
+    ],
+    "yahoo_market": [
+      "yahoo:^TWII"
+    ]
+  },
+  "observed_at": "2026-06-12T07:48:32.230133+00:00",
+  "snapshot_exit_code": 0,
+  "status": "proven"
+}
