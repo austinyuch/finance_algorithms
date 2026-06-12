@@ -720,7 +720,7 @@ def build_drift_assessment_report(
         key: float(current_metrics[key]) - float(reference_metrics[key])
         for key in keys
     }
-    status = "drift_detected" if any(abs(delta) > threshold + 1e-12 for delta in deltas.values()) else "stable"
+    status = "drift_detected" if any(abs(delta) > threshold for delta in deltas.values()) else "stable"
     return {
         "artifact_kind": "drift_assessment_report",
         "claim_boundary": "no_alpha_claim",

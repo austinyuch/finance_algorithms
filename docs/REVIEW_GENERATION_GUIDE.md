@@ -32,7 +32,7 @@ ISSUE_LOG,RTM}.md`, every `.agents/specs/**/review.md`, and `git log`.
 Project is Backend/CLI-dominant Hybrid. Captured live (2026-06-12):
 
 ```bash
-uv run pytest -q                     # 222 passed → docs/review/assets/gate-pytest.txt
+uv run pytest -q                     # 227 passed → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports # clean 53 files → gate-mypy.txt
 uv run lint-imports                  # KEPT          → gate-lint-imports.txt
 (cd frontend && npm test)            # 23 passed     → gate-frontend-test.txt

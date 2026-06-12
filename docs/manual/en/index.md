@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 222 passed
+uv run pytest -q             # sanity: expect 227 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -189,7 +189,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **222 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **38/38 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift, and CR-B12 scoped source-health overclaim protection.
+- Test suite is now **227 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **53** files; mutation spot checks are **39/39 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift, CR-B12 scoped source-health overclaim protection, and CR-B18 broad source-quorum overclaim protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
@@ -200,7 +200,7 @@ baseline** — preserved unchanged.
 | Gap | Severity | Source |
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
-| Live append-only snapshot writes remain separate from dry-run schedule proof | Low | `b-live-scheduled-snapshot-proof/review.md` |
+| Broad source-quorum proof remains separate from scoped live-write smoke | Low | `b-data-platform/change-requests/cr-b18-source-quorum-gate.md` |
 | Static export's readiness panel remains conservative (`not_proven`) by dashboard contract | Low | `frontend/out/index.html` |
 | Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |
