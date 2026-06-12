@@ -152,7 +152,7 @@ flowchart LR
       <div>
         <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-12)</h3>
         <ul class="clean">
-          <li>Python suite now <b>227 passed</b>; mypy clean over 53 files; mutation spot checks <b>44/44 configured</b>, including root Torch dependency, stale governance evidence mutations through CR-B17 and CR-FPS-001 promotion, CR-FPS-001 public-hosting manifest/probe drift, and CR-FPS-001 promotion guard <span class="sev sL">gate</span></li>
+          <li>Python suite now <b>222 passed</b>; mypy clean over 53 files; mutation spot checks <b>38/38 configured</b>, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001 public-hosting manifest/probe drift <span class="sev sL">gate</span></li>
           <li>Frontend <b>23 tests pass</b>, coverage 91.42%, <b>0</b> dependency vulnerabilities <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
           <li><b>Public-hosting probe proven</b> HTTP 200 (<code>public-hosting-probe.json</code>) <span class="sev sL">hosting</span></li>
@@ -181,7 +181,7 @@ flowchart LR
     <h2 class="sec">Roadmap</h2>
     <p class="sub">Next milestones, in order.</p>
     <div class="timeline">
-      <div><b>Now</b> — Manual + review docs published; gates refreshed (227 passed, frontend 23, frontend audit 0); browser visual + pixel diff + public-hosting probe proven; deployment manifest/probe and post-promotion drift guarded; autonomous cron dry-run proof and CR-B12 scoped live-write smoke captured; default Python lock excludes Torch.</div>
+      <div><b>Now</b> — Manual + review docs published; gates refreshed (222 passed, frontend 23, frontend audit 0); browser visual + pixel diff + public-hosting probe proven; deployment manifest/probe and promotion-boundary drift guarded; autonomous cron dry-run proof and CR-B12 scoped live-write smoke captured; default Python lock excludes Torch.</div>
       <div><b>Next</b> — Keep cron observer evidence fresh after future schedule runs; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
       <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
       <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>
