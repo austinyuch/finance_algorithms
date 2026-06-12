@@ -127,8 +127,20 @@ def test_next_steps_reflects_post_merge_live_write_smoke_state():
     text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
 
     assert "Current branch lane:** none after `e-tier3-readiness-proof-cli` promotion" not in text
+    assert "Current branch lane:** none after CR-B12 promotion" not in text
     assert "PR #61" in text
     assert "PR #62" in text
     assert "CR-B12 scoped live write smoke promoted to `dev`" in text
     assert "and to `main` via PR #62" in text
-    assert "Current branch lane:** none after CR-B12 promotion" in text
+
+
+def test_next_steps_reflects_post_merge_cr_b13_state():
+    """NEXT_STEPS should reflect the CR-B13 governance sync promotion."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "CR-B13 post live-write governance sync is implemented locally" not in text
+    assert "Current branch lane:** none after CR-B13 promotion" in text
+    assert "CR-B13 post live-write governance sync promoted to `dev` via PR #63" in text
+    assert "and to `main` via PR #64" in text
+    assert "8c5b3f1" in text
+    assert "aea683f" in text
