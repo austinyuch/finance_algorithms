@@ -290,10 +290,26 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="b-stooq-live-close-positive",
         path="quantlab/data/source_health.py",
-        original="if not isinstance(close, (int, float)) or close <= 0:",
+        original="if not isinstance(close, (int, float)) or not math.isfinite(float(close)) or close <= 0:",
         mutated="if not isinstance(close, (int, float)) or close < 0:",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_daily_snapshot.py::test_pbt_stooq_reopen_evidence_rejects_missing_positive_close"),
+    ),
+    MutationSpec(
+        name="b-stooq-proof-exit-gate",
+        path="scripts/stooq_contract_proof.py",
+        original="if exit_code != 0:",
+        mutated="if exit_code == 0:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_stooq_contract_proof_rejects_failed_or_replayed_reports"),
+    ),
+    MutationSpec(
+        name="b-stooq-proof-file-gate",
+        path="scripts/stooq_contract_proof.py",
+        original="if not path.exists():",
+        mutated="if False:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot.py::test_stooq_contract_proof_rejects_failed_or_replayed_reports"),
     ),
     MutationSpec(
         name="d-evaluation-artifact-checksum",

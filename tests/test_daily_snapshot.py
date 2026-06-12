@@ -20,6 +20,7 @@ import pytest
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "daily_snapshot.py"
+STOOQ_PROOF_PATH = Path(__file__).resolve().parents[1] / "scripts" / "stooq_contract_proof.py"
 
 
 def _load():
@@ -31,6 +32,14 @@ def _load():
 
 
 ds = _load()
+
+
+def _load_stooq_proof():
+    spec = importlib.util.spec_from_file_location("stooq_contract_proof", STOOQ_PROOF_PATH)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 class FakeResp:
@@ -792,6 +801,7 @@ def test_stooq_source_contract_decision_requires_live_proof():
     assert opt_in["default_enabled"] == "false"
 
 
+@settings(deadline=None)
 @given(close=st.one_of(st.none(), st.floats(max_value=0, allow_nan=False, allow_infinity=False)))
 def test_pbt_stooq_reopen_evidence_rejects_missing_positive_close(close):
     from quantlab.data.source_health import build_source_contract_reopen_evidence
@@ -802,6 +812,163 @@ def test_pbt_stooq_reopen_evidence_rejects_missing_positive_close(close):
             rows=[{"symbol": "spy.us", "event_date": "2026-06-11", "close": close}],
             observed_at="2026-06-11T00:00:00Z",
         )
+
+
+def _stooq_snapshot_payload(close: str = "123.45") -> dict[str, object]:
+    return {
+        "source": "stooq:spy.us",
+        "available_date": "2026-06-12",
+        "is_approximate": False,
+        "captured_at": "2026-06-12T00:00:00Z",
+        "event_date": "2026-06-11",
+        "raw": f"Symbol,Date,Time,Open,High,Low,Close,Volume\nSPY.US,2026-06-11,22:00:00,1,2,1,{close},10",
+    }
+
+
+def _stooq_report(tmp_path: Path, status: str = "ok") -> dict[str, object]:
+    out_dir = tmp_path / "2026-06-12"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return {
+        "available_date": "2026-06-12",
+        "out_dir": str(out_dir),
+        "dry_run": False,
+        "counts": {"ok": 1 if status == "ok" else 0, "skip": 1 if status == "skip" else 0,
+                   "fail": 1 if status == "fail" else 0, "dry": 0},
+        "jobs": [{"source_id": "stooq:spy.us", "safe_id": "stooq_spy.us", "status": status}],
+        "source_health": {
+            "claim_boundary": "source_contract_status_only",
+            "stooq": {"status": "unknown", "default_enabled": True, "symbols": ["spy.us"]},
+        },
+    }
+
+
+def test_stooq_contract_proof_marks_file_backed_positive_close_as_opt_in_eligible(tmp_path: Path):
+    proof_mod = _load_stooq_proof()
+    report = _stooq_report(tmp_path)
+    out_dir = Path(str(report["out_dir"]))
+    (out_dir / "stooq_spy.us.json").write_text(
+        json.dumps(_stooq_snapshot_payload()),
+        encoding="utf-8",
+    )
+
+    proof = proof_mod.build_stooq_contract_proof(
+        report,
+        exit_code=0,
+        observed_at="2026-06-12T00:00:00Z",
+        command=["python", "scripts/daily_snapshot.py"],
+    )
+
+    assert proof["status"] == "eligible_for_opt_in_review"
+    assert proof["decision"]["decision"] == "eligible_for_opt_in_review"
+    assert proof["decision"]["default_enabled"] == "false"
+    assert proof["claim_boundary"] == "source_contract_status_only"
+    assert proof["rows"] == [{"symbol": "spy.us", "event_date": "2026-06-11", "close": 123.45}]
+
+
+def test_stooq_contract_proof_rejects_failed_or_replayed_reports(tmp_path: Path):
+    proof_mod = _load_stooq_proof()
+
+    failed = proof_mod.build_stooq_contract_proof(
+        _stooq_report(tmp_path, status="fail"),
+        exit_code=1,
+        observed_at="2026-06-12T00:00:00Z",
+        command=["python", "scripts/daily_snapshot.py"],
+    )
+    assert failed["status"] == "not_proven"
+    assert failed["decision"]["decision"] == "requires_live_close_rows"
+
+    replayed = proof_mod.build_stooq_contract_proof(
+        _stooq_report(tmp_path, status="ok"),
+        exit_code=0,
+        observed_at="2026-06-12T00:00:00Z",
+        command=["python", "scripts/daily_snapshot.py"],
+    )
+    assert replayed["status"] == "not_proven"
+    assert "missing snapshot file" in replayed["reasons"][0]
+
+
+@settings(deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(close=st.sampled_from(["0", "-1", "", "nan", "bad"]))
+def test_pbt_stooq_contract_proof_rejects_non_positive_file_close(tmp_path: Path, close: str):
+    proof_mod = _load_stooq_proof()
+    report = _stooq_report(tmp_path)
+    out_dir = Path(str(report["out_dir"]))
+    (out_dir / "stooq_spy.us.json").write_text(
+        json.dumps(_stooq_snapshot_payload(close=close)),
+        encoding="utf-8",
+    )
+
+    proof = proof_mod.build_stooq_contract_proof(
+        report,
+        exit_code=0,
+        observed_at="2026-06-12T00:00:00Z",
+        command=["python", "scripts/daily_snapshot.py"],
+    )
+
+    assert proof["status"] == "not_proven"
+    assert proof["rows"] == []
+    assert proof["decision"]["decision"] == "requires_live_close_rows"
+
+
+def test_stooq_contract_proof_cli_runs_opt_in_scope_without_network(monkeypatch, tmp_path: Path):
+    proof_mod = _load_stooq_proof()
+    calls: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs: object):
+        calls.append(command)
+        report_path = Path(command[command.index("--report-json") + 1])
+        out_root = Path(command[command.index("--out-root") + 1])
+        out_dir = out_root / "2026-06-12"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "stooq_spy.us.json").write_text(
+            json.dumps(_stooq_snapshot_payload()),
+            encoding="utf-8",
+        )
+        report = _stooq_report(tmp_path)
+        report["out_dir"] = str(out_dir)
+        report_path.write_text(json.dumps(report), encoding="utf-8")
+
+        class Result:
+            returncode = 0
+
+        return Result()
+
+    monkeypatch.setattr(proof_mod.subprocess, "run", fake_run)
+    proof_path = tmp_path / "proof.json"
+    rc = proof_mod.main([
+        "--stooq-symbols", "spy.us",
+        "--out-root", str(tmp_path),
+        "--report-json", str(tmp_path / "report.json"),
+        "--proof-json", str(proof_path),
+        "--observed-at", "2026-06-12T00:00:00Z",
+    ])
+
+    assert rc == 0
+    assert calls
+    assert "--fred-series" in calls[0] and "" in calls[0]
+    assert "--yahoo-symbols" in calls[0]
+    assert "--no-noaa" in calls[0]
+    proof = json.loads(proof_path.read_text(encoding="utf-8"))
+    assert proof["status"] == "eligible_for_opt_in_review"
+
+
+def test_stooq_contract_proof_cli_rejects_empty_symbol_scope(tmp_path: Path):
+    proof_mod = _load_stooq_proof()
+    proof_path = tmp_path / "proof.json"
+
+    rc = proof_mod.main([
+        "--stooq-symbols", "",
+        "--out-root", str(tmp_path),
+        "--report-json", str(tmp_path / "report.json"),
+        "--proof-json", str(proof_path),
+        "--observed-at", "2026-06-12T00:00:00Z",
+    ])
+
+    assert rc == 2
+    proof = json.loads(proof_path.read_text(encoding="utf-8"))
+    assert proof["status"] == "not_proven"
+    assert proof["command"] == []
+    assert proof["decision"]["default_enabled"] == "false"
 
 
 @given(

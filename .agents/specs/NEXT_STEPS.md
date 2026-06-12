@@ -7,7 +7,7 @@
 - **Current branch lane:** none. Next implementation work should branch from `origin/main`.
 - **Dependency security:** Dependabot alert #7 fixed (`fixed_at=2026-06-12T01:19:57Z`) for `uv.lock` / `torch`; the default root environment still excludes the optional PyTorch lane.
 - **Stakeholder docs published (2026-06-12):** bilingual user manual `docs/manual/{en,zh-tw}/index.{md,html}` and executive review `docs/review/index.html`, plus generation guides (`docs/MANUAL_GENERATION_GUIDE.md`, `docs/REVIEW_GENERATION_GUIDE.md`), shared evidence/warning contracts (`docs/{FEATURES,EVIDENCE_METADATA_CONTRACT,DEMO_RISK_WARNING_TAXONOMY}.md`), and traceability bridge `.agents/specs/RTM.md`. Live CLI demos captured under `docs/manual/assets/`; gate transcripts under `docs/review/assets/`; the chromium-headless `browser-visual.png`, `browser-visual-diff.json`, `public-hosting-probe.json` (HTTP 200), and autonomous schedule proof run `27392471359` are tracked as current evidence.
-- **Latest evidence:** `uv run pytest -q` → **231 passed** (default env, after adding the B source-quorum live proof wrapper and consolidating exact PR-pair memo guards into a non-self-staling promotion-boundary guard); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py --ignore-missing-imports` → clean over 54 files; `uv run lint-imports` → KEPT; `uv run pytest --cov=quantlab.mlops.experiment_registry --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py` → 27 passed, 100% line coverage; `uv run pytest --cov=scripts.run_mutation_spot_checks --cov-report=term-missing tests/test_mutation_spot_checks.py` → 8 passed, 90% line coverage; Python mutation spot checks **41/41 configured/killed**, including `b-source-quorum-status-gate`, `b-source-quorum-proof-exit-gate`, `b-source-quorum-proof-file-gate`, `governance-exhaustive-pr-ledger-regression`, and `public-hosting-manifest-status-regression`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
+- **Latest evidence:** `uv run pytest -q` → **236 passed** (default env, after adding the B source-quorum live proof wrapper, Stooq contract proof wrapper, and consolidating exact PR-pair memo guards into a non-self-staling promotion-boundary guard); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` → clean over 55 files; `uv run lint-imports` → KEPT; Stooq proof/source-health focused coverage → 11 passed, 90% combined line coverage; Python mutation spot checks **43/43 configured/killed**, including `b-source-quorum-status-gate`, `b-source-quorum-proof-exit-gate`, `b-source-quorum-proof-file-gate`, `b-stooq-proof-exit-gate`, `b-stooq-proof-file-gate`, `governance-exhaustive-pr-ledger-regression`, and `public-hosting-manifest-status-regression`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
 - **Promotion proof boundary:** do not append every squash PR to this rolling memo. Authoritative promotion state lives in GitHub PR state and spec-local reports; `NEXT_STEPS.md` only records current resume state, durable evidence boundaries, and links to owning specs/reports so future squash promotions do not create another stale memo loop.
 - **Latest external Actions proof:** `daily-snapshot.yml` failed before fix as run `27386918387` because `github.run_started_at` expanded empty. Fixed branch run `27387041974` on `spec/b-live-scheduled-snapshot-proof` succeeded via `workflow_dispatch`. Autonomous cron run `27392471359` on `main` later succeeded with `event=schedule` and uploaded `snapshot-schedule-proof`; proof JSON records `dry=22`, `exit_code=0`, `evidence_tier=smoke`, `retention=append_only`, `trigger=schedule`, and artifact digest `a2699a2ae7b24175364ce448633f789a03cd5557da2470b091ad7652409ffe61`.
 - **ISSUE-B3-001 handled in advance:**
@@ -57,6 +57,10 @@
   - `scripts/source_quorum_proof.py` runs the FRED/Yahoo/NOAA quorum scope, writes a proof artifact, and exits nonzero unless the snapshot command succeeds, CR-B18 passes, and every quorum `ok`/`skip` row has a matching snapshot file.
   - Live proof on 2026-06-12 wrote/confirmed `fred_FEDFUNDS`, `fred_SP500`, `fred_PCOPPUSDM`, `yahoo_2330.TW`, `yahoo_idx_TWII`, and `noaa_oni`; final proof is `status=proven`, `evidence_tier=live_source_quorum`, `fail=0`, `skip=6`.
   - Boundary: Stooq remains blocked/default-disabled and outside this proof until a working Stooq source contract and live close rows are proven.
+- **B Stooq contract proof / CR-B20:** [CR-B20](./b-data-platform/change-requests/cr-b20-stooq-contract-proof-wrapper.md) is **Implemented(repo-side + live fail-closed proof)**.
+  - `scripts/stooq_contract_proof.py` runs an explicit Stooq-only opt-in probe and exits 0 only when append-only snapshot files contain positive finite close rows.
+  - Live proof on 2026-06-12 for `spy.us` returned HTTP 404 and emitted `status=not_proven`, `rows=[]`, and `decision=requires_live_close_rows`.
+  - Boundary: even a successful future Stooq proof only reaches `eligible_for_opt_in_review`; default enablement remains separate maintainer policy.
 - **E/F registry dashboard bridge:** [e-f-registry-dashboard-bridge](./e-f-registry-dashboard-bridge/) is **Implemented · Review PASSED**; F read API and Next.js dashboard display E-lite registry entries as `research_only` / `registry_only` / `no_alpha_claim`.
 - **F public demo readiness:** [f-public-demo-readiness](./f-public-demo-readiness/) is **Implemented · Review PASSED** for local production-demo readiness; PostCSS advisory is remediated through npm override, audit is clean, and `npm run smoke` validates `/` plus `/api/showcase`. Public hosting and visual regression remain `not_proven`.
 - **G alt-data first slice:** [g-alt-data-first-slice](./g-alt-data-first-slice/) is **Implemented · Review PASSED**; optional local CSV loader requires source authority/pin, is default-disabled, and enforces `available_date <= asof`.
@@ -67,7 +71,7 @@
 - **D model-family evaluation:** [d-model-family-evaluation](./d-model-family-evaluation/) is **Implemented · Review PASSED**; D family comparison ranks OOS-net only, keeps baseline visible, and rejects alpha-claim records.
 - **Next gaps 1-6 Tier3/Public/Ops:** [next-gaps-1-6-tier3-public](./next-gaps-1-6-tier3-public/) is **Implemented · Review PASSED** in the working tree.
   - F public hosting proof: GitHub Pages is configured for `main` `/docs`; `https://austinyuch.github.io/finance_algorithms/` returned HTTP 200 and `docs/deployment-manifest.json` records `hostingEvidence.status=proven`.
-  - F browser visual proof: `docs/browser-visual.json` records Chromium screenshot hash `63e86b6d0eabbc90d669496f3ebd7dd2a5f202fee8a9c7577d7ed571d382cee9`.
+  - F browser visual proof: `docs/browser-visual.json` records Chromium screenshot hash `8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88`.
   - E Tier3 first slice: non-serving run manifest and drift skeleton only; no serving, retraining, or automated drift monitoring claim.
   - B scheduled ops: append-only schedule report helper and latest pointer are unit-tested.
   - D evaluation: family evaluator can consume real `LocalResultStore` records.
@@ -80,7 +84,7 @@
   - D artifact expansion: model-family evaluation can be wrapped in checksumed JSON with row-count and OOS-net authority validation.
 - **F browser pixel baseline lane:** [f-browser-pixel-baseline](./f-browser-pixel-baseline/) is **Implemented · Review PASSED**.
   - Replaced hash-derived visual mismatch with a committed PNG baseline and real pixel mismatch ratio.
-  - Latest browser visual diff: `234 / 1,296,000` mismatched pixels, `mismatchRatio=0.00018055555555555555`, threshold `0.001`.
+  - Latest browser visual diff: `221 / 1,296,000` mismatched pixels, `mismatchRatio=0.0001705246913580247`, threshold `0.001`.
   - Dashboard remains fixture-driven / `local_demo_only`; this closes the visual-diff false-green residual only.
 - **B live scheduled snapshot proof lane:** [b-live-scheduled-snapshot-proof](./b-live-scheduled-snapshot-proof/) is **Implemented · Review PASSED**.
   - Fixed the GitHub Actions workflow timestamp bug exposed by failed run `27386918387`.
@@ -98,14 +102,14 @@
 ## Recommended Next Action
 
 1. Keep `daily-snapshot.yml` observer evidence current after future cron runs; do not regress autonomous schedule proof from run `27392471359` back to pending without fresher contradictory Actions evidence.
-2. Route any Stooq re-enable attempt through the source-contract reopen helper and require live positive close rows before changing defaults.
+2. Route any Stooq re-enable attempt through `scripts/stooq_contract_proof.py` and require positive finite live close rows before opt-in review; default enablement remains separate maintainer policy.
 3. Use `scripts/tier3_readiness_gate.py` for any external E production proof handoff; local smoke artifacts, invalid JSON, and hand-written production-looking maps must remain nonzero failures.
 4. Keep stakeholder docs copied from `review.md` verdicts and avoid deriving readiness from test counts.
 
 ## Scheduled Ops
 
 - Daily vintage snapshot routine is expected to continue writing append-only files under `data/vintage/raw/<date>/`.
-- Current live proof says routine/source health is partial but broader than the earlier scoped smoke: Yahoo fallback is proven for `2330.TW` and `^TWII`; CR-B12 proves scoped live append-only write/skip mechanics for `fred:FEDFUNDS`; CR-B19 proves the FRED/Yahoo/NOAA broad source quorum on 2026-06-12. Stooq remains opt-in/blocked.
+- Current live proof says routine/source health is partial but broader than the earlier scoped smoke: Yahoo fallback is proven for `2330.TW` and `^TWII`; CR-B12 proves scoped live append-only write/skip mechanics for `fred:FEDFUNDS`; CR-B19 proves the FRED/Yahoo/NOAA broad source quorum on 2026-06-12. CR-B20 proves Stooq restoration attempts fail closed without positive finite live close rows; Stooq remains opt-in/blocked.
 
 ## Resume Hints
 

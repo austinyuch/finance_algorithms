@@ -25,7 +25,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still
 
 - Gate result: **CONDITIONAL**
 - Coverage tier: **hybrid**
-- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `234 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `63e86b6d0eabbc90d669496f3ebd7dd2a5f202fee8a9c7577d7ed571d382cee9`.
+- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `221 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88`.
 - Still fixture-backed: dashboard data from `frontend/lib/showcase-fixture.ts`; no live backend/live market data dashboard path is claimed.
 - No auth surface exists in this dashboard slice.
 
@@ -34,7 +34,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard still
 - Focused frontend tests: **16 passed**.
 - Frontend coverage: **23 tests passed**, **91.42% line coverage**.
 - Frontend mutation: **9/9 killed**.
-- Browser visual smoke: **passed**, repo-baseline pixel diff `234 / 1,296,000`.
+- Browser visual smoke: **passed**, repo-baseline pixel diff `221 / 1,296,000`.
 - Static showcase fixture evidence was refreshed to current counts while preserving `local_demo_only` / `not_proven` readiness boundaries.
 - Build/smoke/audit: **passed**, `npm audit --json` 0 vulnerabilities.
 
