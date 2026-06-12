@@ -4,7 +4,7 @@ References: `requirements.md`, `frontend/lib/public-demo.ts`, `frontend/scripts/
 
 ## Overview
 
-This lane upgrades the existing browser visual smoke from hash-equality thresholding to a PNG pixel-diff gate. It keeps the dashboard's fixture-driven/read-only claim boundaries unchanged: the visual gate proves rendered static dashboard content stability, not investment alpha or full production backend readiness.
+This lane upgrades the existing browser visual smoke from hash-equality thresholding to a PNG pixel-diff gate. The current dashboard payload boundary is the generated canonical local `local_result_store` / `ExperimentRegistry` scenario introduced by CR-FPS-006; the visual gate proves rendered static dashboard content stability, not investment alpha or full production backend readiness.
 
 ## Architecture
 

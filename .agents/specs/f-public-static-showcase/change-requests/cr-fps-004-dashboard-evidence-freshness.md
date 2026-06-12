@@ -32,8 +32,9 @@ artifacts.
 
 ## Implementation
 
-- Refreshed `frontend/lib/showcase-fixture.ts` evidence strings to current
-  governed counts.
+- Refreshed static dashboard evidence strings to the then-current governed
+  counts; CR-FPS-006 later replaced the inline fixture source with generated
+  canonical local `LocalResultStore` / `ExperimentRegistry` scenario evidence.
 - Added a dashboard test for current gate-evidence freshness.
 - Added `frontend-dashboard-stale-gate-evidence` mutation coverage.
 - Regenerated committed `docs/` and manual/review static showcase assets.

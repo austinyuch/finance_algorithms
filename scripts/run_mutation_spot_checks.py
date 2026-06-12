@@ -393,6 +393,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_next_steps_uses_non_self_staling_promotion_boundary"),
     ),
     MutationSpec(
+        name="governance-stale-mutation-count-regression",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="current suite is governed by the latest evidence row above (**63/63 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        mutated="current suite kills 6/6 configured mutations",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
+    ),
+    MutationSpec(
         name="governance-stale-dashboard-source-wording",
         path=".agents/specs/f-browser-pixel-baseline/review.md",
         original="Data source boundary: dashboard data now comes from the generated canonical `local_result_store` payload introduced by CR-FPS-006; no live backend/live market data dashboard path is claimed.",

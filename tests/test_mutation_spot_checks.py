@@ -86,6 +86,7 @@ def test_mutation_runner_list_smoke():
     assert "governance-stale-next-steps-alert" in result.stdout
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
     assert "governance-stale-cron-proof-pending" in result.stdout
+    assert "governance-stale-mutation-count-regression" in result.stdout
     assert "governance-stale-dashboard-source-wording" in result.stdout
     assert "governance-f-cr-superseded-fixture-boundary" in result.stdout
     assert "public-hosting-probe-expected-hash-drift" in result.stdout
@@ -192,6 +193,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out
+    assert "governance-stale-mutation-count-regression" in out
     assert "governance-stale-dashboard-source-wording" in out
     assert "governance-f-cr-superseded-fixture-boundary" in out
     assert "review-public-hosting-probe-status-overclaim" in out

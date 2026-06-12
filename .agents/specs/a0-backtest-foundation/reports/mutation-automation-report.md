@@ -1,10 +1,13 @@
 # Mutation Automation Report
 
 Date: 2026-06-11
+Current status refreshed: 2026-06-13
 
 ## Summary
 
 Added a repo-local mutation spot-check runner for critical QuantLab invariants. It avoids the current mutmut sandbox/layout issue by applying deterministic text mutations in-place, running targeted tests that must fail, and restoring the original file in a `finally` block.
+
+Current governance truth is no longer the initial A0-only runner size. The maintained suite is the cross-spec `scripts/run_mutation_spot_checks.py` registry referenced from `quantlab/TESTS.md`; current evidence is **63/63 configured/killed**, including CR-A0 event replay, B source-quorum/Stooq proof gates, F public-hosting/stakeholder payload drift gates, E Tier3 production-readiness gates, and governance stale-evidence guards.
 
 ## Implemented Surface
 
@@ -27,10 +30,15 @@ uv run coverage run -m pytest -q tests/test_mutation_spot_checks.py
 uv run coverage report -m scripts/run_mutation_spot_checks.py
 ```
 
-Results:
+Initial results:
 - Runner tests: **7 passed**.
 - Mutation suite: **3/3 killed**.
 - Runner line coverage: **89%**.
+
+Current results:
+- Runner/governance tests: covered by `uv run pytest -q tests/test_mutation_spot_checks.py tests/quantlab/test_governance_guards.py`.
+- Mutation suite: **63/63 configured/killed** via `uv run python scripts/run_mutation_spot_checks.py`.
+- Current registry authority: `quantlab/TESTS.md` and `.agents/specs/RTM.md`.
 
 ## Claim Boundary
 

@@ -42,4 +42,4 @@ This is a false-green/stale-evidence risk: prose could claim public hosting proo
 
 ## Claim Boundary
 
-This CR proves only the committed static GitHub Pages deployment artifact and hosted URL observation. The dashboard remains fixture-backed and `local_demo_only`; this CR does not create live backend, live data, auth, or Tier3 production readiness.
+This CR proves only the committed static GitHub Pages deployment artifact and hosted URL observation. The current dashboard payload boundary is superseded by CR-FPS-006: generated canonical local `LocalResultStore` / `ExperimentRegistry` scenario evidence, still `local_demo_only`; this CR does not create live backend, live data, auth, or Tier3 production readiness.

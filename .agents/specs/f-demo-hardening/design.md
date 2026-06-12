@@ -10,7 +10,7 @@ Extend the existing `ShowcaseDashboard` contract with `demoReadiness`. The field
 
 ```mermaid
 flowchart LR
-  Fixture[showcase fixture] --> Validator[assertDashboardPayload]
+  Payload[canonical local result-store payload] --> Validator[assertDashboardPayload]
   Validator --> API[/api/showcase]
   Validator --> UI[Dashboard Evidence Panel]
   Mutation[frontend mutation script] --> Validator
@@ -42,5 +42,5 @@ flowchart LR
 
 ## Traceability References
 
-- `REQ-F-DEMO-001` -> fixture/API/component render tests.
+- `REQ-F-DEMO-001` -> canonical payload/API/component render tests.
 - `REQ-F-DEMO-002` -> validator negative tests and frontend mutation.

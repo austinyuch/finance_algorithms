@@ -95,16 +95,22 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         ROOT / "docs/review/assets/gate-pytest.txt",
         ROOT / "docs/review/assets/gate-frontend-test.txt",
         ROOT / "docs/review/assets/gate-frontend-audit.txt",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-demo-hardening/review.md",
+        ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
     ]
     stale_markers = [
         "190 pytest",
         "20 frontend",
         "22 mutation",
         "66 passed",
+        "156 passed",
         "243 passed",
         "244 passed",
         "245 passed",
         "246 passed",
+        "246 suite evidence",
         "included in 245 passed",
         "242 passed",
         "241 passed",
@@ -168,6 +174,13 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 61/61",
         "mutation spot checks 61/61",
         "mutation spot-checks are **61/61",
+        "62/62 configured",
+        "62/62 Python mutation",
+        "Python mutation 62/62",
+        "mutation spot checks 62/62",
+        "mutation spot-checks are **62/62",
+        "6/6 configured",
+        "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -176,11 +189,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "55 source files",
         "73 files, 177 deps",
         "91.81% line coverage",
+        "91.42% line coverage",
+        "84.37% line coverage",
+        "mutation 8/8 killed",
+        "8/8 killed",
         "12 frontend mutations",
         "mutation 12/12 killed",
         "frontend mutation 12/12",
         "28 frontend tests",
         "28 tests pass",
+        "23 tests passed",
         "13 frontend mutations",
         "mutation 13/13 killed",
         "frontend mutation 13/13",
@@ -258,9 +276,15 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "472dfef3cbd34ae9d09979a333366bc1054cd9f2379a3869e04aae8cede47cad",
         "3e94cdbe790007dfe7f8a58d4aa45ebc39fd709f88152d351b089339761d71b1",
         "700134c3e1504b866e395f4e7c1465d7a1e094eade4a71960890b1b89c90922c",
+        "0c05cc97a692623ce1226ff0a15332063c8265ea3bdf78b27596d51ac604c7c4",
         "47be766e853053e34fb2fe331caf8f337090bee5b6315fc057bc5c7350e1d423",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
+        "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
+        "221 / 1,296,000",
+        "221/1,296,000",
+        "0 / 1,296,000",
+        "0/1,296,000",
     ]
 
     for path in current_surfaces:
@@ -276,9 +300,11 @@ def test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_bounda
     )
     assert cr_surfaces
     stale_markers = [
+        "The dashboard remains fixture-backed",
         "The dashboard payload remains fixture-backed",
         "fixture-backed local demo evidence",
         "`local_demo_only` / fixture-backed boundary",
+        "Refreshed `frontend/lib/showcase-fixture.ts` evidence strings",
     ]
 
     for path in cr_surfaces:
@@ -364,16 +390,24 @@ def test_current_dashboard_source_wording_tracks_canonical_payload():
     """Current F/governance handoff surfaces must not point at the retired inline fixture."""
     current_source_surfaces = [
         ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/design.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-demo-hardening/design.md",
+        ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
         ROOT / ".agents/specs/governance-evidence-refresh/design.md",
         ROOT / ".agents/specs/governance-evidence-refresh/tasks.md",
         ROOT / ".agents/specs/governance-evidence-refresh/review.md",
     ]
     stale_source_markers = [
         "frontend/lib/showcase-fixture.ts",
+        "Fixture[showcase fixture]",
+        "contract/fixture updates",
+        "fixture/API/component render tests",
         "dashboard still uses fixture-backed showcase data",
         "Still fixture-backed",
+        "fixture-driven/read-only",
+        "Static showcase fixture evidence",
         "Dashboard data remains fixture-driven",
         "static dashboard remains fixture-driven",
         "static showcase fixture evidence",

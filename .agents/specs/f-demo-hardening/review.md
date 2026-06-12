@@ -19,9 +19,9 @@ Overall: **8.9 / 10**.
 
 ## Verification Coverage
 
-- `npm test -- --run tests/dashboard.test.tsx` -> 6 passed.
-- `npm run coverage` -> 84.37% line coverage.
-- `npm run mutation` -> two frontend mutations killed.
+- Current frontend suite: `npm test -- --run` -> 32 passed.
+- Current frontend coverage: `npm run coverage` -> 91.05% line coverage.
+- Current frontend mutation: `npm run mutation` -> 15/15 killed.
 - `npm run build` -> success.
 - Local HTTP smoke on `127.0.0.1:3044` -> `/` and `/api/showcase` returned conservative demo-readiness evidence.
 

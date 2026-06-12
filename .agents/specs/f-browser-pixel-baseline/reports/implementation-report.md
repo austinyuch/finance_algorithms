@@ -12,7 +12,7 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 - Updated `frontend/scripts/browser-visual-smoke.mjs` to decode PNGs via `pngjs`, compare actual pixels, fail on dimension drift, and fail when mismatch exceeds `QUANTLAB_BROWSER_VISUAL_MAX_MISMATCH_RATIO` (default `0.001`).
 - Added frontend tests/PBT for pixel mismatch ratio and dimension/buffer-size rejection.
 - Added frontend mutation target for suppressed pixel mismatch counts.
-- Refreshed the static showcase evidence strings from stale `156 passed` / `8/8` / `84.37%` values to the then-current conservative gate evidence; CR-FPS-006 later replaced the inline fixture source with a generated canonical local result-store payload.
+- Refreshed the static showcase evidence strings from superseded frontend gate counts to the then-current conservative gate evidence; CR-FPS-006 later replaced the inline fixture source with a generated canonical local result-store payload.
 - Copied current diff evidence to `docs/browser-visual-diff.json`.
 - Refreshed `quantlab/TESTS.md`, `.agents/specs/TESTS.md`, `SPECS.md`, `RTM.md`, `NEXT_STEPS.md`, and stakeholder docs to remove the stale hash-equality visual residual where current evidence supports it.
 
@@ -24,10 +24,20 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 
 ## Verification
 
+Current refreshed evidence (2026-06-13):
+
+- `cd frontend && npm test -- --run` -> 32 passed.
+- `cd frontend && npm run visual && npm run visual:browser` -> passed; current pixel diff `1049 / 1,296,000`, `mismatchRatio=0.0008094135802469136`, threshold `0.001`, screenshot hash `9c2e5fe8651694969deafe256918c113c9f189823102da3554840bfe644bc4f3`.
+- `cd frontend && npm run coverage` -> 91.05% line coverage.
+- `cd frontend && npm run mutation` -> 15/15 frontend mutations killed.
+- `cd frontend && npm audit --json` -> 0 vulnerabilities.
+
+Original lane evidence:
+
 - `cd frontend && npm test -- --run tests/public-demo.test.tsx` -> 16 passed.
-- `cd frontend && npm run visual && npm run visual:browser` -> passed; final pixel diff `0 / 1,296,000`, `mismatchRatio=0`, threshold `0.001`, screenshot hash `8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29`.
-- `cd frontend && npm run coverage` -> 23 tests passed, 91.42% line coverage.
-- `cd frontend && npm run mutation` -> 9/9 frontend mutations killed.
+- `cd frontend && npm run visual && npm run visual:browser` -> passed under the original baseline.
+- `cd frontend && npm run coverage` -> passed.
+- `cd frontend && npm run mutation` -> killed all configured frontend mutations.
 - `cd frontend && npm run build` -> passed.
 - `cd frontend && npm run smoke` -> passed on `127.0.0.1:3044`.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.

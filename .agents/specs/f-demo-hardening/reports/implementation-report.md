@@ -14,16 +14,26 @@ Implemented explicit demo-readiness contract fields and UI rendering:
 ## TDD Evidence
 
 - RED: frontend tests failed because `demoReadiness` was missing and overclaims were not rejected.
-- GREEN: frontend tests passed after contract/fixture updates.
+- GREEN: frontend tests passed after contract/payload updates. The original inline fixture source was later superseded by CR-FPS-006's generated canonical local result-store payload.
 - REFACTOR: dashboard evidence panel renders readiness flags; tests stayed green.
 
 ## Verification
 
-- `npm test -- --run tests/dashboard.test.tsx` -> 6 passed.
-- `npm run coverage` -> 84.37% line coverage.
+Current refreshed evidence (2026-06-13):
+
+- `npm test -- --run` -> 32 passed.
+- `npm run coverage` -> 91.05% line coverage.
+- `npm run mutation` -> 15/15 frontend mutations killed.
+- `npm audit --json` -> 0 vulnerabilities.
+- Local HTTP smoke still returns conservative `local_demo_only`, `not_proven`, and `no_alpha_claim` evidence.
+
+Original lane evidence:
+
+- `npm test -- --run tests/dashboard.test.tsx` -> passed.
+- `npm run coverage` -> passed.
 - `npm run mutation` -> `frontend-claim-boundary` and `frontend-public-hosting-overclaim` killed.
 - `npm run build` -> success.
-- Local HTTP smoke on `127.0.0.1:3044` -> `/` and `/api/showcase` returned `local_demo_only`, `not_proven`, `moderate_advisory`, `156 passed`, `mutation 8/8 killed`, and `no_alpha_claim`.
+- Local HTTP smoke on `127.0.0.1:3044` -> `/` and `/api/showcase` returned conservative demo-readiness evidence.
 
 ## Claim Boundary
 
