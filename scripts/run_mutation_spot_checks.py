@@ -314,7 +314,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-live-write-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="CR-B12 scoped live write smoke promoted to `dev` via PR #61 (`0f3af09`) and to `main` via PR #62 (`4f2f58a`).",
+        original="PR #61 squash-merged CR-B12 scoped live write smoke to `dev` as `0f3af09`; PR #62 squash-merged CR-B12 scoped live write smoke to `main` as `4f2f58a`;",
         mutated="CR-B12 scoped live write smoke is implemented locally; open the usual squash PRs for `dev` and `main`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_live_write_smoke_state"),
@@ -322,10 +322,18 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-cr-b13-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="CR-B13 post live-write governance sync promoted to `dev` via PR #63 (`8c5b3f1`) and to `main` via PR #64 (`aea683f`).",
+        original="PR #63 squash-merged CR-B13 post live-write governance sync to `dev` as `8c5b3f1`; PR #64 squash-merged CR-B13 post live-write governance sync to `main` as `aea683f`;",
         mutated="CR-B13 post live-write governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b13_state"),
+    ),
+    MutationSpec(
+        name="governance-stale-cr-b14-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="PR #65 squash-merged CR-B14 post CR-B13 governance sync to `dev` as `05485cc`; PR #66 squash-merged CR-B14 post CR-B13 governance sync to `main` as `c1e1591`.",
+        mutated="CR-B14 post CR-B13 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b14_state"),
     ),
     MutationSpec(
         name="b-scheduled-observer-manual-pending",
