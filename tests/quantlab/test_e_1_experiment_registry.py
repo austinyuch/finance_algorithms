@@ -288,6 +288,308 @@ def test_serving_smoke_evidence_rejects_unhealthy_or_alpha_claim(tmp_path):
         )
 
 
+def test_retraining_smoke_evidence_proves_only_retraining_slice(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_retraining_smoke_evidence,
+        build_serving_smoke_evidence,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+        validate_retraining_smoke_evidence,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+    serving = build_serving_smoke_evidence(
+        entry,
+        health_check=lambda: {"status": "ok", "model_loaded": True},
+        predict=lambda request: {"claim_boundary": "no_alpha_claim", "weights": {"A": 0.6, "B": 0.4}},
+        sample_request={"features": {"momentum": 0.6}},
+        observed_at="2026-06-12T02:30:00Z",
+    )
+
+    evidence = build_retraining_smoke_evidence(
+        entry,
+        retrain=lambda request: {
+            "status": "completed",
+            "run_id": "train-1",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [
+                {"segment": "in_sample", "basis": "net", "sharpe": 99.0},
+                {"segment": "out_of_sample", "basis": "net", "sharpe": 1.1, "max_drawdown": -0.07},
+            ],
+        },
+        training_request={"lookback": 12, "seed": 7},
+        observed_at="2026-06-12T03:00:00Z",
+    )
+    gate = build_tier3_readiness_gate(manifest, serving_evidence=serving, retraining_evidence=evidence)
+
+    validate_retraining_smoke_evidence(evidence)
+    assert evidence["status"] == "proven"
+    assert evidence["retraining_status"] == "local_smoke"
+    assert evidence["readiness_evidence_for"] == "retraining_evidence"
+    assert evidence["oos_net_metrics"] == {"sharpe": 1.1, "max_drawdown": -0.07}
+    assert gate["readiness"] == "not_ready"
+    assert gate["missing_evidence"] == ["automated_drift_monitoring_evidence"]
+
+
+def test_retraining_smoke_evidence_rejects_failed_alpha_or_missing_oos(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, build_retraining_smoke_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    with pytest.raises(ValueError, match="completed"):
+        build_retraining_smoke_evidence(
+            entry,
+            retrain=lambda request: {"status": "failed", "run_id": "train-1", "claim_boundary": "no_alpha_claim"},
+            training_request={"lookback": 12},
+            observed_at="2026-06-12T03:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_retraining_smoke_evidence(
+            entry,
+            retrain=lambda request: {"status": "completed", "run_id": "train-1", "claim_boundary": "alpha_claim"},
+            training_request={"lookback": 12},
+            observed_at="2026-06-12T03:00:00Z",
+        )
+
+    with pytest.raises(ValueError, match="out_of_sample net metrics"):
+        build_retraining_smoke_evidence(
+            entry,
+            retrain=lambda request: {
+                "status": "completed",
+                "run_id": "train-1",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "in_sample", "basis": "net", "sharpe": 99.0}],
+            },
+            training_request={"lookback": 12},
+            observed_at="2026-06-12T03:00:00Z",
+        )
+
+
+def test_experiment_registry_defensive_validation_branches(tmp_path):
+    from dataclasses import replace
+
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_drift_assessment_report,
+        build_drift_report_skeleton,
+        build_retraining_smoke_evidence,
+        build_serving_smoke_evidence,
+        build_tier3_run_manifest,
+        register_result_store_runs,
+        validate_drift_assessment_report,
+        validate_registry_snapshot,
+        validate_retraining_smoke_evidence,
+        validate_serving_smoke_evidence,
+        validate_tier3_run_manifest,
+    )
+    from quantlab.tracking import LocalResultStore
+
+    registry_path = tmp_path / "experiments.jsonl"
+    registry_path.write_text("\n", encoding="utf-8")
+    registry = ExperimentRegistry(registry_path)
+    assert registry.list() == []
+
+    with pytest.raises(ValueError, match="model_family"):
+        registry.register("", "Strategy", {"x": 1})
+
+    entry = registry.register("family", "Strategy", {"x": 1})
+    alpha_entry = replace(entry, claim_boundary="alpha_claim")
+    snapshot = registry.snapshot_artifact()
+
+    for artifact in [
+        {"artifact_kind": "bad", "claim_boundary": "no_alpha_claim", "readiness": "registry_only", "entries": []},
+        {"artifact_kind": "experiment_registry_snapshot", "claim_boundary": "alpha_claim", "readiness": "registry_only", "entries": []},
+        {"artifact_kind": "experiment_registry_snapshot", "claim_boundary": "no_alpha_claim", "readiness": "tier3_ready", "entries": []},
+        {"artifact_kind": "experiment_registry_snapshot", "claim_boundary": "no_alpha_claim", "readiness": "registry_only", "entries": {}},
+        {"artifact_kind": "experiment_registry_snapshot", "claim_boundary": "no_alpha_claim", "readiness": "registry_only", "entries": [], "checksum": "bad"},
+    ]:
+        with pytest.raises(ValueError):
+            validate_registry_snapshot(artifact)
+
+    with pytest.raises(ValueError, match="artifact_uri"):
+        build_tier3_run_manifest(snapshot, artifact_uri=" ")
+
+    for manifest in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "tier3_run_manifest", "claim_boundary": "alpha_claim"},
+        {"artifact_kind": "tier3_run_manifest", "claim_boundary": "no_alpha_claim", "readiness": "tier3_ready"},
+        {
+            "artifact_kind": "tier3_run_manifest",
+            "claim_boundary": "no_alpha_claim",
+            "readiness": "artifact_manifest_only",
+            "serving_status": "serving",
+        },
+        {
+            "artifact_kind": "tier3_run_manifest",
+            "claim_boundary": "no_alpha_claim",
+            "readiness": "artifact_manifest_only",
+            "serving_status": "not_serving",
+            "experiment_ids": "not-list",
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_tier3_run_manifest(manifest)
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_serving_smoke_evidence(
+            alpha_entry,
+            health_check=lambda: {"status": "ok"},
+            predict=lambda request: {"claim_boundary": "no_alpha_claim", "ok": True},
+            sample_request={"x": 1},
+            observed_at="2026-06-12T02:30:00Z",
+        )
+    with pytest.raises(ValueError, match="observed_at"):
+        build_serving_smoke_evidence(entry, health_check=lambda: {"status": "ok"}, predict=lambda request: {"ok": True}, sample_request={"x": 1}, observed_at=" ")
+    with pytest.raises(ValueError, match="sample_request"):
+        build_serving_smoke_evidence(entry, health_check=lambda: {"status": "ok"}, predict=lambda request: {"ok": True}, sample_request={}, observed_at="2026-06-12T02:30:00Z")
+    with pytest.raises(ValueError, match="prediction"):
+        build_serving_smoke_evidence(entry, health_check=lambda: {"status": "ok"}, predict=lambda request: {}, sample_request={"x": 1}, observed_at="2026-06-12T02:30:00Z")
+
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "alpha_claim"},
+        {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
+        {"artifact_kind": "serving_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "serving_evidence", "status": "planned"},
+        {
+            "artifact_kind": "serving_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "status": "proven",
+            "serving_status": "production",
+        },
+        {
+            "artifact_kind": "serving_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "status": "proven",
+            "serving_status": "local_smoke",
+            "health": {"status": "degraded"},
+        },
+        {
+            "artifact_kind": "serving_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "serving_evidence",
+            "status": "proven",
+            "serving_status": "local_smoke",
+            "health": {"status": "ok"},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_serving_smoke_evidence(evidence)
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_retraining_smoke_evidence(alpha_entry, retrain=lambda request: {"status": "completed"}, training_request={"x": 1}, observed_at="2026-06-12T03:00:00Z")
+    with pytest.raises(ValueError, match="observed_at"):
+        build_retraining_smoke_evidence(entry, retrain=lambda request: {"status": "completed"}, training_request={"x": 1}, observed_at=" ")
+    with pytest.raises(ValueError, match="training_request"):
+        build_retraining_smoke_evidence(entry, retrain=lambda request: {"status": "completed"}, training_request={}, observed_at="2026-06-12T03:00:00Z")
+    with pytest.raises(ValueError, match="result"):
+        build_retraining_smoke_evidence(entry, retrain=lambda request: {}, training_request={"x": 1}, observed_at="2026-06-12T03:00:00Z")
+    with pytest.raises(ValueError, match="run_id"):
+        build_retraining_smoke_evidence(
+            entry,
+            retrain=lambda request: {
+                "status": "completed",
+                "claim_boundary": "no_alpha_claim",
+                "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+            },
+            training_request={"x": 1},
+            observed_at="2026-06-12T03:00:00Z",
+        )
+
+    for evidence in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "alpha_claim"},
+        {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "wrong"},
+        {"artifact_kind": "retraining_smoke_evidence", "claim_boundary": "no_alpha_claim", "readiness_evidence_for": "retraining_evidence", "status": "planned"},
+        {
+            "artifact_kind": "retraining_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "status": "proven",
+            "retraining_status": "production",
+        },
+        {
+            "artifact_kind": "retraining_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "status": "proven",
+            "retraining_status": "local_smoke",
+            "oos_net_metrics": {},
+        },
+        {
+            "artifact_kind": "retraining_smoke_evidence",
+            "claim_boundary": "no_alpha_claim",
+            "readiness_evidence_for": "retraining_evidence",
+            "status": "proven",
+            "retraining_status": "local_smoke",
+            "oos_net_metrics": {"sharpe": 1.0},
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_retraining_smoke_evidence(evidence)
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_drift_report_skeleton(alpha_entry, reference_window="2022Q1", current_window="2022Q2")
+    with pytest.raises(ValueError, match="reference"):
+        build_drift_report_skeleton(entry, reference_window=" ", current_window="2022Q2")
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_drift_assessment_report(alpha_entry, reference_metrics={"x": 1}, current_metrics={"x": 1}, threshold=0.1, observed_at="2026-06-12T00:00:00Z")
+    with pytest.raises(ValueError, match="positive"):
+        build_drift_assessment_report(entry, reference_metrics={"x": 1}, current_metrics={"x": 1}, threshold=0, observed_at="2026-06-12T00:00:00Z")
+    with pytest.raises(ValueError, match="observed_at"):
+        build_drift_assessment_report(entry, reference_metrics={"x": 1}, current_metrics={"x": 1}, threshold=0.1, observed_at=" ")
+    with pytest.raises(ValueError, match="overlapping"):
+        build_drift_assessment_report(entry, reference_metrics={"x": 1}, current_metrics={"y": 1}, threshold=0.1, observed_at="2026-06-12T00:00:00Z")
+
+    for report in [
+        {"artifact_kind": "bad"},
+        {"artifact_kind": "drift_assessment_report", "claim_boundary": "no_alpha_claim", "monitoring_status": "automated"},
+        {"artifact_kind": "drift_assessment_report", "claim_boundary": "no_alpha_claim", "monitoring_status": "assessed_not_automated", "serving_status": "serving"},
+        {
+            "artifact_kind": "drift_assessment_report",
+            "claim_boundary": "no_alpha_claim",
+            "monitoring_status": "assessed_not_automated",
+            "serving_status": "not_serving",
+            "retraining_status": "configured",
+        },
+        {
+            "artifact_kind": "drift_assessment_report",
+            "claim_boundary": "no_alpha_claim",
+            "monitoring_status": "assessed_not_automated",
+            "serving_status": "not_serving",
+            "retraining_status": "not_configured",
+            "metric_deltas": {},
+        },
+        {
+            "artifact_kind": "drift_assessment_report",
+            "claim_boundary": "no_alpha_claim",
+            "monitoring_status": "assessed_not_automated",
+            "serving_status": "not_serving",
+            "retraining_status": "not_configured",
+            "metric_deltas": {"x": 0.1},
+            "status": "unknown",
+        },
+    ]:
+        with pytest.raises(ValueError):
+            validate_drift_assessment_report(report)
+
+    store = LocalResultStore(tmp_path / "runs.sqlite")
+    alpha_run = store.log({
+        "strategy_name": "AlphaStrategy",
+        "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.0}],
+        "strategy_metadata": {"claim_boundary": "alpha_claim"},
+    })
+    with pytest.raises(ValueError, match="run_ids"):
+        register_result_store_runs(registry, store, model_family="family", strategy_name="Strategy", config={}, run_ids=[])
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        register_result_store_runs(registry, store, model_family="family", strategy_name="Strategy", config={}, run_ids=[alpha_run])
+
+
 def test_drift_assessment_report_detects_metric_drift_without_serving_claim(tmp_path):
     from quantlab.mlops import (
         ExperimentRegistry,
@@ -402,4 +704,40 @@ def test_pbt_serving_smoke_digest_is_deterministic(tmp_path, momentum):
 
     assert first["request_digest"] == second["request_digest"]
     assert first["prediction_digest"] == second["prediction_digest"]
+    assert first["claim_boundary"] == "no_alpha_claim"
+
+
+@given(
+    lookback=st.integers(min_value=2, max_value=252),
+    sharpe=st.floats(min_value=-3, max_value=3, allow_nan=False, allow_infinity=False),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_retraining_smoke_digest_is_deterministic(tmp_path, lookback, sharpe):
+    from quantlab.mlops import ExperimentRegistry, build_retraining_smoke_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    def retrain(request):
+        return {
+            "status": "completed",
+            "run_id": f"train-{request['lookback']}",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": float(sharpe)}],
+        }
+
+    first = build_retraining_smoke_evidence(
+        entry,
+        retrain=retrain,
+        training_request={"lookback": lookback},
+        observed_at="2026-06-12T03:00:00Z",
+    )
+    second = build_retraining_smoke_evidence(
+        entry,
+        retrain=retrain,
+        training_request={"lookback": lookback},
+        observed_at="2026-06-12T03:00:00Z",
+    )
+
+    assert first["request_digest"] == second["request_digest"]
+    assert first["result_digest"] == second["result_digest"]
     assert first["claim_boundary"] == "no_alpha_claim"

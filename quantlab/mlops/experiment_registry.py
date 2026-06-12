@@ -289,6 +289,69 @@ def validate_serving_smoke_evidence(evidence: Mapping[str, Any]) -> None:
             raise ValueError(f"serving smoke evidence missing {key}")
 
 
+def build_retraining_smoke_evidence(
+    entry: ExperimentEntry,
+    *,
+    retrain: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    training_request: Mapping[str, Any],
+    observed_at: str,
+    runner: str = "in_process",
+) -> dict[str, Any]:
+    """Build local retraining smoke evidence from a real retrain callable."""
+    if entry.claim_boundary != "no_alpha_claim":
+        raise ValueError("retraining smoke only accepts no_alpha_claim entries")
+    if not observed_at.strip():
+        raise ValueError("retraining smoke requires observed_at")
+    request = _json_native(dict(training_request))
+    if not isinstance(request, Mapping) or not request:
+        raise ValueError("retraining smoke requires a non-empty training_request")
+    result = _json_native(dict(retrain(request)))
+    if not isinstance(result, Mapping) or not result:
+        raise ValueError("retraining smoke requires a non-empty result")
+    if str(result.get("status") or "").lower() != "completed":
+        raise ValueError("retraining smoke requires completed status")
+    if result.get("claim_boundary", "no_alpha_claim") != "no_alpha_claim":
+        raise ValueError("retraining smoke result must preserve no_alpha_claim")
+    run_id = str(result.get("run_id") or "").strip()
+    if not run_id:
+        raise ValueError("retraining smoke requires run_id")
+    return {
+        "artifact_kind": "retraining_smoke_evidence",
+        "claim_boundary": "no_alpha_claim",
+        "readiness_evidence_for": "retraining_evidence",
+        "status": "proven",
+        "retraining_status": "local_smoke",
+        "experiment_id": entry.experiment_id,
+        "model_family": entry.model_family,
+        "strategy_name": entry.strategy_name,
+        "observed_at": observed_at,
+        "runner": runner,
+        "run_id": run_id,
+        "oos_net_metrics": _oos_net_metrics(result),
+        "request_digest": _digest_payload(request),
+        "result_digest": _digest_payload(result),
+    }
+
+
+def validate_retraining_smoke_evidence(evidence: Mapping[str, Any]) -> None:
+    if evidence.get("artifact_kind") != "retraining_smoke_evidence":
+        raise ValueError("unknown retraining smoke evidence artifact")
+    if evidence.get("claim_boundary") != "no_alpha_claim":
+        raise ValueError("retraining smoke evidence must preserve no_alpha_claim")
+    if evidence.get("readiness_evidence_for") != "retraining_evidence":
+        raise ValueError("retraining smoke evidence has wrong readiness target")
+    if evidence.get("status") != "proven":
+        raise ValueError("retraining smoke evidence must be proven")
+    if evidence.get("retraining_status") != "local_smoke":
+        raise ValueError("retraining smoke evidence must remain local_smoke")
+    metrics = evidence.get("oos_net_metrics")
+    if not isinstance(metrics, Mapping) or not metrics:
+        raise ValueError("retraining smoke evidence requires out_of_sample net metrics")
+    for key in ["experiment_id", "observed_at", "run_id", "request_digest", "result_digest"]:
+        if not str(evidence.get(key) or "").strip():
+            raise ValueError(f"retraining smoke evidence missing {key}")
+
+
 def build_drift_report_skeleton(
     entry: ExperimentEntry,
     *,
