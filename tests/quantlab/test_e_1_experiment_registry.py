@@ -228,6 +228,66 @@ def test_tier3_readiness_gate_requires_all_live_evidence(tmp_path):
     ]
 
 
+def test_serving_smoke_evidence_proves_only_serving_slice(tmp_path):
+    from quantlab.mlops import (
+        ExperimentRegistry,
+        build_serving_smoke_evidence,
+        build_tier3_readiness_gate,
+        build_tier3_run_manifest,
+        validate_serving_smoke_evidence,
+    )
+
+    registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
+    entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
+    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+
+    evidence = build_serving_smoke_evidence(
+        entry,
+        health_check=lambda: {"status": "ok", "model_loaded": True},
+        predict=lambda request: {
+            "claim_boundary": "no_alpha_claim",
+            "weights": {"A": float(request["features"]["momentum"]), "B": 0.4},
+        },
+        sample_request={"features": {"momentum": 0.6}},
+        observed_at="2026-06-12T02:30:00Z",
+    )
+    gate = build_tier3_readiness_gate(manifest, serving_evidence=evidence)
+
+    validate_serving_smoke_evidence(evidence)
+    assert evidence["status"] == "proven"
+    assert evidence["serving_status"] == "local_smoke"
+    assert evidence["readiness_evidence_for"] == "serving_evidence"
+    assert gate["readiness"] == "not_ready"
+    assert gate["missing_evidence"] == [
+        "retraining_evidence",
+        "automated_drift_monitoring_evidence",
+    ]
+
+
+def test_serving_smoke_evidence_rejects_unhealthy_or_alpha_claim(tmp_path):
+    from quantlab.mlops import ExperimentRegistry, build_serving_smoke_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    with pytest.raises(ValueError, match="healthy"):
+        build_serving_smoke_evidence(
+            entry,
+            health_check=lambda: {"status": "degraded"},
+            predict=lambda request: {"claim_boundary": "no_alpha_claim", "ok": True},
+            sample_request={"features": {"x": 1}},
+            observed_at="2026-06-12T02:30:00Z",
+        )
+
+    with pytest.raises(ValueError, match="no_alpha_claim"):
+        build_serving_smoke_evidence(
+            entry,
+            health_check=lambda: {"status": "ok"},
+            predict=lambda request: {"claim_boundary": "alpha_claim", "ok": True},
+            sample_request={"features": {"x": 1}},
+            observed_at="2026-06-12T02:30:00Z",
+        )
+
+
 def test_drift_assessment_report_detects_metric_drift_without_serving_claim(tmp_path):
     from quantlab.mlops import (
         ExperimentRegistry,
@@ -310,3 +370,36 @@ def test_pbt_tier3_manifest_preserves_experiment_count(tmp_path, count):
 
     assert manifest["entry_count"] == count
     assert len(manifest["experiment_ids"]) == count
+
+
+@given(momentum=st.floats(min_value=0, max_value=1, allow_nan=False, allow_infinity=False))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pbt_serving_smoke_digest_is_deterministic(tmp_path, momentum):
+    from quantlab.mlops import ExperimentRegistry, build_serving_smoke_evidence
+
+    entry = ExperimentRegistry(tmp_path / "experiments.jsonl").register("family", "Strategy", {"x": 1})
+
+    def predict(request):
+        return {
+            "claim_boundary": "no_alpha_claim",
+            "weights": {"A": float(request["features"]["momentum"]), "B": 1.0 - float(request["features"]["momentum"])},
+        }
+
+    first = build_serving_smoke_evidence(
+        entry,
+        health_check=lambda: {"status": "ok"},
+        predict=predict,
+        sample_request={"features": {"momentum": momentum}},
+        observed_at="2026-06-12T02:30:00Z",
+    )
+    second = build_serving_smoke_evidence(
+        entry,
+        health_check=lambda: {"status": "ok"},
+        predict=predict,
+        sample_request={"features": {"momentum": momentum}},
+        observed_at="2026-06-12T02:30:00Z",
+    )
+
+    assert first["request_digest"] == second["request_digest"]
+    assert first["prediction_digest"] == second["prediction_digest"]
+    assert first["claim_boundary"] == "no_alpha_claim"
