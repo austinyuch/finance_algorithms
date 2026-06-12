@@ -12,6 +12,10 @@ export interface PublicHostingProbe {
   httpStatus?: number;
   observedAt?: string;
   deployedDataHash?: string;
+  deployedTargetUrl?: string;
+  deployedArtifactKind?: string;
+  deployedClaimBoundary?: string;
+  deployedDashboardClaim?: string;
 }
 
 export interface PublicDemoManifest {
@@ -27,6 +31,11 @@ export interface PublicDemoManifest {
     deployedDataHash?: string;
     expectedDataHash?: string;
     hashStatus?: "matched" | "mismatched" | "missing" | "not_checked";
+    deployedTargetUrl?: string;
+    deployedArtifactKind?: string;
+    deployedClaimBoundary?: string;
+    deployedDashboardClaim?: string;
+    manifestContractStatus?: "matched" | "mismatched" | "missing" | "not_checked";
   };
   claimBoundary: "no_alpha_claim";
   dashboardClaim: "local_demo_only";
@@ -116,6 +125,10 @@ export function classifyPublicHostingEvidence(
     observedAt: probe.observedAt,
     deployedDataHash: probe.deployedDataHash,
     expectedDataHash,
+    deployedTargetUrl: probe.deployedTargetUrl,
+    deployedArtifactKind: probe.deployedArtifactKind,
+    deployedClaimBoundary: probe.deployedClaimBoundary,
+    deployedDashboardClaim: probe.deployedDashboardClaim,
   };
   const hashStatus =
     expectedDataHash === undefined
@@ -125,10 +138,27 @@ export function classifyPublicHostingEvidence(
         : probe.deployedDataHash === expectedDataHash
           ? "matched"
           : "mismatched";
-  if (probe.httpStatus === 200 && hashStatus === "matched") {
-    return { ...base, hashStatus, status: "proven" };
+  const deployedManifestFields = [
+    probe.deployedTargetUrl,
+    probe.deployedArtifactKind,
+    probe.deployedClaimBoundary,
+    probe.deployedDashboardClaim,
+  ];
+  const manifestContractStatus =
+    expectedDataHash === undefined
+      ? "not_checked"
+      : deployedManifestFields.every((field) => field === undefined)
+        ? "missing"
+        : probe.deployedTargetUrl === PUBLIC_SHOWCASE_URL &&
+            probe.deployedArtifactKind === "github_pages_static_showcase" &&
+            probe.deployedClaimBoundary === "no_alpha_claim" &&
+            probe.deployedDashboardClaim === "local_demo_only"
+          ? "matched"
+          : "mismatched";
+  if (probe.httpStatus === 200 && hashStatus === "matched" && manifestContractStatus === "matched") {
+    return { ...base, hashStatus, manifestContractStatus, status: "proven" };
   }
-  return { ...base, hashStatus, status: "configured_not_observed" };
+  return { ...base, hashStatus, manifestContractStatus, status: "configured_not_observed" };
 }
 
 export function buildPublicDemoManifest(

@@ -158,6 +158,15 @@ def test_public_hosting_manifest_carries_observed_proof():
     assert isinstance(hosting.get("observedAt"), str)
     assert hosting["observedAt"].endswith("Z")
     assert hosting.get("hashStatus") == "matched"
+    assert hosting.get("manifestContractStatus") == "matched"
     assert hosting.get("expectedDataHash") == manifest.get("dataHash")
     assert hosting.get("deployedDataHash") == manifest.get("dataHash")
     assert probe.get("deployedDataHash") == manifest.get("dataHash")
+    assert hosting.get("deployedTargetUrl") == manifest.get("targetUrl")
+    assert hosting.get("deployedArtifactKind") == manifest.get("artifactKind")
+    assert hosting.get("deployedClaimBoundary") == manifest.get("claimBoundary")
+    assert hosting.get("deployedDashboardClaim") == manifest.get("dashboardClaim")
+    assert probe.get("deployedTargetUrl") == manifest.get("targetUrl")
+    assert probe.get("deployedArtifactKind") == manifest.get("artifactKind")
+    assert probe.get("deployedClaimBoundary") == manifest.get("claimBoundary")
+    assert probe.get("deployedDashboardClaim") == manifest.get("dashboardClaim")

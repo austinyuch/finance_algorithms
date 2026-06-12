@@ -376,6 +376,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
     ),
     MutationSpec(
+        name="public-hosting-manifest-contract-regression",
+        path="docs/deployment-manifest.json",
+        original='"manifestContractStatus": "matched"',
+        mutated='"manifestContractStatus": "mismatched"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
+    ),
+    MutationSpec(
         name="b-scheduled-observer-manual-pending",
         path="scripts/scheduled_run_observer.py",
         original='status = "proven" if latest_schedule_success is not None else "pending"',
