@@ -160,6 +160,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_readiness_gate_fails_closed_for_artifact_only_manifest"),
     ),
     MutationSpec(
+        name="e-tier3-production-tier-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='and value.get("evidence_tier") == "production"',
+        mutated='and value.get("evidence_tier") != "production"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_readiness_gate_requires_all_live_evidence"),
+    ),
+    MutationSpec(
         name="e-serving-smoke-health-gate",
         path="quantlab/mlops/experiment_registry.py",
         original='if str(health.get("status") or "").lower() != "ok":',
@@ -174,6 +182,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         mutated='if str(result.get("status") or "").lower() == "completed":',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_e_1_experiment_registry.py::test_retraining_smoke_evidence_proves_only_retraining_slice"),
+    ),
+    MutationSpec(
+        name="e-automated-drift-status-gate",
+        path="quantlab/mlops/experiment_registry.py",
+        original='if result.get("status") not in {"stable", "drift_detected"}:',
+        mutated='if result.get("status") in {"stable", "drift_detected"}:',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_e_1_experiment_registry.py::test_automated_drift_monitoring_local_evidence_does_not_make_tier3_ready"),
     ),
     MutationSpec(
         name="d-result-store-evaluation-source",
