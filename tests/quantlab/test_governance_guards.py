@@ -37,12 +37,41 @@ def _protocol_surface(path: Path) -> dict:
     return out
 
 
+def _top_level_test_count(path: Path) -> int:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return sum(
+        1
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
+    )
+
+
 def test_contract_interfaces_no_drift():
     """spec contract SSOT 與 quantlab 實作版的 Protocol 結構不得漂移。"""
     spec = _protocol_surface(ROOT / ".agents/specs/a0-backtest-foundation/contract/interfaces.py")
     impl = _protocol_surface(ROOT / "quantlab/contracts/interfaces.py")
     assert spec, "spec SSOT interfaces.py 應含 Protocol"
     assert spec == impl, f"contract 漂移:\nSSOT={spec}\nIMPL={impl}"
+
+
+def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
+    """Governance-heavy row counts must track the current test inventory."""
+    registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
+    governed_rows = {
+        "test_governance_guards": ROOT / "tests/quantlab/test_governance_guards.py",
+        "test_mutation_spot_checks": ROOT / "tests/test_mutation_spot_checks.py",
+    }
+
+    for row_id, path in governed_rows.items():
+        expected = _top_level_test_count(path)
+        assert f"| `{row_id}` |" in registry
+        pattern = re.compile(rf"\| `{re.escape(row_id)}` \|[^\n]+\| (?P<count>\d+) pass \|")
+        match = pattern.search(registry)
+        assert match, f"missing pass-count evidence for {row_id}"
+        assert int(match.group("count")) == expected, (
+            f"quantlab/TESTS.md row {row_id} reports {match.group('count')} pass, "
+            f"but {path.relative_to(ROOT)} currently has {expected} tests"
+        )
 
 
 def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
@@ -73,6 +102,9 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "22 mutation",
         "66 passed",
         "243 passed",
+        "244 passed",
+        "245 passed",
+        "included in 245 passed",
         "242 passed",
         "241 passed",
         "231 passed",
@@ -205,6 +237,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1049/1,296,000",
         "0.0008094135802469136",
         "901f8b3c89a8ace220c667ff88771884fdd26b04da599889cd225f9a4d947ab7",
+        "1055 / 1,296,000",
+        "1055/1,296,000",
+        "0.0008140432098765432",
+        "7a3494c6f713743b76a5b5c25d1e3b3cb4fa5e3a9c0defa8b4581f460eba5b6e",
         "1057 / 1,296,000",
         "1057/1,296,000",
         "0.0008155864197530864",
@@ -258,10 +294,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "245 passed" in pytest_gate
-    assert "245 passed" in manual_guide
-    assert "245 passed" in review_guide
-    assert "Python suite now <b>245 passed</b>" in review_html
+    assert "246 passed" in pytest_gate
+    assert "246 passed" in manual_guide
+    assert "246 passed" in review_guide
+    assert "Python suite now <b>246 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -293,7 +329,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1055
+    assert browser_diff["mismatchedPixels"] == 1036
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 

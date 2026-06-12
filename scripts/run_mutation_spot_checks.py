@@ -468,7 +468,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"245 passed"',
+        original='"246 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -476,7 +476,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"245 passed"',
+        original='"246 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -484,10 +484,26 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="245 passed",
+        original="246 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
+    ),
+    MutationSpec(
+        name="governance-test-registry-count-drift",
+        path="quantlab/TESTS.md",
+        original="f-public-static-showcase CR-FPS-001..CR-FPS-008 | 16 pass |",
+        mutated="f-public-static-showcase CR-FPS-001..CR-FPS-008 | 13 pass |",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_quantlab_test_registry_governance_rows_match_current_test_inventory"),
+    ),
+    MutationSpec(
+        name="mutation-test-registry-count-drift",
+        path="quantlab/TESTS.md",
+        original="e-tier3-readiness-proof-cli | 9 pass |",
+        mutated="e-tier3-readiness-proof-cli | 8 pass |",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_quantlab_test_registry_governance_rows_match_current_test_inventory"),
     ),
     MutationSpec(
         name="review-frontend-count-shorthand-regression",
