@@ -26,7 +26,8 @@ reported a stale branch-local deployment gap.
    deployed `dataHash` equals the committed static dashboard hash, and deployed
    manifest contract metadata matches the committed manifest.
 3. Keep the dashboard readiness panel conservative (`not_proven`) because it is
-   fixture-backed local demo evidence, not a live QuantLab service.
+   local-demo evidence, not a live QuantLab service; CR-FPS-006 owns the current
+   generated canonical local result-store payload boundary.
 4. Update current governance and stakeholder docs to distinguish public hosting
    parity from the dashboard's embedded local-demo readiness boundary.
 
@@ -54,5 +55,7 @@ reported a stale branch-local deployment gap.
 
 This CR proves the committed static `docs/` artifact is now deployed with
 matching content hash and manifest contract metadata. It does not change the
-dashboard payload's `local_demo_only` / fixture-backed boundary and does not
-prove a live QuantLab backend service.
+dashboard payload's `local_demo_only` boundary and does not prove a live
+QuantLab backend service. The current payload source claim is superseded by
+CR-FPS-006: generated canonical local `LocalResultStore` / `ExperimentRegistry`
+scenario evidence.

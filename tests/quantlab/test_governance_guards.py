@@ -72,6 +72,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "20 frontend",
         "22 mutation",
         "66 passed",
+        "243 passed",
         "242 passed",
         "241 passed",
         "231 passed",
@@ -124,6 +125,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 53/53",
         "mutation spot checks 53/53",
         "mutation spot-checks are **53/53",
+        "57/57 configured",
+        "57/57 Python mutation",
+        "Python mutation 57/57",
+        "mutation spot checks 57/57",
+        "mutation spot-checks are **57/57",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -195,6 +201,18 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1041/1,296,000",
         "0.0008032407407407408",
         "be7d0618d726253c38af6eb3ab005372848f715f7872efe0fbb63f36a48b9d02",
+        "1049 / 1,296,000",
+        "1049/1,296,000",
+        "0.0008094135802469136",
+        "901f8b3c89a8ace220c667ff88771884fdd26b04da599889cd225f9a4d947ab7",
+        "1057 / 1,296,000",
+        "1057/1,296,000",
+        "0.0008155864197530864",
+        "6b8ecfa0d7ab74ca50cb773de4021f7a1b164224e6b77a463708134cbcaffaba",
+        "1063 / 1,296,000",
+        "1063/1,296,000",
+        "0.000820216049382716",
+        "472dfef3cbd34ae9d09979a333366bc1054cd9f2379a3869e04aae8cede47cad",
         "3e94cdbe790007dfe7f8a58d4aa45ebc39fd709f88152d351b089339761d71b1",
         "700134c3e1504b866e395f4e7c1465d7a1e094eade4a71960890b1b89c90922c",
         "47be766e853053e34fb2fe331caf8f337090bee5b6315fc057bc5c7350e1d423",
@@ -206,6 +224,26 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         text = path.read_text(encoding="utf-8")
         for marker in stale_markers:
             assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale marker: {marker}"
+
+
+def test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_boundary():
+    """F public-static CR overlays must not describe the current payload as fixture-backed."""
+    cr_surfaces = sorted(
+        (ROOT / ".agents/specs/f-public-static-showcase/change-requests").glob("cr-fps-*.md")
+    )
+    assert cr_surfaces
+    stale_markers = [
+        "The dashboard payload remains fixture-backed",
+        "fixture-backed local demo evidence",
+        "`local_demo_only` / fixture-backed boundary",
+    ]
+
+    for path in cr_surfaces:
+        text = path.read_text(encoding="utf-8")
+        for marker in stale_markers:
+            assert marker not in text, (
+                f"{path.relative_to(ROOT)} republishes superseded F fixture boundary: {marker}"
+            )
 
 
 def test_current_review_gate_transcripts_match_published_evidence():
@@ -220,10 +258,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "243 passed" in pytest_gate
-    assert "243 passed" in manual_guide
-    assert "243 passed" in review_guide
-    assert "Python suite now <b>243 passed</b>" in review_html
+    assert "245 passed" in pytest_gate
+    assert "245 passed" in manual_guide
+    assert "245 passed" in review_guide
+    assert "Python suite now <b>245 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -255,7 +293,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1049
+    assert browser_diff["mismatchedPixels"] == 1055
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 

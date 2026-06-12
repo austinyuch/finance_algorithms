@@ -41,4 +41,4 @@ That would allow hash-only proof to hide a manifest-contract overclaim.
 
 ## Claim Boundary
 
-This CR proves only that the deployed static manifest currently observed at the public URL preserves the committed manifest contract metadata and content hash. It does not prove live backend, live QuantLab data, authentication, production MLOps, or Tier3 readiness. The dashboard payload remains fixture-backed and `local_demo_only`.
+This CR proves only that the deployed static manifest observed at the public URL preserves the committed manifest contract metadata and content hash for this CR slice. It does not prove live backend, live QuantLab data, authentication, production MLOps, or Tier3 readiness. The current dashboard payload boundary is superseded by CR-FPS-006: generated canonical local `LocalResultStore` / `ExperimentRegistry` scenario evidence, still `local_demo_only`.

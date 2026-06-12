@@ -1,8 +1,10 @@
 """Mutation spot-check runner tests."""
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 from hypothesis import HealthCheck, given, settings, strategies as st
@@ -84,6 +86,8 @@ def test_mutation_runner_list_smoke():
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
     assert "governance-stale-cron-proof-pending" in result.stdout
     assert "governance-stale-dashboard-source-wording" in result.stdout
+    assert "governance-f-cr-superseded-fixture-boundary" in result.stdout
+    assert "public-hosting-probe-expected-hash-drift" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
     assert "manual-showcase-payload-sync-regression" in result.stdout
     assert "frontend-showcase-payload-sync-regression" in result.stdout
@@ -97,6 +101,18 @@ def test_selected_specs_rejects_unknown_name():
 
     with pytest.raises(ValueError, match="unknown mutation"):
         selected_specs(["missing"])
+
+
+def test_public_probe_expected_hash_mutation_tracks_current_artifact():
+    from scripts.run_mutation_spot_checks import selected_specs
+
+    probe = json.loads(Path("docs/public-hosting-probe.json").read_text(encoding="utf-8"))
+    spec = selected_specs(["public-hosting-probe-expected-hash-drift"])[0]
+
+    assert probe["expectedDataHash"] in spec.original
+    assert probe["expectedDataHash"] not in Path("scripts/run_mutation_spot_checks.py").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_purge_python_bytecode_removes_pycache(tmp_path):
@@ -173,7 +189,9 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out
     assert "governance-stale-dashboard-source-wording" in out
+    assert "governance-f-cr-superseded-fixture-boundary" in out
     assert "review-public-hosting-probe-status-overclaim" in out
+    assert "public-hosting-probe-expected-hash-drift" in out
     assert "b-scheduled-observer-manual-pending" in out
     assert "manual-showcase-payload-sync-regression" in out
     assert "frontend-showcase-payload-sync-regression" in out

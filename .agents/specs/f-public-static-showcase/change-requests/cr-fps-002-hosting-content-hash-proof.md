@@ -41,4 +41,4 @@ That is a false-green risk for stakeholder docs and review artifacts because cur
 
 ## Claim Boundary
 
-This CR proves the committed static GitHub Pages artifact currently observed at the public URL by content hash. It still does not prove live backend, live QuantLab data, authentication, production MLOps, or Tier3 readiness. The dashboard payload remains fixture-backed and `local_demo_only`.
+This CR proves the committed static GitHub Pages artifact observed at the public URL by content hash for this CR slice. It still does not prove live backend, live QuantLab data, authentication, production MLOps, or Tier3 readiness. The current dashboard payload boundary is superseded by CR-FPS-006: generated canonical local `LocalResultStore` / `ExperimentRegistry` scenario evidence, still `local_demo_only`.

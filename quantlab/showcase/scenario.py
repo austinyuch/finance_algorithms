@@ -11,8 +11,8 @@ from quantlab.tracking import LocalResultStore
 
 
 _EVIDENCE_TESTS = [
-    "243 passed",
-    "Python mutation 57/57 killed",
+    "245 passed",
+    "Python mutation 59/59 killed",
     "frontend mutation 15/15 killed",
     "F Next.js coverage 91.05%",
     "E-lite coverage 100%",

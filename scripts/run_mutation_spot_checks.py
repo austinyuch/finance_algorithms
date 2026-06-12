@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
 import shutil
 import subprocess
 import sys
@@ -29,6 +30,15 @@ class MutationSpec:
 class MutationToken:
     path: Path
     original_text: str
+
+
+def _public_probe_expected_hash() -> str:
+    probe_path = Path(__file__).resolve().parents[1] / "docs/public-hosting-probe.json"
+    probe = json.loads(probe_path.read_text(encoding="utf-8"))
+    expected = probe.get("expectedDataHash")
+    if not isinstance(expected, str) or len(expected) != 64:
+        raise ValueError("public-hosting probe expectedDataHash must be a 64-character hash")
+    return expected
 
 
 MUTATIONS: tuple[MutationSpec, ...] = (
@@ -384,6 +394,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_current_dashboard_source_wording_tracks_canonical_payload"),
     ),
     MutationSpec(
+        name="governance-f-cr-superseded-fixture-boundary",
+        path=".agents/specs/f-public-static-showcase/change-requests/cr-fps-002-hosting-content-hash-proof.md",
+        original="The current dashboard payload boundary is superseded by CR-FPS-006: generated canonical local `LocalResultStore` / `ExperimentRegistry` scenario evidence, still `local_demo_only`.",
+        mutated="The dashboard payload remains fixture-backed and `local_demo_only`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_boundary"),
+    ),
+    MutationSpec(
         name="public-hosting-manifest-status-overclaim",
         path="docs/deployment-manifest.json",
         original='"status": "configured_not_observed"',
@@ -424,6 +442,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
     ),
     MutationSpec(
+        name="public-hosting-probe-expected-hash-drift",
+        path="docs/public-hosting-probe.json",
+        original=f'"expectedDataHash": "{_public_probe_expected_hash()}"',
+        mutated='"expectedDataHash": "269bb251c5480976e98ec6533b1fdbbbc2b383b85fd0cae4852aec859be1922c"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
+    ),
+    MutationSpec(
         name="public-hosting-manifest-contract-regression",
         path="docs/deployment-manifest.json",
         original='"manifestContractStatus": "matched"',
@@ -442,7 +468,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"243 passed"',
+        original='"245 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -450,7 +476,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"243 passed"',
+        original='"245 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -458,7 +484,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="243 passed",
+        original="245 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
