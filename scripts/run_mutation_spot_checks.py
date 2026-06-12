@@ -419,7 +419,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**68/68 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**69/69 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -455,6 +455,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         mutated="The dashboard payload remains fixture-backed and `local_demo_only`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_boundary"),
+    ),
+    MutationSpec(
+        name="governance-stale-visual-evidence-regression",
+        path=".agents/specs/RTM.md",
+        original="visual diff `1007 / 1,296,000`",
+        mutated="visual diff `1089 / 1,296,000`",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_traceability_visual_evidence_tracks_current_pixel_diff"),
     ),
     MutationSpec(
         name="public-hosting-manifest-status-overclaim",
@@ -523,7 +531,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"250 passed"',
+        original='"251 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -531,7 +539,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"250 passed"',
+        original='"251 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -539,7 +547,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="250 passed",
+        original="251 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
@@ -547,7 +555,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-test-registry-count-drift",
         path="quantlab/TESTS.md",
-        original="f-public-static-showcase CR-FPS-001..CR-FPS-008 | 16 pass |",
+        original="f-public-static-showcase CR-FPS-001..CR-FPS-008 | 17 pass |",
         mutated="f-public-static-showcase CR-FPS-001..CR-FPS-008 | 13 pass |",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_quantlab_test_registry_governance_rows_match_current_test_inventory"),

@@ -205,12 +205,17 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 66/66",
         "mutation spot checks 66/66",
         "mutation spot-checks are **66/66",
-        "67/67 configured",
-        "67/67 Python mutation",
-        "Python mutation 67/67",
-        "mutation spot checks 67/67",
-        "mutation spot-checks are **67/67",
-        "6/6 configured",
+            "67/67 configured",
+            "67/67 Python mutation",
+            "Python mutation 67/67",
+            "mutation spot checks 67/67",
+            "mutation spot-checks are **67/67",
+            "68/68 configured",
+            "68/68 Python mutation",
+            "Python mutation 68/68",
+            "mutation spot checks 68/68",
+            "mutation spot-checks are **68/68",
+            "6/6 configured",
         "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
@@ -370,10 +375,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "250 passed" in pytest_gate
-    assert "250 passed" in manual_guide
-    assert "250 passed" in review_guide
-    assert "Python suite now <b>250 passed</b>" in review_html
+    assert "251 passed" in pytest_gate
+    assert "251 passed" in manual_guide
+    assert "251 passed" in review_guide
+    assert "Python suite now <b>251 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -419,14 +424,38 @@ def test_current_stakeholder_payload_assets_are_synchronized():
     review_public_probe = json.loads(
         (ROOT / "docs/review/assets/public-hosting-probe.json").read_text(encoding="utf-8")
     )
+    browser_diff = json.loads((ROOT / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    visual_evidence = (
+        f"browser visual diff {browser_diff['mismatchedPixels']}/{browser_diff['totalPixels']} passed"
+    )
 
     assert frontend_showcase == showcase
     assert manual_showcase == showcase
     assert review_showcase == showcase
     assert review_public_probe == public_probe
+    assert visual_evidence in showcase["evidence"]["tests"]
     assert (ROOT / "docs/manual/assets/dashboard-static-export.html").read_text(encoding="utf-8") == (
         ROOT / "docs/index.html"
     ).read_text(encoding="utf-8")
+    assert visual_evidence in (ROOT / "docs/index.html").read_text(encoding="utf-8")
+
+
+def test_traceability_visual_evidence_tracks_current_pixel_diff():
+    """Governance bridge docs must not publish stale browser visual mismatch counts."""
+    browser_diff = json.loads((ROOT / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    spaced = f"{browser_diff['mismatchedPixels']} / {browser_diff['totalPixels']:,}"
+    compact = f"{browser_diff['mismatchedPixels']} / 1,296,000"
+    current_surfaces = [
+        ROOT / ".agents/specs/RTM.md",
+        ROOT / "docs/DEMO_RISK_WARNING_TAXONOMY.md",
+    ]
+
+    assert browser_diff["mismatchedPixels"] == 1007
+    for path in current_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert spaced in text or compact in text
+        assert "1089 / 1,296,000" not in text
+        assert "1089/1296000" not in text
 
 
 def test_current_dashboard_source_wording_tracks_canonical_payload():

@@ -93,6 +93,7 @@ def test_mutation_runner_list_smoke():
     assert "governance-stale-import-linter-formalization-regression" in result.stdout
     assert "governance-stale-dashboard-source-wording" in result.stdout
     assert "governance-f-cr-superseded-fixture-boundary" in result.stdout
+    assert "governance-stale-visual-evidence-regression" in result.stdout
     assert "public-hosting-probe-expected-hash-drift" in result.stdout
     assert "governance-test-registry-count-drift" in result.stdout
     assert "mutation-test-registry-count-drift" in result.stdout
@@ -205,6 +206,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-import-linter-formalization-regression" in out
     assert "governance-stale-dashboard-source-wording" in out
     assert "governance-f-cr-superseded-fixture-boundary" in out
+    assert "governance-stale-visual-evidence-regression" in out
     assert "review-public-hosting-probe-status-overclaim" in out
     assert "public-hosting-probe-expected-hash-drift" in out
     assert "governance-test-registry-count-drift" in out
