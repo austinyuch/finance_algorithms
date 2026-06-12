@@ -29,11 +29,11 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 ## Latest authoritative gate evidence (2026-06-12)
 
-- `uv run pytest -q` → **192 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
+- `uv run pytest -q` → **193 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env)
 - `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports` → clean, **52 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (71 files, 174 deps)
 - `frontend` `npm test` → **23 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
-- Python mutation spot checks → **25/25 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
+- Python mutation spot checks → **26/26 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-scheduled-observer-promotion`, and `b-scheduled-observer-manual-pending`; frontend coverage **91.42%**, mutation 9/9 killed
 - `npm run visual:browser` → chromium-headless screenshot `proven`
   (`frontend/out/browser-visual.png`); `npm run probe:public-demo` → **HTTP 200 proven**
   (`frontend/out/public-hosting-probe.json`), per

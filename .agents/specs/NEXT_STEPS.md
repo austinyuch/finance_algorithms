@@ -4,12 +4,12 @@
 
 ## Current State (2026-06-12)
 
-- **Current branch lane:** `spec/scheduled-run-observer` adds a fail-closed observer for the remaining B autonomous cron proof residual.
+- **Current branch lane:** `spec/post-merge-scheduled-observer-sync` reconciles the rolling memo after the scheduled-run observer promotion.
 - **Recently merged:** `a-torch-default-dependency-isolation` landed in `dev` via PR #24 (`e726fac`) and in `main` via PR #26 (`fcbdc23`). Dependabot alert #7 fixed (`fixed_at=2026-06-12T01:19:57Z`) for `uv.lock` / `torch`.
 - **Stakeholder docs published (2026-06-12):** bilingual user manual `docs/manual/{en,zh-tw}/index.{md,html}` and executive review `docs/review/index.html`, plus generation guides (`docs/MANUAL_GENERATION_GUIDE.md`, `docs/REVIEW_GENERATION_GUIDE.md`), shared evidence/warning contracts (`docs/{FEATURES,EVIDENCE_METADATA_CONTRACT,DEMO_RISK_WARNING_TAXONOMY}.md`), and traceability bridge `.agents/specs/RTM.md`. Live CLI demos captured under `docs/manual/assets/`; gate transcripts under `docs/review/assets/`; the chromium-headless `browser-visual.png`, `browser-visual-diff.json`, and `public-hosting-probe.json` (HTTP 200) copied into tracked doc assets (`frontend/out/` is gitignored). Readiness copied from each `review.md`; remaining ops residual = no autonomous cron-triggered scheduled-run artifact.
-- **Latest evidence:** `uv run pytest -q` → **192 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports` → clean over 52 files; `uv run lint-imports` → KEPT; Python mutation spot checks **25/25 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, and `b-scheduled-observer-manual-pending`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
-- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`; PR #19 squash-merged to `main` as `59c8884` and merged into `dev` as `e1b081c`.
-- **Latest external Actions proof:** `daily-snapshot.yml` failed before fix as run `27386918387` because `github.run_started_at` expanded empty. Fixed branch run `27387041974` on `spec/b-live-scheduled-snapshot-proof` succeeded via `workflow_dispatch` and uploaded `snapshot-schedule-proof`; proof JSON records `dry=22`, `exit_code=0`, `evidence_tier=smoke`, `retention=append_only`, `trigger=workflow_dispatch`.
+- **Latest evidence:** `uv run pytest -q` → **193 passed, 1 skipped** (PyTorch LSTM optional-lane tests skipped in default env); `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports` → clean over 52 files; `uv run lint-imports` → KEPT; Python mutation spot checks **26/26 configured**, including `root-torch-default-dependency`, `governance-stale-next-steps-alert`, `governance-stale-scheduled-observer-promotion`, and `b-scheduled-observer-manual-pending`; default `uv sync` removes `torch`/CUDA packages from the root env; F Next.js tests 23 passed, line coverage 91.42%, `npm audit --json` 0 vulnerabilities, 9/9 frontend mutations killed, static export/browser visual pixel diff/build/smoke/public probe passed.
+- **Merged:** PR #7 squash-merged to `main` as `6e2af71`; PR #8 squash-merged to `dev` as `1f46725`; PR #9 squash-merged to `dev` as `0eaeaf0`; PR #10 squash-merged to `dev` as `1cec276`; PR #11 squash-merged to `dev` as `d2da67f`; PR #12 squash-merged to `main` as `1a10166`; PR #13 squash-merged to `dev` as `52b8dd9`; PR #14 squash-merged to `main` as `6b3d6be`; PR #19 squash-merged to `main` as `59c8884` and merged into `dev` as `e1b081c`; PR #29 squash-merged scheduled-run observer to `dev` as `955c315`; PR #30 squash-merged scheduled-run observer to `main` as `185edb2`.
+- **Latest external Actions proof:** `daily-snapshot.yml` failed before fix as run `27386918387` because `github.run_started_at` expanded empty. Fixed branch run `27387041974` on `spec/b-live-scheduled-snapshot-proof` succeeded via `workflow_dispatch` and uploaded `snapshot-schedule-proof`; proof JSON records `dry=22`, `exit_code=0`, `evidence_tier=smoke`, `retention=append_only`, `trigger=workflow_dispatch`. Fresh `gh run list` observation on 2026-06-12 still shows `schedule_run_count=0`, so autonomous cron proof remains pending.
 - **ISSUE-B3-001 handled in advance:**
   - Promoted/folded into [CR-B7 source health](./b-data-platform/change-requests/cr-b7-source-health.md) for invalid FRED gold proxy defaults.
   - Repo-side fix: default FRED price proxy list now uses reachable `PCOPPUSDM` commodity proxy instead of invalid London gold IDs.
@@ -68,7 +68,7 @@
   - Fixed the GitHub Actions workflow timestamp bug exposed by failed run `27386918387`.
   - Real Actions run `27387041974` succeeded with artifact `snapshot-schedule-proof`.
   - Boundary: proves `workflow_dispatch` smoke-tier Actions execution, not autonomous cron firing.
-- **B scheduled run observer lane:** [b-scheduled-run-observer](./b-scheduled-run-observer/) is **Implemented · Review PASSED** locally.
+- **B scheduled run observer lane:** [b-scheduled-run-observer](./b-scheduled-run-observer/) is **Implemented · Review PASSED** and merged to `dev`/`main`.
   - Added `scripts/scheduled_run_observer.py` to classify GitHub Actions run-list evidence without overclaiming manual dispatches.
   - Live observation artifact: `reports/scheduled-run-observation-2026-06-12.json` records `status=pending`, `schedule_run_count=0`, and latest manual success `27387041974`.
   - Boundary: observer is repo-side closure; cron proof can become `proven` only after a completed successful `event=schedule` run exists.
@@ -79,7 +79,7 @@
 
 ## Recommended Next Action
 
-1. Commit/push `spec/scheduled-run-observer` and promote it through `dev`/`main`.
+1. Open/promote `spec/post-merge-scheduled-observer-sync` after the governance guard confirms the observer promotion memo is no longer stale.
 2. Continue observing `daily-snapshot.yml` until a completed successful autonomous `event=schedule` run exists; until then the observer should keep status `pending`.
 3. Keep E Tier3 at artifact-manifest-only until serving, retraining, and automated drift monitoring have separate live evidence.
 
