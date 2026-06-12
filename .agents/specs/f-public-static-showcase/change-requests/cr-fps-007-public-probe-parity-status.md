@@ -54,6 +54,7 @@ optimistic than `docs/deployment-manifest.json`.
 - GREEN: `npm test -- --run` -> 28 passed; `npm run coverage` -> 91.07% line coverage.
 - GREEN: `uv run pytest -q tests/quantlab/test_governance_guards.py` -> 10 passed.
 - GREEN: `npm run visual`, `npm run visual:browser`, `npm run build`, `npm run smoke`, `npm audit --json`, and `npm run mutation` passed. `npm run probe:public-demo` is expected to return exit code 2 while deployed `dataHash` is stale.
+- Mutation: `uv run python scripts/run_mutation_spot_checks.py --only public-hosting-probe-status-overclaim` -> killed. The mutation changes the committed probe artifact from `status=configured_not_observed` to `status=proven` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
 
 ## Claim Boundary
 
