@@ -367,6 +367,69 @@ def test_daily_snapshot_workflow_records_report_and_schedule_contract():
     assert "date -u +%Y-%m-%dT%H:%M:%SZ" in workflow
 
 
+def test_scheduled_run_observer_keeps_manual_dispatch_as_pending(tmp_path):
+    from scripts.scheduled_run_observer import build_scheduled_run_observation, write_scheduled_run_observation
+
+    runs = [
+        {
+            "databaseId": 27387041974,
+            "event": "workflow_dispatch",
+            "status": "completed",
+            "conclusion": "success",
+            "headBranch": "spec/b-live-scheduled-snapshot-proof",
+            "createdAt": "2026-06-12T00:47:01Z",
+            "updatedAt": "2026-06-12T00:47:39Z",
+            "url": "https://github.com/austinyuch/finance_algorithms/actions/runs/27387041974",
+        },
+    ]
+
+    observation = build_scheduled_run_observation(runs, workflow="daily-snapshot")
+    target = write_scheduled_run_observation(observation, tmp_path)
+
+    assert observation["artifact_kind"] == "scheduled_run_observation"
+    assert observation["status"] == "pending"
+    assert observation["claim_boundary"] == "manual_dispatch_is_not_cron"
+    assert observation["latest_manual_success"]["databaseId"] == 27387041974
+    assert observation["latest_schedule_success"] is None
+    assert "event=schedule" in observation["next_action"]
+    assert target.name == "scheduled-run-observation.json"
+
+
+def test_scheduled_run_observer_promotes_only_successful_schedule_run():
+    from scripts.scheduled_run_observer import build_scheduled_run_observation
+
+    runs = [
+        {
+            "databaseId": 10,
+            "event": "schedule",
+            "status": "completed",
+            "conclusion": "failure",
+            "headBranch": "main",
+            "createdAt": "2026-06-12T02:17:00Z",
+            "updatedAt": "2026-06-12T02:18:00Z",
+            "url": "https://example.invalid/fail",
+        },
+        {
+            "databaseId": 11,
+            "event": "schedule",
+            "status": "completed",
+            "conclusion": "success",
+            "headBranch": "main",
+            "createdAt": "2026-06-13T02:17:00Z",
+            "updatedAt": "2026-06-13T02:18:00Z",
+            "url": "https://example.invalid/success",
+        },
+    ]
+
+    observation = build_scheduled_run_observation(runs, workflow="daily-snapshot")
+
+    assert observation["status"] == "proven"
+    assert observation["evidence_tier"] == "live"
+    assert observation["latest_schedule_success"]["databaseId"] == 11
+    assert observation["latest_schedule_attempt"]["databaseId"] == 11
+    assert observation["latest_failed_schedule"]["databaseId"] == 10
+
+
 def test_snapshot_ops_gate_rejects_overclaimed_or_inconsistent_report():
     from scripts.snapshot_ops_gate import validate_snapshot_report
 
