@@ -2,9 +2,9 @@
 
 ## Verdict
 
-**Review PASSED for repo-side workflow fix and external `workflow_dispatch` proof.**
+**Review PASSED for repo-side workflow fix, external `workflow_dispatch` proof, and autonomous `event=schedule` dry-run proof.**
 
-This is not a cron-fired production schedule proof. The remaining gap is an observed `event=schedule` run.
+This is still dry-run schedule proof, not live append-only data writes.
 
 ## Scores
 
@@ -18,15 +18,16 @@ This is not a cron-fired production schedule proof. The remaining gap is an obse
 
 ## Requirement Acceptance
 
-- `REQ-BLSP-001`: **Accepted.** Workflow timestamps no longer depend on invalid GitHub context, and run `27387041974` produced external Actions proof artifacts.
-- `REQ-BLSP-002`: **Accepted.** Review and reports label the trigger as `workflow_dispatch` and keep cron proof open.
+- `REQ-BLSP-001`: **Accepted.** Workflow timestamps no longer depend on invalid GitHub context, and runs `27387041974` / `27392471359` produced external Actions proof artifacts.
+- `REQ-BLSP-002`: **Accepted.** Review and reports label trigger semantics honestly: `workflow_dispatch` for `27387041974`, `schedule` for `27392471359`.
 
 ## External Evidence
 
 - Failed pre-fix run: `27386918387`, `workflow_dispatch`, failed with empty timestamps.
 - Successful post-fix run: `27387041974`, `workflow_dispatch`, conclusion `success`.
+- Successful autonomous run: `27392471359`, `schedule`, conclusion `success`.
 - Artifact: `snapshot-schedule-proof`.
-- Proof JSON: `snapshot-schedule-run-proof-27387041974.json`.
+- Proof JSON: `snapshot-schedule-run-proof-27387041974.json`; `snapshot-schedule-run-proof-27392471359.json`.
 - Counts: `dry=22`, `fail=0`, `ok=0`, `skip=0`.
 - Evidence tier: `smoke`.
 - Retention: `append_only`.
@@ -39,6 +40,5 @@ This is not a cron-fired production schedule proof. The remaining gap is an obse
 
 ## Residual Risk
 
-- No autonomous cron-triggered Actions run has been observed yet.
 - The workflow still runs a dry-run snapshot report; live writes remain governed separately by append-only data rules and external source availability.
 - GitHub Actions annotations warn that Node.js 20 actions are deprecated for `actions/checkout@v4`, `actions/upload-artifact@v4`, and `astral-sh/setup-uv@v5`; this is a future maintenance risk, not a current proof failure.

@@ -45,4 +45,4 @@
 
 ## Next Action
 
-Keep the Tier3 gate fail-closed. The next valuable E slice is automated drift-monitoring evidence; B scheduled cron proof remains separately pending until GitHub emits a successful `event=schedule` run.
+Keep the Tier3 gate fail-closed. The next valuable E slice is automated drift-monitoring evidence; B scheduled cron dry-run proof is observed through run `27392471359`, while live writes remain separately governed.

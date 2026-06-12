@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The daily snapshot workflow has a successful GitHub Actions `workflow_dispatch` proof, but no observed autonomous cron `event=schedule` run. This spec adds a deterministic observer so the project can repeatedly classify the current GitHub Actions evidence without overclaiming manual runs as production schedule proof.
+The daily snapshot workflow has a successful GitHub Actions `workflow_dispatch` proof and now has an observed autonomous cron `event=schedule` run. This spec adds a deterministic observer so the project can repeatedly classify the current GitHub Actions evidence without overclaiming manual runs as production schedule proof.
 
 ## Dependencies, Impacts & Change Requests
 
