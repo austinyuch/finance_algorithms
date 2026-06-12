@@ -68,6 +68,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "22 mutation",
         "66 passed",
         "231 passed",
+        "238 passed",
         "237 passed",
         "23 frontend tests",
         "27 frontend tests",
@@ -76,6 +77,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 46/46",
         "mutation spot checks 46/46",
         "mutation spot-checks are **46/46",
+        "47/47 configured",
+        "47/47 Python mutation",
+        "Python mutation 47/47",
+        "mutation spot checks 47/47",
+        "mutation spot-checks are **47/47",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -90,6 +96,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "221 / 1,296,000",
         "221/1,296,000",
         "latest 221",
+        "1019 / 1,296,000",
+        "1019/1,296,000",
+        "0.0007862654320987655",
+        "2bbe4348ca8c005bd6db5b472e7fa1c468fba1249c3288fe2319d1656131f493",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
@@ -114,7 +124,7 @@ def test_current_visual_evidence_assets_are_synchronized():
     assert review_browser_visual == browser_visual
     assert review_browser_diff == browser_diff
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1019
+    assert browser_diff["mismatchedPixels"] == 1022
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
@@ -228,3 +238,14 @@ def test_public_hosting_manifest_carries_observed_proof():
         assert hosting.get("hashStatus") == "mismatched"
         assert probe.get("status") == "configured_not_observed"
         assert probe.get("deployedDataHash") != manifest.get("dataHash")
+
+
+def test_demo_risk_taxonomy_names_current_public_hosting_authority():
+    """Stakeholder warning taxonomy must point at committed parity evidence."""
+    text = (ROOT / "docs/DEMO_RISK_WARNING_TAXONOMY.md").read_text(encoding="utf-8")
+
+    assert "CR-FPS-001 + CR-FPS-002 + CR-FPS-003 + CR-FPS-007" in text
+    assert "standalone probe parity" in text
+    assert "docs/deployment-manifest.json" in text
+    assert "docs/public-hosting-probe.json" in text
+    assert "frontend/out/public-hosting-probe.json" not in text
