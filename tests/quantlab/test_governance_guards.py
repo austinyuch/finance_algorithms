@@ -166,3 +166,16 @@ def test_next_steps_reflects_post_merge_cr_b14_state():
     assert "c1e1591" in text
     assert "8b72a51" in text
     assert "508187e" in text
+
+
+def test_next_steps_reflects_post_merge_cr_b16_state():
+    """NEXT_STEPS should retain CR-B16 promotion proof after dev/main squash PRs."""
+    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+
+    assert "CR-B16 post CR-B15 governance sync is implemented locally" not in text
+    assert "Current branch lane:** none after CR-B16 promotion" not in text
+    assert "Current branch lane:** none." in text
+    assert "PR #69 squash-merged CR-B16 governance sync to `dev` as `474e17f`" in text
+    assert "PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`" in text
+    assert "474e17f" in text
+    assert "c35571e" in text

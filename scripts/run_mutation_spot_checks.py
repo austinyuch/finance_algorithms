@@ -338,10 +338,18 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-cr-b15-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="PR #67 squash-merged CR-B15 post CR-B14 governance sync to `dev` as `8b72a51`; PR #68 squash-merged CR-B15 post CR-B14 governance sync to `main` as `508187e`.",
+        original="PR #67 squash-merged CR-B15 post CR-B14 governance sync to `dev` as `8b72a51`; PR #68 squash-merged CR-B15 post CR-B14 governance sync to `main` as `508187e`;",
         mutated="CR-B15 post CR-B14 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b14_state"),
+    ),
+    MutationSpec(
+        name="governance-stale-cr-b16-promotion",
+        path=".agents/specs/NEXT_STEPS.md",
+        original="PR #69 squash-merged CR-B16 governance sync to `dev` as `474e17f`; PR #70 squash-merged CR-B16 governance sync to `main` as `c35571e`.",
+        mutated="CR-B16 post CR-B15 governance sync is implemented locally; open the usual squash PRs for `dev` and `main`.",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_cr_b16_state"),
     ),
     MutationSpec(
         name="b-scheduled-observer-manual-pending",
