@@ -224,12 +224,12 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_torch_alert_state"),
     ),
     MutationSpec(
-        name="governance-stale-scheduled-observer-promotion",
+        name="governance-stale-post-merge-sync-promotion",
         path=".agents/specs/NEXT_STEPS.md",
-        original="Open/promote `spec/post-merge-scheduled-observer-sync` after the governance guard confirms the observer promotion memo is no longer stale.",
-        mutated="Commit/push `spec/scheduled-run-observer` and promote it through `dev`/`main`.",
+        original="Start the E Tier3 readiness false-green lane: keep current artifact-manifest-only status, then add a repo-side readiness gate that cannot mark Tier3 `ready` unless serving, retraining, and automated drift monitoring evidence are all present.",
+        mutated="Open/promote `spec/post-merge-scheduled-observer-sync` after the governance guard confirms the observer promotion memo is no longer stale.",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_scheduled_observer_state"),
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_governance_sync_state"),
     ),
     MutationSpec(
         name="b-scheduled-observer-manual-pending",
