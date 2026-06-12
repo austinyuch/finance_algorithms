@@ -5,7 +5,7 @@ import fc from "fast-check";
 import { Dashboard } from "../components/Dashboard";
 import { GET } from "../app/api/showcase/route";
 import { assertDashboardPayload, isLeaderboardSorted } from "../lib/showcase-contract";
-import { getShowcaseDashboard } from "../lib/showcase-fixture";
+import { getShowcaseDashboard } from "../lib/showcase-data";
 
 describe("F Next.js showcase dashboard", () => {
   it("renders dashboard sections, warnings, and no-alpha evidence", () => {
@@ -29,6 +29,11 @@ describe("F Next.js showcase dashboard", () => {
 
     expect(response.status).toBe(200);
     expect(() => assertDashboardPayload(payload)).not.toThrow();
+    expect(payload.sourceMetadata).toEqual({
+      source: "local_result_store",
+      sourceRecordCount: 2,
+      experimentRegistry: "experiment_registry"
+    });
     expect(payload.claimBoundary).toBe("no_alpha_claim");
     expect(payload.experiments[0].readiness).toBe("registry_only");
     expect(payload.experiments[0].claimBoundary).toBe("no_alpha_claim");
@@ -40,8 +45,8 @@ describe("F Next.js showcase dashboard", () => {
   it("keeps dashboard gate evidence aligned with current governed proof", () => {
     const payload = getShowcaseDashboard();
 
-    expect(payload.evidence.tests).toContain("frontend mutation 12/12 killed");
-    expect(payload.evidence.tests).toContain("F Next.js coverage 91.81%");
+    expect(payload.evidence.tests).toContain("frontend mutation 13/13 killed");
+    expect(payload.evidence.tests).toContain("F Next.js coverage 91.07%");
     expect(payload.evidence.tests).not.toContain("mutation 9/9 killed");
     expect(payload.evidence.tests).not.toContain("F Next.js coverage 91.42%");
   });

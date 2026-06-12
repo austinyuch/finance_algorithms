@@ -10,7 +10,7 @@ import {
   buildVisualSnapshot,
   type PublicHostingProbe,
 } from "../lib/public-demo";
-import { getShowcaseDashboard } from "../lib/showcase-fixture";
+import { getShowcaseDashboard } from "../lib/showcase-data";
 
 const root = process.cwd();
 const outDir = process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR

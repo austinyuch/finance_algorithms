@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -121,7 +122,7 @@ def test_next_steps_uses_non_self_staling_promotion_boundary():
     assert "Current branch lane:** none after CR-B16 promotion" not in text
     assert "Current branch lane:** none after CR-B17 promotion" not in text
     assert "Current branch lane:** none after CR-FPS-001 promotion" not in text
-    assert "Current branch lane:** none." in text
+    assert re.search(r"Current branch lane:\*\* (none\.|`spec/[^`]+`)", text)
     assert "CR-B12 scoped live write smoke is implemented locally" not in text
     assert "CR-B13 post live-write governance sync is implemented locally" not in text
     assert "CR-B14 post CR-B13 governance sync is implemented locally" not in text

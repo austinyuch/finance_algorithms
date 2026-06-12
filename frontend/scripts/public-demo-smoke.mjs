@@ -44,6 +44,13 @@ function assertPayload(payload) {
   if (payload.demoReadiness?.dependencyAudit !== "clean") {
     throw new Error("dependency audit must be clean");
   }
+  if (
+    payload.sourceMetadata?.source !== "local_result_store" ||
+    payload.sourceMetadata?.experimentRegistry !== "experiment_registry" ||
+    payload.sourceMetadata?.sourceRecordCount < 2
+  ) {
+    throw new Error("dashboard payload must prove local_result_store source metadata");
+  }
   if (payload.experiments?.[0]?.readiness !== "registry_only") {
     throw new Error("experiment registry must remain registry_only");
   }

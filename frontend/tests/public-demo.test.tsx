@@ -14,7 +14,7 @@ import {
   computePixelMismatchRatio,
   dashboardSections,
 } from "../lib/public-demo";
-import { getShowcaseDashboard } from "../lib/showcase-fixture";
+import { getShowcaseDashboard } from "../lib/showcase-data";
 
 function deployedManifestContract() {
   return {

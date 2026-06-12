@@ -8,38 +8,45 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const mutations = [
   {
     name: "frontend-claim-boundary",
-    path: "lib/showcase-fixture.ts",
-    original: 'claimBoundary: "no_alpha_claim",\n  regime:',
-    mutated: 'claimBoundary: "alpha_claim" as never,\n  regime:',
+    path: "lib/showcase-payload.json",
+    original: '  "claimBoundary": "no_alpha_claim",\n  "demoReadiness":',
+    mutated: '  "claimBoundary": "alpha_claim",\n  "demoReadiness":',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
     name: "frontend-experiment-registry-claim-boundary",
-    path: "lib/showcase-fixture.ts",
-    original: 'claimBoundary: "no_alpha_claim",\n      status: "research_only",',
-    mutated: 'claimBoundary: "alpha_claim" as never,\n      status: "research_only",',
+    path: "lib/showcase-payload.json",
+    original: '      "claimBoundary": "no_alpha_claim",\n      "experimentId": "7bb2f220f757ed89",',
+    mutated: '      "claimBoundary": "alpha_claim",\n      "experimentId": "7bb2f220f757ed89",',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
     name: "frontend-public-hosting-overclaim",
-    path: "lib/showcase-fixture.ts",
-    original: 'publicHosting: "not_proven",',
-    mutated: 'publicHosting: "proven" as never,',
+    path: "lib/showcase-payload.json",
+    original: '"publicHosting": "not_proven",',
+    mutated: '"publicHosting": "proven",',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
     name: "frontend-dependency-audit-regression",
-    path: "lib/showcase-fixture.ts",
-    original: 'dependencyAudit: "clean",',
-    mutated: 'dependencyAudit: "moderate_advisory" as never,',
+    path: "lib/showcase-payload.json",
+    original: '"dependencyAudit": "clean",',
+    mutated: '"dependencyAudit": "moderate_advisory",',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
     name: "frontend-dashboard-stale-gate-evidence",
-    path: "lib/showcase-fixture.ts",
-    original: '"frontend mutation 12/12 killed"',
+    path: "lib/showcase-payload.json",
+    original: '"frontend mutation 13/13 killed"',
     mutated: '"mutation 9/9 killed"',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
+  },
+  {
+    name: "frontend-dashboard-source-regression",
+    path: "lib/showcase-payload.json",
+    original: '"source": "local_result_store",',
+    mutated: '"source": "fixture_records",',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "serves validated"]
   },
   {
     name: "frontend-public-demo-hosting-classifier",

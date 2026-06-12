@@ -26,7 +26,7 @@ the manual or review MUST carry at least:
 
 | Field | Allowed values | Meaning |
 |---|---|---|
-| `Evidence Source` | `live_screenshot`, `live_command_output`, `report_artifact`, `fixture-backed`, `static_export`, `css_illustration`, `static_placeholder` | How the artifact was produced. |
+| `Evidence Source` | `live_screenshot`, `live_command_output`, `report_artifact`, `fixture-backed`, `canonical_local_result_store`, `static_export`, `css_illustration`, `static_placeholder` | How the artifact was produced. |
 | `Coverage Tier` | `full-integration`, `hybrid`, `mock-heavy`, `not_assessed` | Strength of *this* artifact's evidence — not the product total. |
 | `Readiness State` | `PASS`, `CONDITIONAL`, `FAIL`, `not_assessed` | Copied from the owning `review.md`; never derived from task counts. |
 | `Source Ref` | path | The `review.md` / `SPECS.md` / guide the readiness was copied from. |
@@ -43,7 +43,7 @@ When emitting a `benchmark-evidence-map.json` or similar index, use:
 
 - `ready`, `validated`, `full-integration`, `production-proven` wording is only
   permitted when a product-level authority (`review.md`) states it.
-- `fixture-backed` / `static_export` / `css_illustration` evidence MUST be paired
+- `fixture-backed` / `canonical_local_result_store` / `static_export` / `css_illustration` evidence MUST be paired
   with the relevant warning code from
   [`DEMO_RISK_WARNING_TAXONOMY.md`](./DEMO_RISK_WARNING_TAXONOMY.md).
 
@@ -55,9 +55,11 @@ This repository is **Backend / Tool / CLI-dominant Hybrid**:
   legacy `invest_algorithms` FastAPI. Primary evidence = live command transcripts
   and report artifacts (`live_command_output`, `report_artifact`).
 - **Frontend surface (secondary):** the `frontend/` Next.js showcase dashboard.
-  Primary evidence = the committed static export (`static_export`,
-  `fixture-backed`), because the dashboard is fixture-driven by design and its
-  owning spec (`f-demo-hardening`) is `CONDITIONAL / local_demo_only`.
+  Primary evidence = the committed static export (`static_export`) backed by a
+  generated canonical local result-store payload
+  (`canonical_local_result_store`), because the dashboard is still a
+  deterministic local demo and its owning spec (`f-demo-hardening`) is
+  `CONDITIONAL / local_demo_only`.
 
 A missing browser screenshot for the dashboard does NOT downgrade the
 backend/CLI surface, and a passing CLI transcript does NOT upgrade the

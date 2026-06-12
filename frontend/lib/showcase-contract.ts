@@ -23,6 +23,11 @@ export interface ShowcaseDashboard {
   activeRunId: string;
   strategyName: string;
   claimBoundary: ClaimBoundary;
+  sourceMetadata: {
+    source: "local_result_store";
+    sourceRecordCount: number;
+    experimentRegistry: "experiment_registry";
+  };
   regime: {
     label: string;
     confidence: number;
@@ -58,6 +63,15 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   }
   if (value.claimBoundary !== "no_alpha_claim") {
     throw new Error("dashboard claimBoundary must remain no_alpha_claim");
+  }
+  if (
+    !isRecord(value.sourceMetadata) ||
+    value.sourceMetadata.source !== "local_result_store" ||
+    value.sourceMetadata.experimentRegistry !== "experiment_registry" ||
+    typeof value.sourceMetadata.sourceRecordCount !== "number" ||
+    value.sourceMetadata.sourceRecordCount < 2
+  ) {
+    throw new Error("dashboard sourceMetadata must prove local_result_store artifact source");
   }
   if (!Array.isArray(value.leaderboard)) {
     throw new Error("dashboard leaderboard must be an array");

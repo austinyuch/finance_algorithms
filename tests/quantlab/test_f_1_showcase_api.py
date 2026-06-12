@@ -157,3 +157,21 @@ def test_dashboard_html_smoke_contains_sections_and_warning(tmp_path):
     assert "<section id=\"evidence\">" in html
     assert "missing_regime_metadata" in html
     assert "no_alpha_claim" in html
+
+
+def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    artifact = build_canonical_dashboard_artifact(tmp_path)
+
+    assert artifact["sourceMetadata"] == {
+        "source": "local_result_store",
+        "sourceRecordCount": 2,
+        "experimentRegistry": "experiment_registry",
+    }
+    assert artifact["activeRunId"] == "forecast-run"
+    assert artifact["claimBoundary"] == "no_alpha_claim"
+    assert [row["runId"] for row in artifact["leaderboard"]] == [
+        "forecast-run",
+        "baseline-run",
+    ]

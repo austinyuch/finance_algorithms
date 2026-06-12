@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 236 passed
+uv run pytest -q             # sanity: expect 237 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -30,7 +30,7 @@ Canonical seed/sample data already committed:
 
 - `data/vintage/raw/2026-06-09/`, `data/vintage/raw/2026-06-11/` — append-only
   point-in-time FRED + NOAA snapshots (immutable).
-- `frontend/lib/showcase-fixture.ts` — the dashboard demo payload.
+- `frontend/lib/showcase-payload.json` — generated dashboard payload with `sourceMetadata.source=local_result_store`.
 - `frontend/out/showcase.json` — exported dashboard payload (downloadable).
 
 ---
@@ -151,13 +151,13 @@ ships semantic HTML **without** the app stylesheet, so the screenshot is
 intentionally unstyled — it proves render + content, not visual polish. The live
 `npm run dev` app applies `app/globals.css`.
 
-> - Evidence Source: `live_screenshot` (chromium-headless) + `static_export`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`, while public-hosting probe observed HTTP 200 plus deployed manifest contract metadata and matching deployed `dataHash` (`ops-visual-drift-artifacts/review.md`)
-> - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
-> - Resolved: visual diff is repo-baseline pixel-backed (`221 / 1,296,000`
+> - Evidence Source: `live_screenshot` (chromium-headless) + `static_export` + `canonical_local_result_store`
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`, while branch-local public-hosting parity is `configured_not_observed` after the regenerated payload changed `dataHash` (`f-public-static-showcase/review.md`)
+> - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
+> - Resolved: visual diff is repo-baseline pixel-backed (`1024 / 1,296,000`
 >   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
 >   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
->   probe observed HTTP 200 plus deployed manifest contract metadata and matching deployed `dataHash`; the export's embedded readiness panel remains conservative (`not_proven`) by contract.
+>   probe observed HTTP 200 plus deployed manifest contract metadata; the export's embedded readiness panel remains conservative (`not_proven`) by contract while Pages catches up to the refreshed `dataHash`.
 
 ---
 
@@ -188,11 +188,11 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **236 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **55** files; mutation spot checks are **45/45 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003 public-hosting manifest/probe/hash/contract drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
+- Test suite is now **237 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **55** files; mutation spot checks are **46/46 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003 public-hosting manifest/probe/hash/contract drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
-- **Public-hosting probe now records HTTP 200, deployed manifest contract metadata, and matching deployed `dataHash`** (`public-hosting-probe.json`); the export readiness panel still stays `not_proven` because the dashboard is fixture-backed local demo evidence.
-- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `221 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
+- **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after CR-FPS-006 the regenerated local result-store payload has a new `dataHash`, so branch-local deployment parity is intentionally `configured_not_observed` until Pages serves the refreshed artifact.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `1024 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
 

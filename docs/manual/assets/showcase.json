@@ -1,48 +1,39 @@
 {
   "activeRunId": "forecast-run",
-  "strategyName": "ForecastAllocationStrategy",
-  "claimBoundary": "no_alpha_claim",
-  "regime": {
-    "label": "risk_on",
-    "confidence": 0.6
-  },
   "allocation": {
     "GROWTH": 0.62,
     "STEADY": 0.38
   },
-  "rebalanceDates": [
-    "2022-01-31",
-    "2022-02-28",
-    "2022-03-31"
-  ],
-  "leaderboard": [
-    {
-      "runId": "forecast-run",
-      "strategyName": "ForecastAllocationStrategy",
-      "oosNetSharpe": 1.21,
-      "isBaseline": false,
-      "claimBoundary": "no_alpha_claim"
-    },
-    {
-      "runId": "baseline-run",
-      "strategyName": "StaticWeights",
-      "oosNetSharpe": 0.74,
-      "isBaseline": true,
-      "claimBoundary": "no_alpha_claim"
-    }
-  ],
+  "claimBoundary": "no_alpha_claim",
+  "demoReadiness": {
+    "claim": "local_demo_only",
+    "dependencyAudit": "clean",
+    "publicHosting": "not_proven",
+    "visualRegression": "not_proven"
+  },
+  "evidence": {
+    "readiness": "local_runtime_only",
+    "tests": [
+      "237 passed",
+      "Python mutation 46/46 killed",
+      "frontend mutation 13/13 killed",
+      "F Next.js coverage 91.07%",
+      "E-lite coverage 100%",
+      "B source-health/Stooq proof coverage 90%"
+    ]
+  },
   "experiments": [
     {
-      "experimentId": "return-risk-demo",
+      "claimBoundary": "no_alpha_claim",
+      "experimentId": "7bb2f220f757ed89",
       "modelFamily": "return-risk-forecast",
-      "strategyName": "ForecastAllocationStrategy",
+      "readiness": "registry_only",
       "runIds": [
         "forecast-run",
         "baseline-run"
       ],
-      "claimBoundary": "no_alpha_claim",
       "status": "research_only",
-      "readiness": "registry_only",
+      "strategyName": "ForecastAllocationStrategy",
       "tags": [
         "D2",
         "F",
@@ -50,24 +41,38 @@
       ]
     }
   ],
+  "leaderboard": [
+    {
+      "claimBoundary": "no_alpha_claim",
+      "isBaseline": false,
+      "oosNetSharpe": 1.21,
+      "runId": "forecast-run",
+      "strategyName": "ForecastAllocationStrategy"
+    },
+    {
+      "claimBoundary": "no_alpha_claim",
+      "isBaseline": true,
+      "oosNetSharpe": 0.74,
+      "runId": "baseline-run",
+      "strategyName": "StaticWeights"
+    }
+  ],
+  "rebalanceDates": [
+    "2022-01-31",
+    "2022-02-28",
+    "2022-03-31"
+  ],
+  "regime": {
+    "confidence": 0.6,
+    "label": "risk_on"
+  },
+  "sourceMetadata": {
+    "experimentRegistry": "experiment_registry",
+    "source": "local_result_store",
+    "sourceRecordCount": 2
+  },
+  "strategyName": "ForecastAllocationStrategy",
   "warnings": [
     "local_runtime_only"
-  ],
-  "evidence": {
-    "readiness": "local_runtime_only",
-    "tests": [
-      "236 passed",
-      "Python mutation 45/45 killed",
-      "frontend mutation 12/12 killed",
-      "F Next.js coverage 91.81%",
-      "E-lite coverage 100%",
-      "B source-health/Stooq proof coverage 90%"
-    ]
-  },
-  "demoReadiness": {
-    "publicHosting": "not_proven",
-    "visualRegression": "not_proven",
-    "dependencyAudit": "clean",
-    "claim": "local_demo_only"
-  }
+  ]
 }
