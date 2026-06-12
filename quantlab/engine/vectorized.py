@@ -1,9 +1,9 @@
-"""向量化回測引擎(REQ-A0-BT-001..006)。
+"""向量化/低頻事件回測引擎(REQ-A0-BT-001..006)。
 
 流程:依 config 產生再平衡日(calendar-driven)→ 各日 strategy.generate_signal(僅 PIT)
 → 以下一再平衡日的價格實現報酬 → 套成本(net 模式)→ 計指標(full + walk-forward IS/OOS)。
 
-event_driven 引擎為未來預留(高頻 epic),呼叫即 NotImplementedError。
+event_driven 目前支援低頻 event-date replay;高頻/order-book 撮合仍非 A0 範圍。
 ⚠️ 框架隔離:不得 import torch/tensorflow/jax。
 """
 from __future__ import annotations
@@ -22,13 +22,10 @@ _FREQ = {"monthly": ("ME", 12.0), "quarterly": ("QE", 4.0), "semiannual": ("2QE"
 
 class VectorizedEngine:
     def run(self, strategy: Any, data: Any, config: Mapping[str, Any]) -> dict:
-        if config.get("engine", "vectorized") == "event_driven":
-            raise NotImplementedError("event_driven 引擎為未來預留(高頻 epic)")
-
         freq, ppy = _FREQ[config["rebalance"]]
         mode = config.get("mode", "gross")
         cost_config = config.get("cost_config") or {}
-        candidates = pd.date_range(config["start"], config["end"], freq=freq).tolist()
+        candidates = self._candidate_dates(config, freq)
         rebal = self._rebalance_dates(candidates, data, config)
 
         # 訓練:把訓練窗交給 strategy.fit(buy-and-hold 為 no-op);此處以全期 fit 一次。
@@ -63,6 +60,22 @@ class VectorizedEngine:
             clean_policy["classifier"] = getattr(classifier, "__class__", type(classifier)).__name__
             out["rebalance_policy"] = clean_policy
         return out
+
+    @staticmethod
+    def _candidate_dates(config: Mapping[str, Any], freq: str) -> list[pd.Timestamp]:
+        engine = config.get("engine", "vectorized")
+        if engine not in {"vectorized", "event_driven"}:
+            raise ValueError(f"unsupported engine: {engine}")
+        if engine != "event_driven" or "event_dates" not in config:
+            return pd.date_range(config["start"], config["end"], freq=freq).tolist()
+
+        start = pd.Timestamp(config["start"])
+        end = pd.Timestamp(config["end"])
+        dates = sorted({pd.Timestamp(date) for date in config["event_dates"]})
+        in_range = [date for date in dates if start <= date <= end]
+        if not in_range:
+            raise ValueError("event_driven requires at least one event_date within start/end")
+        return in_range
 
     def _rebalance_dates(self, candidates: list[pd.Timestamp], data: Any,
                          config: Mapping[str, Any]) -> list[pd.Timestamp]:

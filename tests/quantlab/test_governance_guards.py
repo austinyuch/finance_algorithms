@@ -104,6 +104,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "243 passed",
         "244 passed",
         "245 passed",
+        "246 passed",
         "included in 245 passed",
         "242 passed",
         "241 passed",
@@ -162,6 +163,11 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 57/57",
         "mutation spot checks 57/57",
         "mutation spot-checks are **57/57",
+        "61/61 configured",
+        "61/61 Python mutation",
+        "Python mutation 61/61",
+        "mutation spot checks 61/61",
+        "mutation spot-checks are **61/61",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -233,9 +239,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1041/1,296,000",
         "0.0008032407407407408",
         "be7d0618d726253c38af6eb3ab005372848f715f7872efe0fbb63f36a48b9d02",
-        "1049 / 1,296,000",
-        "1049/1,296,000",
-        "0.0008094135802469136",
+        "1036 / 1,296,000",
+        "1036/1,296,000",
+        "0.0007993827160493827",
+        "c1c0cb85d2d9f1ac2df037399b856845705bc225998af0b73a64f65715875037",
         "901f8b3c89a8ace220c667ff88771884fdd26b04da599889cd225f9a4d947ab7",
         "1055 / 1,296,000",
         "1055/1,296,000",
@@ -294,10 +301,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "246 passed" in pytest_gate
-    assert "246 passed" in manual_guide
-    assert "246 passed" in review_guide
-    assert "Python suite now <b>246 passed</b>" in review_html
+    assert "247 passed" in pytest_gate
+    assert "247 passed" in manual_guide
+    assert "247 passed" in review_guide
+    assert "Python suite now <b>247 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -329,7 +336,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1036
+    assert browser_diff["mismatchedPixels"] == 1049
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 

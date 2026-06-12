@@ -16,6 +16,7 @@ A0 的核心保證(point-in-time 正確、可重現、框架無感、平行確�
 | PIT-001..004(bitemporal、survivorship、macro lag) | `test_a0_1`、AC-A0-01/02 | ✅ |
 | BT-001..006(引擎、成本、walk-forward、指標) | `test_a0_2`、AC-A0-03 | ✅ |
 | CR-A0 regime rebalance scheduling | `test_a0_2` regime policy tests;[CR-A0](./change-requests/cr-a0-regime-rebalance-scheduling.md) | ✅ |
+| CR-A0 low-frequency event replay | `test_a0_2` event-driven example/PBT;[CR-A0 event replay](./change-requests/cr-a0-event-driven-replay.md) | ✅(high-frequency/order-book scope remains deferred) |
 | PAR-001/002(平行確定性) | `test_a0_3`、AC-A0-06 | ✅ |
 | PAR-003(三框架環境隔離) | env 定義互斥測試 | ⚠️ 定義就緒;真機安裝/GPU 驗證延後 |
 | TRK-001/002/003(log/get/leaderboard) | `test_a0_4`、AC-A0-07 | ✅(SQLite 後端) |

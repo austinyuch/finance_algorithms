@@ -35,4 +35,4 @@ The engine builds candidate dates from the existing `rebalance` cadence, filters
 
 ## Residual
 
-This is event selection within the existing vectorized engine. It is not the future high-frequency `event_driven` engine.
+This is regime event selection within the existing vectorized engine. CR-A0 low-frequency event replay now covers explicit `event_dates`; high-frequency/order-book `event_driven` simulation remains future scope.

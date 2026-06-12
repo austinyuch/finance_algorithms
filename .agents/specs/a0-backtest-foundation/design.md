@@ -12,7 +12,7 @@
 quantlab/
   contracts/      # 由 contract/schemas/*.json 生成的 Pydantic models + 介面 re-export
   data/           # PointInTimeDataProvider 實作 + fixture 玩具資料集
-  engine/         # BacktestEngine:vectorized 實作(+ event_driven 預留 stub)
+  engine/         # BacktestEngine:vectorized 實作(+ event_driven 低頻 replay overlay)
   costs/          # 成本/稅/匯模型(CostConfig 驅動)
   parallel/       # ParallelExecutor:joblib 實作(+ Ray 預留介面)
   tracking/       # ResultStore:MLflow(local backend)實作 + leaderboard
@@ -31,7 +31,7 @@ tests/            # 沿用既有 tests/,新增 quantlab 測試(含 golden tests)
 - fixture 玩具資料:行情 + 1 條總經(含 revision)+ 1 檔中途下市標的,專供 golden tests。
 
 ### 2.2 BacktestEngine(engine/)— 向量化先行
-- `VectorizedEngine` 實作 `BacktestEngine`;`config.engine` 預留 `event_driven` 之後實作。
+- `VectorizedEngine` 實作 `BacktestEngine`;`config.engine="event_driven"` 支援低頻 `event_dates` replay,高頻/order-book 撮合另待未來 spec。
 - 流程:對每個 rebalance 時點 `t` → `strategy.generate_signal(t, data)`(只透過 PIT data)→ 依 `fill` 模型於 `t+1` 成交 → 累計部位 → 套 `costs` → 產 net/gross 報酬序列 → 計指標。
 - walk-forward:依 `config.walk_forward` 切訓練/測試窗,`strategy.fit()` 只見訓練窗;指標分 `in_sample`/`out_of_sample` 各算一份。
 

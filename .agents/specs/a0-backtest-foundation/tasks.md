@@ -35,7 +35,7 @@ A0-0 contract codegen ──┬─> A0-1 PIT data ──┐
 ## A0-2 — 回測引擎(向量化)+ 成本模型(Impl)
 - **Role:** Coder · **Effort:** L · **depends_on:** ["A0-0"] · **Implements:** REQ-A0-BT-001..006
 - **RED:** 先寫 failing 測試:玩具案例對拍已知解析解(指標數值);**PBT-1**(`cost=0→net==gross` 且任意成本 `net≤gross`)、**PBT-5**(指標健全性)、**PBT-6**(walk-forward 訓練窗結束 < 測試窗開始)。執行 → 紅燈。
-- **GREEN:** `VectorizedEngine.run`(rebalance 迴圈 → `generate_signal` 僅 PIT → fill → 部位累計);`costs/`(手續費+滑價+台股證交稅+美股股息預扣+換匯點差);指標(報酬/vol/maxDD/Sharpe/turnover,分 IS/OOS、gross/net);walk-forward 切分;`event_driven` stub NotImplemented。執行 → 綠燈。
+- **GREEN:** `VectorizedEngine.run`(rebalance 迴圈 → `generate_signal` 僅 PIT → fill → 部位累計);`costs/`(手續費+滑價+台股證交稅+美股股息預扣+換匯點差);指標(報酬/vol/maxDD/Sharpe/turnover,分 IS/OOS、gross/net);walk-forward 切分;CR-A0 low-frequency `event_driven` event-date replay overlay。執行 → 綠燈。
 - **REFACTOR:** 抽出指標計算模組、成本套用 pipeline。保持綠。
 - **AC:** AC-A0-03、玩具對拍、PBT-1/5/6 綠燈。
 

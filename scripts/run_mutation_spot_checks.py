@@ -50,6 +50,13 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q", "tests/quantlab/test_a0_2_engine.py", "-k", "regime_rebalance"),
     ),
     MutationSpec(
+        name="engine-event-driven-date-gate",
+        path="quantlab/engine/vectorized.py",
+        original='if engine != "event_driven" or "event_dates" not in config:',
+        mutated='if engine != "event_driven" or "event_dates" in config:',
+        test_command=("uv", "run", "pytest", "-q", "tests/quantlab/test_a0_2_engine.py", "-k", "event_driven"),
+    ),
+    MutationSpec(
         name="c3-regime-change",
         path="quantlab/portfolio/rebalance.py",
         original="regime_changed = previous_label is not None and label != previous_label",
@@ -468,7 +475,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="manual-showcase-payload-sync-regression",
         path="docs/manual/assets/showcase.json",
-        original='"246 passed"',
+        original='"247 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -476,7 +483,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="frontend-showcase-payload-sync-regression",
         path="frontend/lib/showcase-payload.json",
-        original='"246 passed"',
+        original='"247 passed"',
         mutated='"242 passed"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
@@ -484,7 +491,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-pytest-gate-transcript-regression",
         path="docs/review/assets/gate-pytest.txt",
-        original="246 passed",
+        original="247 passed",
         mutated="242 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),

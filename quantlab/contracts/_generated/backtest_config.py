@@ -41,7 +41,11 @@ class BacktestConfig(BaseModel):
     seed: int = Field(..., description="隨機種子 (可重現)")
     data_version: str = Field(..., description="DataProvider 資料版本標籤 (可重現)")
     engine: Literal["vectorized", "event_driven"] | None = Field(
-        "vectorized", description="引擎實作;A0 預設 vectorized,event_driven 為未來預留"
+        "vectorized",
+        description="引擎實作;A0 預設 vectorized,event_driven 支援低頻 event-date replay",
+    )
+    event_dates: list[date] | None = Field(
+        None, description="event_driven 低頻 replay 決策日期;省略時退回 rebalance cadence"
     )
     pit_strictness: Literal["strict", "lenient"] | None = Field(
         "lenient",

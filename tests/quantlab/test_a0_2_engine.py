@@ -162,16 +162,61 @@ def test_pbt6_walkforward_no_overlap(train_m, test_m, step_m, n_months):
             assert max(train) < min(test)
 
 
-# --- event_driven 引擎為預留 stub ---
+# --- CR-A0 event-driven low-frequency replay overlay ---
 
-def test_event_driven_not_implemented():
+def test_event_driven_replays_explicit_event_dates_only():
     from quantlab.engine import VectorizedEngine
-    from quantlab.strategies import BuyAndHold
 
-    cfg = _base_config()
-    cfg["engine"] = "event_driven"
-    with pytest.raises(NotImplementedError):
-        VectorizedEngine().run(BuyAndHold(["X"]), _toy_engine_data(), cfg)
+    data, dates = _monthly_engine_data(5)
+    event_dates = [dates[0], dates[2], dates[4]]
+    cfg = {
+        "engine": "event_driven",
+        "event_dates": [str(d.date()) for d in event_dates],
+        "start": str(dates[0].date()),
+        "end": str(dates[-1].date()),
+        "rebalance": "monthly",
+        "fill": "same_close",
+        "mode": "gross",
+        "cost_config": {},
+        "seed": 0,
+        "data_version": "toy-events",
+    }
+    strategy = _RecordingStrategy()
+
+    result = VectorizedEngine().run(strategy, data, cfg)
+
+    assert strategy.calls == event_dates
+    assert result["rebalance_dates"] == [str(d.date()) for d in event_dates]
+    assert result["config"]["engine"] == "event_driven"
+
+
+@settings(max_examples=40)
+@given(mask=st.lists(st.booleans(), min_size=2, max_size=12))
+def test_pbt_event_driven_replay_uses_sorted_unique_events(mask):
+    from quantlab.engine import VectorizedEngine
+
+    data, dates = _monthly_engine_data(len(mask))
+    selected = [d for d, include in zip(dates, mask) if include]
+    if not selected:
+        selected = [dates[0], dates[-1]]
+    unsorted_with_duplicate = [selected[-1], *selected, selected[0]]
+    cfg = {
+        "engine": "event_driven",
+        "event_dates": [str(d.date()) for d in unsorted_with_duplicate],
+        "start": str(dates[0].date()),
+        "end": str(dates[-1].date()),
+        "rebalance": "monthly",
+        "fill": "same_close",
+        "mode": "gross",
+        "cost_config": {},
+        "seed": 0,
+        "data_version": "toy-events-pbt",
+    }
+    strategy = _RecordingStrategy()
+
+    VectorizedEngine().run(strategy, data, cfg)
+
+    assert strategy.calls == sorted(set(pd.Timestamp(d) for d in selected))
 
 
 def test_regime_rebalance_policy_filters_engine_schedule():
