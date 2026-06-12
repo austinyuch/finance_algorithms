@@ -49,7 +49,7 @@ surfaces without an explicit source-authority check.
   failed before `build_canonical_dashboard_artifact` existed.
 - RED: `cd frontend && npm test -- --run tests/dashboard.test.tsx -t "serves validated"`
   failed while `/api/showcase` returned no `sourceMetadata`.
-- GREEN: `uv run pytest -q tests/quantlab/test_f_1_showcase_api.py` -> 6 passed.
+- GREEN: `uv run pytest -q tests/quantlab/test_f_1_showcase_api.py` -> 7 passed.
 - GREEN: `cd frontend && npm test -- --run tests/dashboard.test.tsx` -> 8 passed.
 - Static export: `cd frontend && npm run export:public-demo:docs` -> passed;
   because the dashboard `dataHash` changed before deployment, branch-local

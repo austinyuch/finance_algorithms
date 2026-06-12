@@ -177,6 +177,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "b-scheduled-observer-manual-pending" in out
     assert "manual-showcase-payload-sync-regression" in out
     assert "frontend-showcase-payload-sync-regression" in out
+    assert "f-showcase-retired-fixture-marker" in out
     assert "review-pytest-gate-transcript-regression" in out
     assert "review-frontend-count-shorthand-regression" in out
     assert "review-audit-gate-transcript-regression" in out

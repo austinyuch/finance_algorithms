@@ -72,6 +72,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "20 frontend",
         "22 mutation",
         "66 passed",
+        "242 passed",
         "241 passed",
         "231 passed",
         "238 passed",
@@ -190,6 +191,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1051 / 1,296,000",
         "1051/1,296,000",
         "0.0008109567901234568",
+        "1041 / 1,296,000",
+        "1041/1,296,000",
+        "0.0008032407407407408",
+        "be7d0618d726253c38af6eb3ab005372848f715f7872efe0fbb63f36a48b9d02",
         "3e94cdbe790007dfe7f8a58d4aa45ebc39fd709f88152d351b089339761d71b1",
         "700134c3e1504b866e395f4e7c1465d7a1e094eade4a71960890b1b89c90922c",
         "47be766e853053e34fb2fe331caf8f337090bee5b6315fc057bc5c7350e1d423",
@@ -215,10 +220,10 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "242 passed" in pytest_gate
-    assert "242 passed" in manual_guide
-    assert "242 passed" in review_guide
-    assert "Python suite now <b>242 passed</b>" in review_html
+    assert "243 passed" in pytest_gate
+    assert "243 passed" in manual_guide
+    assert "243 passed" in review_guide
+    assert "Python suite now <b>243 passed</b>" in review_html
     assert "Tests  32 passed (32)" in frontend_gate
     assert "Frontend <b>32 tests pass</b>" in review_html
     assert "27 tests pass" not in review_html
@@ -250,7 +255,7 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1043
+    assert browser_diff["mismatchedPixels"] == 1049
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 

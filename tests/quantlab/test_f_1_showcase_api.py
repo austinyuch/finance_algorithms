@@ -8,6 +8,7 @@ RED/GREEN/REFACTOR trace:
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -33,7 +34,7 @@ def _record(name: str, sharpe: float, *, run_id: str = "", baseline: bool = Fals
         "run_id": run_id,
         "strategy_name": name,
         "strategy_metadata": metadata or {},
-        "config": {"seed": 7, "data_version": "showcase-fixture"},
+        "config": {"seed": 7, "data_version": "canonical-showcase-scenario"},
         "rebalance_dates": ["2022-01-31", "2022-02-28"],
         "metrics": [_metric(sharpe)],
         "is_baseline": baseline,
@@ -175,3 +176,11 @@ def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
         "forecast-run",
         "baseline-run",
     ]
+
+
+def test_showcase_api_tests_do_not_reintroduce_retired_fixture_marker():
+    """Current F test data must not point future work back to the retired fixture source."""
+    test_source = Path(__file__).read_text(encoding="utf-8")
+    retired_marker = "showcase" + "-fixture"
+
+    assert retired_marker not in test_source
