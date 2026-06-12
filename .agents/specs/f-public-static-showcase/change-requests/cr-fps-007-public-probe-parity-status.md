@@ -61,6 +61,8 @@ optimistic than `docs/deployment-manifest.json`.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only public-hosting-probe-status-overclaim` -> killed. The mutation changes the committed probe artifact from `status=configured_not_observed` to `status=proven` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only review-public-hosting-probe-status-overclaim` -> killed. The mutation changes the executive-review probe artifact from `status=configured_not_observed` to `status=proven` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
 - Mutation: `uv run python scripts/run_mutation_spot_checks.py --only public-hosting-probe-hash-overclaim` -> killed. The mutation changes the committed probe artifact from `hashStatus=mismatched` to `hashStatus=matched` and is rejected by `test_public_hosting_manifest_carries_observed_proof`.
+- Mutation: `uv run python scripts/run_mutation_spot_checks.py --only manual-showcase-payload-sync-regression` -> killed. The mutation changes the copied manual showcase payload from `240 passed` to stale `239 passed` and is rejected by `test_current_stakeholder_payload_assets_are_synchronized`.
+- Mutation: `uv run python scripts/run_mutation_spot_checks.py --only frontend-showcase-payload-sync-regression` -> killed. The mutation changes the Next.js app payload source from `240 passed` to stale `239 passed` and is rejected by `test_current_stakeholder_payload_assets_are_synchronized`.
 
 ## Claim Boundary
 

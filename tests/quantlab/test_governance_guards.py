@@ -93,6 +93,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "Python mutation 49/49",
         "mutation spot checks 49/49",
         "mutation spot-checks are **49/49",
+        "50/50 configured",
+        "50/50 Python mutation",
+        "Python mutation 50/50",
+        "mutation spot checks 50/50",
+        "mutation spot-checks are **50/50",
+        "51/51 configured",
+        "51/51 Python mutation",
+        "Python mutation 51/51",
+        "mutation spot checks 51/51",
+        "mutation spot-checks are **51/51",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
@@ -125,6 +135,18 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "0.0007947530864197531",
         "0898127d2d7192df7344c34736a89ce5623a7ca362923e2dcc7a6bc91e10fff9",
         "bd09929c62f6874ac9753154272ae2ae27d51522d997e85a85ec190f1718b633",
+        "976 / 1,296,000",
+        "976/1,296,000",
+        "0.0007530864197530864",
+        "1dfe0f883def3a9e62a2579cadf5dfb2e3484976d5c57ca48db1e3e05a123615",
+        "c50441599f2d9962eaa0037afa73fbbd54a0863f845b6cd7664abf45f7ec279f",
+        "aee424d0dbe186047e9c322ffdf0ad1ab533d927ed14c28b3003714a16fe687c",
+        "957 / 1,296,000",
+        "957/1,296,000",
+        "0.0007384259259259259",
+        "132387264370da6f7be62d80a48083cbabde04108bff37d585ac065bfc30a3b7",
+        "c660658743856add81851bd3d822133bfec2aabbf84a1ab2c0ecd62d8754b4cc",
+        "e5d0eb89f0ca0a54b4668c5fd6c7d5b3cf0f64ee5c74a67c8479267e404ba9d5",
         "refreshed to 236",
         "8e7b66b604482811081cf199063bf0bd89e4071a751d12c2bbac65fb0eaf2a88",
     ]
@@ -155,13 +177,14 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 976
+    assert browser_diff["mismatchedPixels"] == 966
     assert browser_diff["maxMismatchRatio"] == 0.001
 
 
 def test_current_stakeholder_payload_assets_are_synchronized():
-    """Copied stakeholder payload assets must not drift from committed docs artifacts."""
+    """Copied stakeholder and app payload assets must not drift from committed docs artifacts."""
     showcase = json.loads((ROOT / "docs/showcase.json").read_text(encoding="utf-8"))
+    frontend_showcase = json.loads((ROOT / "frontend/lib/showcase-payload.json").read_text(encoding="utf-8"))
     manual_showcase = json.loads((ROOT / "docs/manual/assets/showcase.json").read_text(encoding="utf-8"))
     review_showcase = json.loads((ROOT / "docs/review/assets/showcase.json").read_text(encoding="utf-8"))
     public_probe = json.loads((ROOT / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
@@ -169,6 +192,7 @@ def test_current_stakeholder_payload_assets_are_synchronized():
         (ROOT / "docs/review/assets/public-hosting-probe.json").read_text(encoding="utf-8")
     )
 
+    assert frontend_showcase == showcase
     assert manual_showcase == showcase
     assert review_showcase == showcase
     assert review_public_probe == public_probe

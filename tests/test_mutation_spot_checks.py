@@ -84,6 +84,8 @@ def test_mutation_runner_list_smoke():
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
     assert "governance-stale-cron-proof-pending" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
+    assert "manual-showcase-payload-sync-regression" in result.stdout
+    assert "frontend-showcase-payload-sync-regression" in result.stdout
 
 
 def test_selected_specs_rejects_unknown_name():
@@ -168,3 +170,5 @@ def test_main_list_prints_mutation_names(capsys):
     assert "governance-stale-cron-proof-pending" in out
     assert "review-public-hosting-probe-status-overclaim" in out
     assert "b-scheduled-observer-manual-pending" in out
+    assert "manual-showcase-payload-sync-regression" in out
+    assert "frontend-showcase-payload-sync-regression" in out

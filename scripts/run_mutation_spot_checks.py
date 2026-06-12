@@ -424,6 +424,22 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_demo_risk_taxonomy_names_current_public_hosting_authority"),
     ),
     MutationSpec(
+        name="manual-showcase-payload-sync-regression",
+        path="docs/manual/assets/showcase.json",
+        original='"240 passed"',
+        mutated='"239 passed"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
+    ),
+    MutationSpec(
+        name="frontend-showcase-payload-sync-regression",
+        path="frontend/lib/showcase-payload.json",
+        original='"240 passed"',
+        mutated='"239 passed"',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_governance_guards.py::test_current_stakeholder_payload_assets_are_synchronized"),
+    ),
+    MutationSpec(
         name="b-scheduled-observer-manual-pending",
         path="scripts/scheduled_run_observer.py",
         original='status = "proven" if latest_schedule_success is not None else "pending"',
