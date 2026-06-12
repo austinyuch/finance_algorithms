@@ -28,4 +28,4 @@ before it emits a `tier3_ready` gate artifact.
 
 - No real production serving, retraining, or automated drift monitoring run has
   been executed by this repo.
-- B autonomous cron-triggered `event=schedule` proof remains pending.
+- B autonomous cron-triggered dry-run proof is now observed through run `27392471359`; live writes remain governed separately.

@@ -13,7 +13,7 @@ This spec closes a current-state governance drift after the Torch dependency iso
 ## Repo-side Closure vs External Execution
 
 - **Repo-side Closure**: refresh current governance/stakeholder evidence, add guard tests, add a mutation spot check for stale governance wording, and verify Python/static visual gates locally.
-- **External Execution**: GitHub Dependabot alert state is queried live through `gh api`; autonomous cron `event=schedule` proof remains external/pending until GitHub naturally emits a scheduled run.
+- **External Execution**: GitHub Dependabot alert state is queried live through `gh api`; autonomous cron `event=schedule` proof is external and must be refreshed from GitHub Actions evidence.
 - **External Blockers / Constraints**: no local command can honestly create a real autonomous `event=schedule` Actions run; the repo must keep that residual explicit.
 
 ## Requirements
@@ -26,7 +26,7 @@ This spec closes a current-state governance drift after the Torch dependency iso
 
 1. When `.agents/specs/NEXT_STEPS.md` is read after PR #24/#26, then it shall state that Torch isolation has landed in `dev` and `main`.
 2. When GitHub Dependabot alert #7 is fixed, then `NEXT_STEPS.md` and `SPECS.md` shall not continue to describe it as pending.
-3. If autonomous cron proof is still absent, then the memo shall keep that residual separate from completed Torch dependency work.
+3. If autonomous cron proof is absent, then the memo shall keep that residual separate from completed Torch dependency work; if a successful `event=schedule` run exists, then the memo shall not keep stale pending language.
 
 ### Requirement 2 [REQ-GOV-EVID-002]
 

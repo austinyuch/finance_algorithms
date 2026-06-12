@@ -81,7 +81,7 @@ def test_mutation_runner_list_smoke():
     assert "root-torch-default-dependency" in result.stdout
     assert "governance-stale-next-steps-alert" in result.stdout
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
-    assert "governance-stale-e-gate-promotion" in result.stdout
+    assert "governance-stale-cron-proof-pending" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
 
 
@@ -163,5 +163,5 @@ def test_main_list_prints_mutation_names(capsys):
     assert "root-torch-default-dependency" in out
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
-    assert "governance-stale-e-gate-promotion" in out
+    assert "governance-stale-cron-proof-pending" in out
     assert "b-scheduled-observer-manual-pending" in out

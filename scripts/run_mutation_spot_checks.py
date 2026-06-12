@@ -296,12 +296,12 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_governance_sync_state"),
     ),
     MutationSpec(
-        name="governance-stale-e-gate-promotion",
+        name="governance-stale-cron-proof-pending",
         path=".agents/specs/NEXT_STEPS.md",
-        original="Continue observing `daily-snapshot.yml` until a completed successful autonomous `event=schedule` run exists; until then the observer should keep status `pending`.",
-        mutated="Commit/push `spec/e-tier3-readiness-gate`, then open the usual squash PRs for `dev` and `main`.",
+        original="Live observation artifact: `reports/scheduled-run-observation-2026-06-12-cron.json` records `status=proven`, `schedule_run_count=1`, and latest schedule success `27392471359`.",
+        mutated="Live observation artifact: `reports/scheduled-run-observation-2026-06-12.json` records `status=pending`, `schedule_run_count=0`, and latest manual success `27387041974`.",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_e_gate_state"),
+                      "tests/quantlab/test_governance_guards.py::test_next_steps_reflects_post_merge_scheduled_observer_state"),
     ),
     MutationSpec(
         name="b-scheduled-observer-manual-pending",

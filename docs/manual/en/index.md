@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 190 passed, 1 skipped
+uv run pytest -q             # sanity: expect 214 passed, 1 skipped
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -155,11 +155,10 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual + public-hosting probe `PASSED` (`ops-visual-drift-artifacts/review.md`)
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard data is fixture-driven (`no_alpha_claim`).
 > - Resolved: visual diff is repo-baseline pixel-backed (`505 / 1,296,000`
->   mismatched pixels at threshold `0.001`); GitHub Actions `workflow_dispatch`
->   schedule proof exists as run `27387041974`. Residual: no autonomous
->   cron-triggered `event=schedule` run yet. Public-hosting probe is `proven`
->   HTTP 200, but the export's embedded readiness panel remains conservative
->   (`not_proven`) by contract.
+>   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
+>   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
+>   probe is `proven` HTTP 200, but the export's embedded readiness panel
+>   remains conservative (`not_proven`) by contract.
 
 ---
 
@@ -190,7 +189,7 @@ baseline** — preserved unchanged.
 
 **Gaps resolved since last check (2026-06-11 → 2026-06-12):**
 
-- Test suite is now **190 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **51** files; mutation spot checks are **24/24 configured**, including root Torch dependency and stale governance evidence mutations.
+- Test suite is now **214 passed, 1 skipped** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **51** files; mutation spot checks are **35/35 configured**, including root Torch dependency and stale governance evidence mutations.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe now proven** HTTP 200 (`public-hosting-probe.json`) — closes the prior `configured_not_observed` gap.
@@ -201,7 +200,7 @@ baseline** — preserved unchanged.
 | Gap | Severity | Source |
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
-| No autonomous cron-triggered `event=schedule` GitHub Actions run observed | Medium | `b-live-scheduled-snapshot-proof/review.md` |
+| Live append-only snapshot writes remain separate from dry-run schedule proof | Low | `b-live-scheduled-snapshot-proof/review.md` |
 | Static export's readiness panel remains conservative (`not_proven`) by dashboard contract | Low | `frontend/out/index.html` |
 | Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |

@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 190 passed, 1 skipped
+uv run pytest -q             # 健檢：預期 214 passed, 1 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -149,11 +149,10 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual 與 public-hosting probe `PASSED`（`ops-visual-drift-artifacts/review.md`）
 > - `MOCK_DOMINANT_EVIDENCE` — dashboard 資料為 fixture 驅動（`no_alpha_claim`）。
 > - 已解決：visual diff 為 repo-baseline pixel-backed（`505 / 1,296,000`
->   mismatched pixels，threshold `0.001`）；GitHub Actions `workflow_dispatch`
->   schedule proof 已有 run `27387041974`。殘留：尚無 autonomous
->   cron-triggered `event=schedule` run。Public-hosting probe 已 `proven` HTTP
->   200，但 export 內嵌 readiness 面板依 dashboard contract 仍保守顯示
->   `not_proven`。
+>   mismatched pixels，threshold `0.001`）；GitHub Actions autonomous
+>   `event=schedule` dry-run proof 已有 run `27392471359`。Public-hosting
+>   probe 已 `proven` HTTP 200，但 export 內嵌 readiness 面板依 dashboard
+>   contract 仍保守顯示 `not_proven`。
 
 ---
 
@@ -183,7 +182,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 **自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
 
-- 測試套件目前為 **190 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **51** 檔且 clean；mutation spot checks **24/24 configured**，包含 root Torch dependency 與 stale governance evidence mutations。
+- 測試套件目前為 **214 passed, 1 skipped**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **51** 檔且 clean；mutation spot checks **35/35 configured**，包含 root Torch dependency 與 stale governance evidence mutations。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已 proven** HTTP 200（`public-hosting-probe.json`）— 解決先前 `configured_not_observed` 缺口。
@@ -194,7 +193,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 | 缺口 | 嚴重度 | 來源 |
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
-| 尚無 autonomous cron-triggered `event=schedule` GitHub Actions run | Medium | `b-live-scheduled-snapshot-proof/review.md` |
+| Live append-only snapshot writes 仍與 dry-run schedule proof 分開治理 | Low | `b-live-scheduled-snapshot-proof/review.md` |
 | Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 `not_proven` | Low | `frontend/out/index.html` |
 | Vintage 真實資料回測仍延後（<2 價格資產） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |
