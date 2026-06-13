@@ -1005,6 +1005,16 @@ def test_current_stakeholder_payload_assets_are_synchronized():
     ) is None
 
 
+def _assert_hash_surface_publishes_current(text: str, current_hash: str, baseline_hash: str) -> None:
+    """A current hash surface must publish ``current_hash``; it must not publish a
+    *distinct* stale ``baseline_hash``. CR-FBP-001: when a baseline is re-pinned in
+    a deterministic-rendering environment ``baseline_hash == current_hash`` (0-pixel
+    diff), so there is no distinct stale hash to forbid."""
+    assert current_hash in text
+    if baseline_hash != current_hash:
+        assert baseline_hash not in text
+
+
 def test_traceability_visual_evidence_tracks_current_pixel_diff():
     """Governance bridge docs must not publish stale browser visual mismatch counts."""
     browser_visual = json.loads((ROOT / "docs/browser-visual.json").read_text(encoding="utf-8"))
@@ -1045,9 +1055,9 @@ def test_traceability_visual_evidence_tracks_current_pixel_diff():
         assert "1089 / 1,296,000" not in text
         assert "1089/1296000" not in text
     for path in current_hash_surfaces:
-        text = path.read_text(encoding="utf-8")
-        assert current_hash in text
-        assert baseline_hash not in text
+        _assert_hash_surface_publishes_current(
+            path.read_text(encoding="utf-8"), current_hash, baseline_hash
+        )
 
 
 def test_browser_visual_smoke_fails_closed_on_stale_committed_docs():

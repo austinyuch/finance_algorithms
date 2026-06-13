@@ -126,6 +126,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_real_data_oos_cotemporal.py::test_report_uses_cotemporal_universe_and_is_non_degenerate"),
     ),
     MutationSpec(
+        name="visual-baseline-repin-hash-guard",
+        path="tests/quantlab/test_governance_guards.py",
+        original="    if baseline_hash != current_hash:\n        assert baseline_hash not in text",
+        mutated="    if baseline_hash == current_hash:\n        assert baseline_hash not in text",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_visual_baseline_guard.py"),
+    ),
+    MutationSpec(
         name="yahoo-latest-close",
         path="scripts/daily_snapshot.py",
         original="valid = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]",
@@ -624,7 +632,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**105/105 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**106/106 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -632,7 +640,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 332 suite evidence",
+        original="current registries use 336 suite evidence",
         mutated="current registries use 275 suite evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),

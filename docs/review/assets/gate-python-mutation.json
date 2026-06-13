@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 105,
-  "killed": 105,
+  "total": 106,
+  "killed": 106,
   "survived": 0,
   "mutations": [
     {
@@ -38,6 +38,10 @@
     },
     {
       "name": "real-data-oos-cotemporal-asset-set",
+      "status": "killed"
+    },
+    {
+      "name": "visual-baseline-repin-hash-guard",
       "status": "killed"
     },
     {
