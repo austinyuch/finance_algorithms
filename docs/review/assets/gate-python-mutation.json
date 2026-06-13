@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 100,
-  "killed": 100,
+  "total": 103,
+  "killed": 103,
   "survived": 0,
   "mutations": [
     {
@@ -18,6 +18,18 @@
     },
     {
       "name": "result-store-finite-oos-net-sharpe",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-sufficiency-asset-gate",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-net-sharpe-segment",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-baseline-visibility",
       "status": "killed"
     },
     {

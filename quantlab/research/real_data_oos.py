@@ -1,0 +1,275 @@
+"""Real-data >=2-asset OOS-net backtest slice (spec: real-data-oos-backtest).
+
+Runs the existing A0 ``VectorizedEngine`` over real point-in-time vintage data
+for a candidate strategy and a dumb baseline, and emits a checksumed OOS-net
+comparison artifact. No engine / loader / cost / metric semantics change here:
+this module is composition + honest gating only.
+
+Honesty boundary: this proves *mechanism* on real-source-format data. It never
+claims alpha; every artifact carries ``claim_boundary="no_alpha_claim"``. When
+fewer than ``min_assets`` price assets exist, or accumulated history is below the
+walk-forward window, it fails closed to ``status="insufficient_data"`` instead of
+emitting a comparison that could read as validated.
+
+This is research/orchestration, not backtest core: it may use pandas and import
+``quantlab.runner`` / ``quantlab.data`` / ``quantlab.strategies``; it must not
+import any ML framework (kept green by import-linter, which only forbids that in
+``quantlab.engine`` / ``quantlab.data``).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+import hashlib
+import json
+from pathlib import Path
+from typing import Any, Mapping
+
+_CLAIM = "no_alpha_claim"
+_AUTHORITY = "out_of_sample_net_only"
+_ARTIFACT_KIND = "real_data_oos_backtest_artifact"
+_STATUSES = {"computed", "insufficient_data"}
+# Default min history = train(12) + test(6) of the default walk-forward window.
+_DEFAULT_MIN_HISTORY_MONTHS = 18.0
+
+
+@dataclass(frozen=True)
+class DataSufficiency:
+    price_assets: tuple[str, ...]
+    asset_count: int
+    history_start: str | None
+    history_end: str | None
+    history_span_months: float
+    min_assets: int
+    min_history_months: float
+    sufficient: bool
+    reason: str  # "ok" | "fewer_than_min_assets" | "history_below_min_window"
+
+
+def assess_data_sufficiency(
+    provider: Any, *, min_assets: int = 2, min_history_months: float = _DEFAULT_MIN_HISTORY_MONTHS,
+) -> DataSufficiency:
+    """Decide whether real price data can support a walk-forward OOS comparison.
+
+    Reads the provider's price panel (same internal contract used by
+    ``scripts/run_vintage_slice.py``). Fails closed: too few assets or too short a
+    span yields ``sufficient=False`` with an explicit reason.
+    """
+    prices = provider._prices
+    if len(prices):
+        assets = tuple(sorted(set(prices["symbol"])))
+        events = prices["event_date"]
+        start, end = events.min(), events.max()
+        span_days = (end - start).days
+        span_months = round(span_days / 30.4375, 4)
+        start_s, end_s = str(start.date()), str(end.date())
+    else:
+        assets, span_months, start_s, end_s = (), 0.0, None, None
+
+    if len(assets) < min_assets:
+        sufficient, reason = False, "fewer_than_min_assets"
+    elif span_months < min_history_months:
+        sufficient, reason = False, "history_below_min_window"
+    else:
+        sufficient, reason = True, "ok"
+
+    return DataSufficiency(
+        price_assets=assets, asset_count=len(assets),
+        history_start=start_s, history_end=end_s, history_span_months=span_months,
+        min_assets=min_assets, min_history_months=float(min_history_months),
+        sufficient=sufficient, reason=reason,
+    )
+
+
+def _oos_net_sharpe(result: Mapping[str, Any]) -> float:
+    for metric in result.get("metrics", []):
+        if metric.get("segment") == "out_of_sample" and metric.get("basis") == "net":
+            return float(metric["sharpe"])
+    raise ValueError("real-data OOS comparison requires an out_of_sample net Sharpe")
+
+
+def _window(provider: Any, config: Mapping[str, Any]) -> tuple[str, str]:
+    if config.get("start") and config.get("end"):
+        return str(config["start"]), str(config["end"])
+    span = provider._prices["event_date"]
+    return str(span.min().date()), str(span.max().date())
+
+
+def build_real_data_oos_report(
+    provider: Any, *, candidate: Any, baseline: Any, config: Mapping[str, Any],
+    min_assets: int = 2, min_history_months: float = _DEFAULT_MIN_HISTORY_MONTHS,
+    store: Any | None = None,
+) -> dict[str, Any]:
+    """Run candidate + baseline over real PIT data; rank OOS-net only, baseline visible."""
+    suff = assess_data_sufficiency(provider, min_assets=min_assets,
+                                   min_history_months=min_history_months)
+    if not suff.sufficient:
+        raise ValueError(f"insufficient real data for OOS comparison: {suff.reason}")
+
+    if config.get("mode", "net") != "net":
+        raise ValueError("real-data OOS comparison requires mode=net for OOS-net authority")
+    start, end = _window(provider, config)
+    run_cfg = {**config, "start": start, "end": end, "mode": "net"}
+
+    rows: list[dict[str, Any]] = []
+    for strategy, is_baseline in ((candidate, False), (baseline, True)):
+        result = _run(strategy, provider, run_cfg, store, is_baseline)
+        rows.append({
+            "strategy_name": str(result.get("strategy_name") or ""),
+            "oos_net_sharpe": _oos_net_sharpe(result),
+            "is_baseline": is_baseline,
+            "run_id": str(result.get("run_id") or ""),
+        })
+    rows.sort(key=lambda r: r["oos_net_sharpe"], reverse=True)
+
+    universe_asof = list(provider.universe(end))
+    return {
+        "status": "computed",
+        "claim_boundary": _CLAIM,
+        "metric_authority": _AUTHORITY,
+        "rows": rows,
+        "asset_set": list(suff.price_assets),
+        "asof_window": {"start": start, "end": end},
+        "cost_config": dict(config.get("cost_config") or {}),
+        "data_provenance": {
+            "asset_count": suff.asset_count,
+            "history_start": suff.history_start,
+            "history_end": suff.history_end,
+            "history_span_months": suff.history_span_months,
+            "universe_asof": universe_asof,
+        },
+    }
+
+
+def _run(strategy: Any, provider: Any, run_cfg: Mapping[str, Any], store: Any | None,
+         is_baseline: bool) -> dict[str, Any]:
+    from quantlab.engine import VectorizedEngine
+
+    result = VectorizedEngine().run(strategy, provider, dict(run_cfg))
+    result["is_baseline"] = is_baseline
+    if store is not None:
+        # Mark the record before logging so the store records is_baseline and
+        # validates the finite OOS-net Sharpe.
+        store.log(result)
+    return result
+
+
+def build_insufficient_data_report(
+    suff: DataSufficiency, *, config: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    cfg = config or {}
+    window = None
+    if suff.history_start and suff.history_end:
+        window = {"start": suff.history_start, "end": suff.history_end}
+    return {
+        "status": "insufficient_data",
+        "claim_boundary": _CLAIM,
+        "metric_authority": _AUTHORITY,
+        "rows": [],
+        "asset_set": list(suff.price_assets),
+        "asof_window": window,
+        "cost_config": dict(cfg.get("cost_config") or {}),
+        "reason": suff.reason,
+        "data_provenance": {
+            "asset_count": suff.asset_count,
+            "history_start": suff.history_start,
+            "history_end": suff.history_end,
+            "history_span_months": suff.history_span_months,
+            "min_assets": suff.min_assets,
+            "min_history_months": suff.min_history_months,
+        },
+    }
+
+
+def _canonical_json(value: Mapping[str, Any]) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def build_real_data_oos_artifact(
+    report: Mapping[str, Any], *, artifact_uri: str, generated_at: str,
+) -> dict[str, Any]:
+    status = report.get("status")
+    if status not in _STATUSES:
+        raise ValueError(f"unknown real-data OOS report status: {status!r}")
+    if report.get("claim_boundary") != _CLAIM:
+        raise ValueError("real-data OOS artifact must preserve no_alpha_claim")
+    if report.get("metric_authority") != _AUTHORITY:
+        raise ValueError("real-data OOS artifact requires out_of_sample_net_only authority")
+    rows = report.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("real-data OOS artifact requires a rows list")
+    if status == "computed":
+        if not rows:
+            raise ValueError("computed real-data OOS artifact requires rows")
+        if not any(bool(r.get("is_baseline")) for r in rows):
+            raise ValueError("computed real-data OOS artifact requires a visible baseline row")
+    elif rows:
+        raise ValueError("insufficient_data report must not carry comparison rows")
+
+    clean_uri, clean_at = artifact_uri.strip(), generated_at.strip()
+    if not clean_uri or not clean_at:
+        raise ValueError("real-data OOS artifact requires artifact_uri and generated_at")
+
+    payload = {"artifact_uri": clean_uri, "generated_at": clean_at, "report": dict(report)}
+    checksum = hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+    return {
+        "artifact_kind": _ARTIFACT_KIND,
+        "status": status,
+        "claim_boundary": _CLAIM,
+        "metric_authority": _AUTHORITY,
+        "artifact_uri": clean_uri,
+        "generated_at": clean_at,
+        "row_count": len(rows),
+        "report": dict(report),
+        "checksum": checksum,
+    }
+
+
+def validate_real_data_oos_artifact(artifact: Mapping[str, Any]) -> None:
+    if artifact.get("artifact_kind") != _ARTIFACT_KIND:
+        raise ValueError("unknown real-data OOS backtest artifact")
+    if artifact.get("status") not in _STATUSES:
+        raise ValueError("real-data OOS artifact has unknown status")
+    if artifact.get("claim_boundary") != _CLAIM:
+        raise ValueError("real-data OOS artifact must preserve no_alpha_claim")
+    if artifact.get("metric_authority") != _AUTHORITY:
+        raise ValueError("real-data OOS artifact requires out_of_sample_net_only authority")
+    report = artifact.get("report")
+    if not isinstance(report, Mapping):
+        raise ValueError("real-data OOS artifact requires report")
+    rows = report.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("real-data OOS artifact requires rows list")
+    if artifact.get("row_count") != len(rows):
+        raise ValueError("real-data OOS artifact row_count mismatch")
+    if artifact.get("status") == "computed" and not any(bool(r.get("is_baseline")) for r in rows):
+        raise ValueError("computed real-data OOS artifact requires a visible baseline row")
+    payload = {
+        "artifact_uri": artifact.get("artifact_uri"),
+        "generated_at": artifact.get("generated_at"),
+        "report": report,
+    }
+    expected = hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+    if artifact.get("checksum") != expected:
+        raise ValueError("real-data OOS artifact checksum mismatch")
+
+
+def write_real_data_oos_artifact(artifact: Mapping[str, Any], path: str | Path) -> Path:
+    validate_real_data_oos_artifact(artifact)
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        json.dumps(dict(artifact), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return target
+
+
+__all__ = [
+    "DataSufficiency",
+    "assess_data_sufficiency",
+    "build_real_data_oos_report",
+    "build_insufficient_data_report",
+    "build_real_data_oos_artifact",
+    "validate_real_data_oos_artifact",
+    "write_real_data_oos_artifact",
+]
