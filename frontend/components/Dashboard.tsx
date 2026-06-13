@@ -98,6 +98,37 @@ export function Dashboard({ data }: { data: ShowcaseDashboard }) {
         </table>
       </section>
 
+      {data.realData && (
+        <section className="panel real-data-panel" data-section="real-data">
+          <div className="panel-heading">
+            <h2>Real-Data OOS-Net (research)</h2>
+            <p>
+              {data.realData.assetSet.join(" / ")} · {data.realData.overlapStart}–
+              {data.realData.overlapEnd} ({data.realData.overlapMonths.toFixed(1)} mo) ·{" "}
+              {data.realData.claimBoundary}
+            </p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>OOS-net Sharpe</th>
+                <th>Baseline</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.realData.rows.map((row) => (
+                <tr key={row.strategyName}>
+                  <td>{row.strategyName}</td>
+                  <td>{formatSharpe(row.oosNetSharpe)}</td>
+                  <td>{row.isBaseline ? "yes" : "no"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       <section className="panel evidence-panel" data-section="evidence">
         <div className="panel-heading">
           <h2>Evidence</h2>

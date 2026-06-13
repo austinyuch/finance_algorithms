@@ -7,7 +7,7 @@ Implemented · Review PASSED (local production-demo readiness).
 ## Evidence
 
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
-- `cd frontend && npm test -- --run` -> 44 passed.
+- `cd frontend && npm test -- --run` -> 46 passed.
 - `cd frontend && npm run coverage` -> 89.85% line coverage.
 - `cd frontend && npm run mutation` -> 26/26 frontend mutations killed.
 - `cd frontend && npm run build` -> success.

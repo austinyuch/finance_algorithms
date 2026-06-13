@@ -300,6 +300,29 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     assert written["demoReadiness"]["visualRegression"] == "proven"
 
 
+def test_canonical_showcase_artifact_surfaces_real_data_section(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    repo_root = Path(__file__).resolve().parents[2]
+    artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=repo_root)
+    real = artifact.get("realData")
+    assert real is not None
+    assert real["source"] == "real_data_oos_backtest_artifact"
+    assert real["status"] == "computed"
+    assert real["claimBoundary"] == "no_alpha_claim"
+    assert len(real["rows"]) >= 2
+    assert any(row["isBaseline"] for row in real["rows"])
+    sharpes = [row["oosNetSharpe"] for row in real["rows"]]
+    assert sharpes == sorted(sharpes, reverse=True)
+
+
+def test_canonical_showcase_artifact_omits_real_data_without_evidence_root(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    artifact = build_canonical_dashboard_artifact(tmp_path / "work")
+    assert "realData" not in artifact
+
+
 def test_canonical_showcase_artifact_rejects_failed_frontend_transcript(tmp_path):
     from quantlab.showcase import build_canonical_dashboard_artifact
 

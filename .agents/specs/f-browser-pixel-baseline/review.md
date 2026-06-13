@@ -25,16 +25,16 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 
 - Gate result: **CONDITIONAL**
 - Coverage tier: **hybrid**
-- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `236 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `2fe7d5e612bbb28072b8829af4db020e04a9a23e1cd6ff3ff2f7bea97994563d`.
+- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `0 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `0f2b849a424192bea32c2bfe39d6e3bf209c73db863efde41ff6aa092431fae9`.
 - Data source boundary: dashboard data now comes from the generated canonical `local_result_store` payload introduced by CR-FPS-006; no live backend/live market data dashboard path is claimed.
 - No auth surface exists in this dashboard slice.
 
 ## Verification Coverage
 
-- Focused frontend/public-demo tests are included in the current frontend suite: **44 passed**.
-- Frontend coverage: **89.85% line coverage**.
+- Focused frontend/public-demo tests are included in the current frontend suite: **46 passed**.
+- Frontend coverage: **90.00% line coverage**.
 - Frontend mutation: **26/26 killed**.
-- Browser visual smoke: **passed**, repo-baseline pixel diff `236 / 1,296,000`.
+- Browser visual smoke: **passed**, repo-baseline pixel diff `0 / 1,296,000`.
 - Dashboard payload generation now fails closed unless the committed visual diff
   artifact has the expected `browser_visual_diff` kind, valid pixel counts,
   matching `mismatchRatio`, and a ratio at or below `maxMismatchRatio`.

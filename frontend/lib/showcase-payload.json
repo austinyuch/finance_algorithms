@@ -14,11 +14,11 @@
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "336 passed",
-      "frontend tests 44 passed",
+      "338 passed",
+      "frontend tests 46 passed",
       "Python mutation 106/106 killed",
       "frontend mutation 26/26 killed",
-      "F Next.js coverage 89.85%",
+      "F Next.js coverage 90.00%",
       "frontend audit 0 vulnerabilities",
       "browser visual diff passed",
       "public hosting configured_not_observed (hash mismatched)"
@@ -59,6 +59,30 @@
       "strategyName": "StaticWeights"
     }
   ],
+  "realData": {
+    "assetSet": [
+      "PCOPPUSDM",
+      "SP500"
+    ],
+    "claimBoundary": "no_alpha_claim",
+    "overlapEnd": "2026-05-01",
+    "overlapMonths": 118.5708,
+    "overlapStart": "2016-06-13",
+    "rows": [
+      {
+        "isBaseline": true,
+        "oosNetSharpe": 0,
+        "strategyName": "BuyAndHold"
+      },
+      {
+        "isBaseline": false,
+        "oosNetSharpe": -4.841150979688946,
+        "strategyName": "RandomStrategy"
+      }
+    ],
+    "source": "real_data_oos_backtest_artifact",
+    "status": "computed"
+  },
   "rebalanceDates": [
     "2022-01-31",
     "2022-02-28",

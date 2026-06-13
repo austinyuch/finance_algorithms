@@ -32,10 +32,10 @@ ISSUE_LOG,RTM}.md`, every `.agents/specs/**/review.md`, and `git log`.
 Project is Backend/CLI-dominant Hybrid. Captured/refreshed live (2026-06-13):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py  # 336 passed → docs/review/assets/gate-pytest.txt
+uv run python scripts/capture_pytest_gate.py  # 338 passed → docs/review/assets/gate-pytest.txt
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean 60 files → gate-mypy.txt
 uv run lint-imports                  # KEPT, 77 files / 198 deps → gate-lint-imports.txt
-(cd frontend && npm test)            # 44 passed     → gate-frontend-test.txt
+(cd frontend && npm test)            # 46 passed     → gate-frontend-test.txt
 (cd frontend && npm audit --omit=dev)# 0 vulns       → gate-frontend-audit.txt
 ```
 

@@ -93,6 +93,33 @@ describe("F Next.js showcase dashboard", () => {
     ).toThrow(/sorted/);
   });
 
+  it("surfaces the real-data OOS-net comparison panel under no_alpha_claim", () => {
+    const payload = getShowcaseDashboard();
+    expect(payload.realData).toBeDefined();
+    const html = renderToStaticMarkup(<Dashboard data={payload} />);
+    expect(html).toContain('data-section="real-data"');
+    expect(html).toContain("Real-Data OOS-Net");
+    expect(payload.realData?.claimBoundary).toBe("no_alpha_claim");
+    expect(payload.realData?.source).toBe("real_data_oos_backtest_artifact");
+    expect(payload.realData?.rows.some((row) => row.isBaseline)).toBe(true);
+  });
+
+  it("rejects malformed realData sections", () => {
+    const base = getShowcaseDashboard();
+    expect(() =>
+      assertDashboardPayload({ ...base, realData: { ...base.realData, claimBoundary: "alpha_claim" } })
+    ).toThrow(/no_alpha_claim/);
+    expect(() =>
+      assertDashboardPayload({ ...base, realData: { ...base.realData, rows: [base.realData?.rows[0]] } })
+    ).toThrow(/candidate and baseline/);
+    expect(() =>
+      assertDashboardPayload({
+        ...base,
+        realData: { ...base.realData, rows: base.realData?.rows.map((r) => ({ ...r, isBaseline: false })) },
+      })
+    ).toThrow(/visible baseline/);
+  });
+
   it("rejects overclaimed public demo readiness", () => {
     const payload = {
       ...getShowcaseDashboard(),

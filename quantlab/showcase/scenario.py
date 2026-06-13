@@ -13,11 +13,11 @@ from quantlab.tracking import LocalResultStore
 
 
 _FALLBACK_EVIDENCE_TESTS = [
-    "336 passed",
-    "frontend tests 44 passed",
+    "338 passed",
+    "frontend tests 46 passed",
     "Python mutation 106/106 killed",
     "frontend mutation 26/26 killed",
-    "F Next.js coverage 89.85%",
+    "F Next.js coverage 90.00%",
     "E registry coverage 99%",
     "B source-health/Stooq proof coverage 90%",
 ]
@@ -256,17 +256,62 @@ def _experiment_row(row: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+_REAL_DATA_ARTIFACT = ".agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json"
+
+
+def _real_data_section(evidence_root: str | Path | None) -> dict[str, Any] | None:
+    """Surface the committed real-data OOS-net comparison (research, no_alpha_claim).
+
+    Returns None when the artifact is absent or not a computed comparison, so the
+    dashboard degrades to the canonical scenario without overclaiming.
+    """
+    if evidence_root is None:
+        return None
+    path = Path(evidence_root) / _REAL_DATA_ARTIFACT
+    if not path.exists():
+        return None
+    artifact = json.loads(path.read_text(encoding="utf-8"))
+    if artifact.get("artifact_kind") != "real_data_oos_backtest_artifact":
+        return None
+    if artifact.get("status") != "computed" or artifact.get("claim_boundary") != "no_alpha_claim":
+        return None
+    report = artifact.get("report") or {}
+    provenance = report.get("data_provenance") or {}
+    rows: list[dict[str, Any]] = [
+        {
+            "strategyName": str(row.get("strategy_name") or ""),
+            "oosNetSharpe": float(row["oos_net_sharpe"]),
+            "isBaseline": bool(row.get("is_baseline")),
+        }
+        for row in report.get("rows") or []
+    ]
+    rows.sort(key=lambda row: row["oosNetSharpe"], reverse=True)
+    if len(rows) < 2 or not any(row["isBaseline"] for row in rows):
+        return None
+    return {
+        "source": "real_data_oos_backtest_artifact",
+        "status": "computed",
+        "claimBoundary": "no_alpha_claim",
+        "assetSet": list(report.get("asset_set") or []),
+        "overlapStart": str(provenance.get("overlap_start") or ""),
+        "overlapEnd": str(provenance.get("overlap_end") or ""),
+        "overlapMonths": float(provenance.get("overlap_months") or 0.0),
+        "rows": rows,
+    }
+
+
 def _frontend_payload(
     summary: Mapping[str, Any],
     *,
     source_record_count: int,
     evidence_tests: list[str],
     visual_regression_status: str,
+    real_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     warnings = list(summary.get("warnings") or [])
     if "local_runtime_only" not in warnings:
         warnings.append("local_runtime_only")
-    return {
+    payload: dict[str, Any] = {
         "activeRunId": str(summary["active_run_id"]),
         "strategyName": str(summary["strategy_name"]),
         "claimBoundary": str(summary["claim_boundary"]),
@@ -292,6 +337,9 @@ def _frontend_payload(
             "experimentRegistry": "experiment_registry",
         },
     }
+    if real_data is not None:
+        payload["realData"] = real_data
+    return payload
 
 
 def build_canonical_dashboard_artifact(
@@ -345,6 +393,7 @@ def build_canonical_dashboard_artifact(
             source_record_count=len(api.leaderboard()),
             evidence_tests=_current_evidence_tests(evidence_root),
             visual_regression_status="proven" if evidence_root is not None else "not_proven",
+            real_data=_real_data_section(evidence_root),
         )
 
 

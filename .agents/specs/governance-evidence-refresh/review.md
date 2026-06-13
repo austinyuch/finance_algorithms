@@ -25,9 +25,9 @@
 - `uv run python scripts/run_mutation_spot_checks.py` -> 100/100 configured/killed.
 - `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` -> success over 58 source files.
 - `uv run lint-imports` -> KEPT over 75 files / 189 dependencies.
-- `cd frontend && npm test -- --run` -> 44 passed.
+- `cd frontend && npm test -- --run` -> 46 passed.
 - `cd frontend && npm run build && npm run smoke && npm run visual && npm run visual:browser` -> PASS.
-- Browser visual diff -> `236 / 1,296,000` mismatched pixels, threshold `0.001`.
+- Browser visual diff -> `0 / 1,296,000` mismatched pixels, threshold `0.001`.
 
 ## Acceptance Status
 

@@ -21,7 +21,7 @@ Implemented explicit demo-readiness contract fields and UI rendering:
 
 Current refreshed evidence (2026-06-13):
 
-- `npm test -- --run` -> 44 passed.
+- `npm test -- --run` -> 46 passed.
 - `npm run coverage` -> 89.85% line coverage.
 - `npm run mutation` -> 26/26 frontend mutations killed.
 - `npm audit --json` -> 0 vulnerabilities.

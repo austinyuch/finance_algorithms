@@ -10,7 +10,7 @@ describe("public demo export script", () => {
     const absoluteOutDir = mkdtempSync(join(tmpdir(), "quantlab-public-demo-export-"));
     const corruptedOutDir = join(process.cwd(), absoluteOutDir.replace(/^\/+/, ""));
     const transcriptPath = join(absoluteOutDir, "gate-frontend-test.txt");
-    writeFileSync(transcriptPath, "Tests 44 passed\n", "utf8");
+    writeFileSync(transcriptPath, "Tests 46 passed\n", "utf8");
     try {
       const result = spawnSync(join(process.cwd(), "node_modules", ".bin", "tsx"), ["scripts/export-public-demo.tsx"], {
         cwd: process.cwd(),
@@ -28,7 +28,7 @@ describe("public demo export script", () => {
       expect(existsSync(join(absoluteOutDir, "deployment-manifest.json"))).toBe(true);
       expect(existsSync(join(absoluteOutDir, "visual-snapshot.json"))).toBe(true);
       const exported = JSON.parse(readFileSync(join(absoluteOutDir, "showcase.json"), "utf8"));
-      expect(exported.evidence.tests).toContain("frontend tests 44 passed");
+      expect(exported.evidence.tests).toContain("frontend tests 46 passed");
       expect(existsSync(join(corruptedOutDir, "index.html"))).toBe(false);
     } finally {
       rmSync(absoluteOutDir, { recursive: true, force: true });

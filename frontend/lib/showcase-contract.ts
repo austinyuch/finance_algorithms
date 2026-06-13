@@ -19,10 +19,28 @@ export interface ExperimentRegistryRow {
   tags: string[];
 }
 
+export interface RealDataOosRow {
+  strategyName: string;
+  oosNetSharpe: number;
+  isBaseline: boolean;
+}
+
+export interface RealDataComparison {
+  source: "real_data_oos_backtest_artifact";
+  status: "computed";
+  claimBoundary: ClaimBoundary;
+  assetSet: string[];
+  overlapStart: string;
+  overlapEnd: string;
+  overlapMonths: number;
+  rows: RealDataOosRow[];
+}
+
 export interface ShowcaseDashboard {
   activeRunId: string;
   strategyName: string;
   claimBoundary: ClaimBoundary;
+  realData?: RealDataComparison;
   sourceMetadata: {
     source: "local_result_store";
     sourceRecordCount: number;
@@ -111,5 +129,26 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   }
   if (value.demoReadiness.dependencyAudit !== "clean") {
     throw new Error("dependency audit must remain clean after remediation");
+  }
+  if (value.realData !== undefined) {
+    const real = value.realData;
+    if (
+      !isRecord(real) ||
+      real.source !== "real_data_oos_backtest_artifact" ||
+      real.status !== "computed" ||
+      real.claimBoundary !== "no_alpha_claim"
+    ) {
+      throw new Error("realData must be a computed real_data_oos_backtest_artifact under no_alpha_claim");
+    }
+    if (!Array.isArray(real.rows) || real.rows.length < 2) {
+      throw new Error("realData must carry the candidate and baseline rows");
+    }
+    if (!real.rows.some((row) => isRecord(row) && row.isBaseline === true)) {
+      throw new Error("realData must keep a visible baseline row");
+    }
+    const sharpes = (real.rows as RealDataOosRow[]).map((row) => row.oosNetSharpe);
+    if (!sharpes.every((value, index) => index === 0 || sharpes[index - 1] >= value)) {
+      throw new Error("realData rows must be ranked by descending OOS-net Sharpe");
+    }
   }
 }
