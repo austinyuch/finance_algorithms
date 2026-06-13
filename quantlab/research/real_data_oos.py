@@ -19,6 +19,7 @@ import any ML framework (kept green by import-linter, which only forbids that in
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import combinations
 import hashlib
 import json
 from pathlib import Path
@@ -42,7 +43,78 @@ class DataSufficiency:
     min_assets: int
     min_history_months: float
     sufficient: bool
-    reason: str  # "ok" | "fewer_than_min_assets" | "history_below_min_window"
+    # "ok" | "fewer_than_min_assets" | "history_below_min_window" | "no_cotemporal_overlap"
+    reason: str
+    # CR-RDO-001: the co-temporal subset that actually shares the walk-forward window.
+    cotemporal_universe: tuple[str, ...] = ()
+    overlap_start: str | None = None
+    overlap_end: str | None = None
+    overlap_months: float = 0.0
+
+
+def _asset_spans(provider: Any) -> dict[str, tuple[Any, Any]]:
+    """Per-asset (earliest, latest) event_date from the PIT price panel."""
+    prices = provider._prices
+    spans: dict[str, tuple[Any, Any]] = {}
+    if not len(prices):
+        return spans
+    for sym, grp in prices.groupby("symbol"):
+        events = grp["event_date"]
+        spans[str(sym)] = (events.min(), events.max())
+    return spans
+
+
+def _overlap_months(spans: Mapping[str, tuple[Any, Any]]) -> tuple[Any, Any, float]:
+    """Shared window of a set of assets: [max(start), min(end)] in months (negative if disjoint)."""
+    start = max(v[0] for v in spans.values())
+    end = min(v[1] for v in spans.values())
+    months = ((end - start).days / 30.4375) if end >= start else -1.0
+    return start, end, months
+
+
+def resolve_cotemporal_universe(
+    provider: Any, *, min_history_months: float = _DEFAULT_MIN_HISTORY_MONTHS, min_assets: int = 2,
+) -> tuple[tuple[str, ...], str | None, str | None]:
+    """Largest >=min_assets subset that shares a window >= min_history_months.
+
+    Exact: enumerates subsets from largest size down and returns the first size
+    that has a qualifying subset, breaking ties by longest shared window then
+    lexicographically. Greedy single-drop is unsafe when several assets share the
+    binding constraint (e.g. two short-history symbols both pinning the window),
+    so for the small asset counts in this lab we enumerate. Returns
+    ``((), None, None)`` when no qualifying co-temporal subset exists.
+    """
+    spans = _asset_spans(provider)
+    syms = sorted(spans)
+    if len(syms) < min_assets:
+        return (), None, None
+    if len(syms) <= 18:
+        for size in range(len(syms), min_assets - 1, -1):
+            qualifying = []
+            for combo in combinations(syms, size):
+                start, end, months = _overlap_months({k: spans[k] for k in combo})
+                if months >= min_history_months:
+                    qualifying.append((months, combo, start, end))
+            if qualifying:
+                qualifying.sort(key=lambda x: (x[0], x[1]))
+                _, combo, start, end = qualifying[-1]
+                return tuple(combo), str(start.date()), str(end.date())
+        return (), None, None
+    # Fallback (very large asset sets, not expected here): greedy single-drop.
+    keep = dict(spans)
+    while len(keep) > min_assets:
+        start, end, months = _overlap_months(keep)
+        if months >= min_history_months:
+            return tuple(sorted(keep)), str(start.date()), str(end.date())
+        late_start = max(keep, key=lambda k: (keep[k][0], k))
+        early_end = min(keep, key=lambda k: (keep[k][1], k))
+        gains = {v: _overlap_months({k: s for k, s in keep.items() if k != v})[2]
+                 for v in {late_start, early_end}}
+        del keep[max(gains, key=lambda k: (gains[k], k))]
+    start, end, months = _overlap_months(keep)
+    if months >= min_history_months:
+        return tuple(sorted(keep)), str(start.date()), str(end.date())
+    return (), None, None
 
 
 def assess_data_sufficiency(
@@ -50,33 +122,43 @@ def assess_data_sufficiency(
 ) -> DataSufficiency:
     """Decide whether real price data can support a walk-forward OOS comparison.
 
-    Reads the provider's price panel (same internal contract used by
-    ``scripts/run_vintage_slice.py``). Fails closed: too few assets or too short a
-    span yields ``sufficient=False`` with an explicit reason.
+    CR-RDO-001 makes this overlap-aware: sufficiency requires >=``min_assets``
+    that share a *common* event_date window >= ``min_history_months`` (a coarse
+    calendar span over a non-co-temporal asset mix produced a degenerate
+    comparison). Fails closed with an explicit reason otherwise.
     """
-    prices = provider._prices
-    if len(prices):
-        assets = tuple(sorted(set(prices["symbol"])))
-        events = prices["event_date"]
-        start, end = events.min(), events.max()
-        span_days = (end - start).days
-        span_months = round(span_days / 30.4375, 4)
+    spans = _asset_spans(provider)
+    assets = tuple(sorted(spans))
+    if assets:
+        prices = provider._prices
+        start, end = prices["event_date"].min(), prices["event_date"].max()
+        span_months = round((end - start).days / 30.4375, 4)
         start_s, end_s = str(start.date()), str(end.date())
     else:
-        assets, span_months, start_s, end_s = (), 0.0, None, None
+        span_months, start_s, end_s = 0.0, None, None
+
+    universe, o_start, o_end = resolve_cotemporal_universe(
+        provider, min_history_months=min_history_months, min_assets=min_assets)
+    overlap_months = _overlap_months({k: spans[k] for k in universe})[2] if universe else 0.0
 
     if len(assets) < min_assets:
         sufficient, reason = False, "fewer_than_min_assets"
-    elif span_months < min_history_months:
-        sufficient, reason = False, "history_below_min_window"
-    else:
+    elif universe:
         sufficient, reason = True, "ok"
+    else:
+        # No >=min_assets subset reaches the window. Distinguish a thin-but-
+        # overlapping panel (history below window) from genuinely disjoint assets.
+        full_overlap = _overlap_months(spans)[2] if len(assets) >= min_assets else -1.0
+        sufficient = False
+        reason = "history_below_min_window" if full_overlap >= 0.0 else "no_cotemporal_overlap"
 
     return DataSufficiency(
         price_assets=assets, asset_count=len(assets),
         history_start=start_s, history_end=end_s, history_span_months=span_months,
         min_assets=min_assets, min_history_months=float(min_history_months),
         sufficient=sufficient, reason=reason,
+        cotemporal_universe=universe,
+        overlap_start=o_start, overlap_end=o_end, overlap_months=round(overlap_months, 4),
     )
 
 
@@ -107,7 +189,13 @@ def build_real_data_oos_report(
 
     if config.get("mode", "net") != "net":
         raise ValueError("real-data OOS comparison requires mode=net for OOS-net authority")
-    start, end = _window(provider, config)
+    # Run over the co-temporal overlap window so every selected asset has data.
+    if config.get("start") and config.get("end"):
+        start, end = str(config["start"]), str(config["end"])
+    elif suff.overlap_start and suff.overlap_end:
+        start, end = suff.overlap_start, suff.overlap_end
+    else:
+        start, end = _window(provider, config)
     run_cfg = {**config, "start": start, "end": end, "mode": "net"}
 
     rows: list[dict[str, Any]] = []
@@ -127,7 +215,7 @@ def build_real_data_oos_report(
         "claim_boundary": _CLAIM,
         "metric_authority": _AUTHORITY,
         "rows": rows,
-        "asset_set": list(suff.price_assets),
+        "asset_set": list(suff.cotemporal_universe),
         "asof_window": {"start": start, "end": end},
         "cost_config": dict(config.get("cost_config") or {}),
         "data_provenance": {
@@ -135,6 +223,10 @@ def build_real_data_oos_report(
             "history_start": suff.history_start,
             "history_end": suff.history_end,
             "history_span_months": suff.history_span_months,
+            "cotemporal_universe": list(suff.cotemporal_universe),
+            "overlap_start": suff.overlap_start,
+            "overlap_end": suff.overlap_end,
+            "overlap_months": suff.overlap_months,
             "universe_asof": universe_asof,
         },
     }
@@ -267,6 +359,7 @@ def write_real_data_oos_artifact(artifact: Mapping[str, Any], path: str | Path) 
 __all__ = [
     "DataSufficiency",
     "assess_data_sufficiency",
+    "resolve_cotemporal_universe",
     "build_real_data_oos_report",
     "build_insufficient_data_report",
     "build_real_data_oos_artifact",

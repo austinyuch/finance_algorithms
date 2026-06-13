@@ -110,6 +110,22 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_real_data_oos.py::test_validate_rejects_computed_without_visible_baseline"),
     ),
     MutationSpec(
+        name="real-data-oos-cotemporal-overlap-reason",
+        path="quantlab/research/real_data_oos.py",
+        original="reason = \"history_below_min_window\" if full_overlap >= 0.0 else \"no_cotemporal_overlap\"",
+        mutated="reason = \"history_below_min_window\" if full_overlap >= -999.0 else \"no_cotemporal_overlap\"",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_real_data_oos_cotemporal.py::test_sufficiency_disjoint_assets_no_cotemporal_overlap"),
+    ),
+    MutationSpec(
+        name="real-data-oos-cotemporal-asset-set",
+        path="quantlab/research/real_data_oos.py",
+        original="\"asset_set\": list(suff.cotemporal_universe),",
+        mutated="\"asset_set\": list(suff.price_assets),",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_real_data_oos_cotemporal.py::test_report_uses_cotemporal_universe_and_is_non_degenerate"),
+    ),
+    MutationSpec(
         name="yahoo-latest-close",
         path="scripts/daily_snapshot.py",
         original="valid = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]",
@@ -608,7 +624,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**100/100 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**105/105 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -616,7 +632,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 288 suite evidence",
+        original="current registries use 332 suite evidence",
         mutated="current registries use 275 suite evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -632,7 +648,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-import-linter-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="`uv run lint-imports` → KEPT over 75 files / 189 dependencies",
+        original="`uv run lint-imports` → KEPT over 77 files / 198 dependencies",
         mutated="`uv run lint-imports` → KEPT over 75 files / 186 dependencies",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),

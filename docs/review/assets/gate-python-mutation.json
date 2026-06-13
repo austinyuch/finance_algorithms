@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 103,
-  "killed": 103,
+  "total": 105,
+  "killed": 105,
   "survived": 0,
   "mutations": [
     {
@@ -30,6 +30,14 @@
     },
     {
       "name": "real-data-oos-baseline-visibility",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-cotemporal-overlap-reason",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-cotemporal-asset-set",
       "status": "killed"
     },
     {

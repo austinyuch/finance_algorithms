@@ -3,6 +3,7 @@ from quantlab.research.align import align_asof
 from quantlab.research.real_data_oos import (
     DataSufficiency,
     assess_data_sufficiency,
+    resolve_cotemporal_universe,
     build_insufficient_data_report,
     build_real_data_oos_artifact,
     build_real_data_oos_report,
@@ -17,6 +18,7 @@ __all__ = [
     "align_asof",
     "DataSufficiency",
     "assess_data_sufficiency",
+    "resolve_cotemporal_universe",
     "build_real_data_oos_report",
     "build_insufficient_data_report",
     "build_real_data_oos_artifact",

@@ -63,7 +63,9 @@ def run_real_data_oos(
               f"assets={suff.asset_count} span_months={suff.history_span_months}", file=sys.stderr)
         return 2
 
-    assets = list(suff.price_assets)
+    # CR-RDO-001: trade only the co-temporal subset that shares the walk-forward
+    # window, not every price symbol (avoids a degenerate non-overlapping mix).
+    assets = list(suff.cotemporal_universe)
     cand = candidate if candidate is not None else RandomStrategy(assets, seed=0)
     base = baseline if baseline is not None else BuyAndHold(assets)
     report = build_real_data_oos_report(provider, candidate=cand, baseline=base, config=config,
