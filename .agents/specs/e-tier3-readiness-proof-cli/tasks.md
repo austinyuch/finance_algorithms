@@ -12,6 +12,6 @@
   - [x] 2.1 Add `e-tier3-cli-serving-validator` mutation.
     - _Eval: mutation killed by spoofed production map chaos test._
   - [x] 2.2 Run full Python, mypy, import-linter, CLI smoke, mutation, and stale-evidence checks.
-    - _Eval: `uv run pytest -q` -> 214 passed, 1 skipped; mypy clean over 53 files; `uv run lint-imports` KEPT; `e-tier3-cli-serving-validator` killed._
+    - _Eval: current rollup `uv run pytest -q` -> 288 passed; mypy clean over 58 files; `uv run lint-imports` KEPT; `e-tier3-cli-serving-validator` and `e-tier3-manifest-artifact-uri-gate` killed._
   - [x] 2.3 Refresh `quantlab/TESTS.md`, `.agents/specs/TESTS.md`, `RTM.md`, `SPECS.md`, `NEXT_STEPS.md`, correctness checklist, and feature catalog.
-    - _Eval: governance surfaces now reference 214/1, 35/35, and the strict readiness proof CLI._
+    - _Eval: governance surfaces now reference 288 passed, 100/100 mutations, and the strict readiness proof CLI with external manifest artifact URI gating._

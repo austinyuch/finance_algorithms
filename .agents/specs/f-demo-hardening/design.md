@@ -29,7 +29,7 @@ flowchart LR
 | Risk ID | Failure Mode | Effect | Control | Response | Task Trace |
 |---|---|---|---|---|---|
 | FMEA-F-DEMO-01 | Local demo described as public deployment | False readiness | explicit `not_proven` fields | contract rejection + UI rendering | F-1/F-3 |
-| FMEA-F-DEMO-02 | Visual regression implied without screenshot | Misleading review artifact | explicit `visualRegression=not_proven` | negative test | F-1 |
+| FMEA-F-DEMO-02 | Visual regression implied without browser visual evidence | Misleading review artifact | evidence-backed `visualRegression=proven` only after passed browser visual diff | negative test + underclaim mutation | F-1 / CR-FPS-009 |
 | FMEA-F-DEMO-03 | Dependency audit hidden | public demo risk lost | rendered dependency audit status | review caveat | F-4 |
 
 ## EDD

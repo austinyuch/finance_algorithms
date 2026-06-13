@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { PNG } from "pngjs";
@@ -10,8 +10,17 @@ const screenshotPath = join(root, "out", "browser-visual.png");
 const evidencePath = join(root, "out", "browser-visual.json");
 const diffPath = join(root, "out", "browser-visual-diff.json");
 const baselineImagePath = join(root, "visual-baselines", "browser-visual.png");
+const docsRoot = join(root, "..", "docs");
+const docsVisualPath = join(docsRoot, "browser-visual.json");
+const docsDiffPath = join(docsRoot, "browser-visual-diff.json");
+const docsScreenshotPath = join(docsRoot, "browser-visual.png");
+const reviewVisualPath = join(docsRoot, "review", "assets", "browser-visual.json");
+const reviewDiffPath = join(docsRoot, "review", "assets", "browser-visual-diff.json");
+const reviewScreenshotPath = join(docsRoot, "review", "assets", "dashboard-browser-visual.png");
+const manualScreenshotPath = join(docsRoot, "manual", "assets", "dashboard-browser-visual.png");
 const chromium = process.env.CHROMIUM_BIN || "/snap/bin/chromium";
 const maxMismatchRatio = Number(process.env.QUANTLAB_BROWSER_VISUAL_MAX_MISMATCH_RATIO || "0.001");
+const updateDocs = process.env.QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS === "1";
 
 function sha256(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -44,6 +53,52 @@ function comparePixels(baseline, current) {
     totalPixels,
     mismatchRatio: mismatchedPixels / totalPixels,
   };
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function withoutObservedAt(evidence) {
+  const { observedAt, ...stableEvidence } = evidence;
+  return stableEvidence;
+}
+
+function assertEqualJson(label, actual, expected) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`${label} is stale; rerun with QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS=1`);
+  }
+}
+
+function assertEqualFile(label, actualPath, expectedPath) {
+  if (sha256(actualPath) !== sha256(expectedPath)) {
+    throw new Error(`${label} is stale; rerun with QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS=1`);
+  }
+}
+
+function syncCommittedDocs(evidence, diff) {
+  mkdirSync(join(docsRoot, "review", "assets"), { recursive: true });
+  mkdirSync(join(docsRoot, "manual", "assets"), { recursive: true });
+  writeFileSync(docsVisualPath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+  writeFileSync(docsDiffPath, `${JSON.stringify(diff, null, 2)}\n`, "utf8");
+  writeFileSync(reviewVisualPath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+  writeFileSync(reviewDiffPath, `${JSON.stringify(diff, null, 2)}\n`, "utf8");
+  copyFileSync(screenshotPath, docsScreenshotPath);
+  copyFileSync(screenshotPath, reviewScreenshotPath);
+  copyFileSync(screenshotPath, manualScreenshotPath);
+}
+
+function assertCommittedDocsFresh(evidence, diff) {
+  if (!existsSync(docsVisualPath) || !existsSync(docsDiffPath) || !existsSync(docsScreenshotPath)) {
+    return;
+  }
+  assertEqualJson("docs/browser-visual.json", withoutObservedAt(readJson(docsVisualPath)), withoutObservedAt(evidence));
+  assertEqualJson("docs/browser-visual-diff.json", readJson(docsDiffPath), diff);
+  assertEqualJson("docs/review/assets/browser-visual.json", withoutObservedAt(readJson(reviewVisualPath)), withoutObservedAt(evidence));
+  assertEqualJson("docs/review/assets/browser-visual-diff.json", readJson(reviewDiffPath), diff);
+  assertEqualFile("docs/browser-visual.png", docsScreenshotPath, screenshotPath);
+  assertEqualFile("docs/review/assets/dashboard-browser-visual.png", reviewScreenshotPath, screenshotPath);
+  assertEqualFile("docs/manual/assets/dashboard-browser-visual.png", manualScreenshotPath, screenshotPath);
 }
 
 if (!existsSync(htmlPath)) {
@@ -99,5 +154,10 @@ const diff = {
 writeFileSync(diffPath, `${JSON.stringify(diff, null, 2)}\n`, "utf8");
 if (diff.status !== "passed") {
   throw new Error(`browser visual diff failed: mismatchRatio=${pixelDiff.mismatchRatio}`);
+}
+if (updateDocs) {
+  syncCommittedDocs(evidence, diff);
+} else {
+  assertCommittedDocsFresh(evidence, diff);
 }
 console.log(`browser-visual-smoke: PASS ${evidence.screenshotHash} mismatchRatio=${pixelDiff.mismatchRatio}`);

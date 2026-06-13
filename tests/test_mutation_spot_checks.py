@@ -73,6 +73,8 @@ def test_mutation_runner_list_smoke():
     assert "e-tier3-readiness-gate" in result.stdout
     assert "e-tier3-gate-proof-digest" in result.stdout
     assert "e-tier3-gate-production-validator" in result.stdout
+    assert "e-tier3-manifest-artifact-uri-gate" in result.stdout
+    assert "e-tier3-experiment-binding-gate" in result.stdout
     assert "e-tier3-production-tier-gate" in result.stdout
     assert "e-serving-smoke-health-gate" in result.stdout
     assert "e-retraining-smoke-status-gate" in result.stdout
@@ -80,6 +82,11 @@ def test_mutation_runner_list_smoke():
     assert "e-production-serving-endpoint-gate" in result.stdout
     assert "e-production-retraining-status-gate" in result.stdout
     assert "e-production-external-proof-uri-gate" in result.stdout
+    assert "e-production-observed-at-utc-gate" in result.stdout
+    assert "e-production-external-identity-uri-gate" in result.stdout
+    assert "e-production-retraining-artifact-uri-gate" in result.stdout
+    assert "e-production-drift-threshold-gate" in result.stdout
+    assert "e-production-digest-format-gate" in result.stdout
     assert "e-tier3-cli-serving-validator" in result.stdout
     assert "b-source-health-claim-boundary" in result.stdout
     assert "snapshot-report-stooq-default" in result.stdout
@@ -88,24 +95,41 @@ def test_mutation_runner_list_smoke():
     assert "showcase-frontend-transcript-failure-gate" in result.stdout
     assert "g-alt-data-pit-gate" in result.stdout
     assert "root-torch-default-dependency" in result.stdout
+    assert "demo-tsmc-store-close-gate" in result.stdout
+    assert "demo-vintage-store-close-gate" in result.stdout
+    assert "demo-showcase-payload-tempdir-gate" in result.stdout
     assert "governance-stale-next-steps-alert" in result.stdout
     assert "governance-stale-post-merge-sync-promotion" in result.stdout
     assert "governance-stale-cron-proof-pending" in result.stdout
     assert "governance-stale-mutation-count-regression" in result.stdout
+    assert "governance-stale-python-count-regression" in result.stdout
     assert "governance-stale-import-linter-count-regression" in result.stdout
     assert "governance-stale-import-linter-formalization-regression" in result.stdout
+    assert "governance-local-first-ci-default-regression" in result.stdout
+    assert "governance-local-first-ci-skill-default-regression" in result.stdout
+    assert "governance-workflow-hosted-only-contract" in result.stdout
+    assert "local-ci-matrix-report-command-placeholder-regression" in result.stdout
+    assert "governance-refresh-review-stale-evidence-regression" in result.stdout
     assert "governance-stale-dashboard-source-wording" in result.stdout
+    assert "governance-stale-f-nextjs-requirements-fixture" in result.stdout
+    assert "governance-stale-f-nextjs-fixture-review" in result.stdout
     assert "governance-f-cr-superseded-fixture-boundary" in result.stdout
     assert "governance-stale-visual-evidence-regression" in result.stdout
     assert "public-hosting-probe-expected-hash-drift" in result.stdout
     assert "governance-test-registry-count-drift" in result.stdout
     assert "mutation-test-registry-count-drift" in result.stdout
+    assert "python-mutation-report-survivor-drift" in result.stdout
     assert "b-scheduled-observer-manual-pending" in result.stdout
     assert "manual-showcase-payload-sync-regression" in result.stdout
     assert "frontend-showcase-payload-sync-regression" in result.stdout
     assert "f-showcase-evidence-artifact-source" in result.stdout
+    assert "f-showcase-visual-diff-contract-gate" in result.stdout
+    assert "f-showcase-public-probe-freshness-gate" in result.stdout
+    assert "f-showcase-public-probe-observed-at-gate" in result.stdout
+    assert "f-showcase-public-probe-observed-at-age-gate" in result.stdout
     assert "review-pytest-gate-transcript-regression" in result.stdout
     assert "review-frontend-count-shorthand-regression" in result.stdout
+    assert "review-frontend-coverage-artifact-drift" in result.stdout
     assert "review-audit-gate-transcript-regression" in result.stdout
 
 
@@ -188,6 +212,7 @@ def test_main_list_prints_mutation_names(capsys):
     assert "e-tier3-readiness-gate" in out
     assert "e-tier3-gate-proof-digest" in out
     assert "e-tier3-gate-production-validator" in out
+    assert "e-tier3-experiment-binding-gate" in out
     assert "e-tier3-production-tier-gate" in out
     assert "e-serving-smoke-health-gate" in out
     assert "e-retraining-smoke-status-gate" in out
@@ -195,6 +220,11 @@ def test_main_list_prints_mutation_names(capsys):
     assert "e-production-serving-endpoint-gate" in out
     assert "e-production-retraining-status-gate" in out
     assert "e-production-external-proof-uri-gate" in out
+    assert "e-production-observed-at-utc-gate" in out
+    assert "e-production-external-identity-uri-gate" in out
+    assert "e-production-retraining-artifact-uri-gate" in out
+    assert "e-production-drift-threshold-gate" in out
+    assert "e-production-digest-format-gate" in out
     assert "e-tier3-cli-serving-validator" in out
     assert "b-source-health-claim-boundary" in out
     assert "snapshot-report-stooq-default" in out
@@ -202,25 +232,76 @@ def test_main_list_prints_mutation_names(capsys):
     assert "showcase-experiment-readiness" in out
     assert "g-alt-data-pit-gate" in out
     assert "root-torch-default-dependency" in out
+    assert "demo-tsmc-store-close-gate" in out
+    assert "demo-vintage-store-close-gate" in out
+    assert "demo-showcase-payload-tempdir-gate" in out
     assert "e-evidence-explicit-claim-boundary" in out
     assert "showcase-frontend-transcript-failure-gate" in out
     assert "governance-stale-next-steps-alert" in out
     assert "governance-stale-post-merge-sync-promotion" in out
     assert "governance-stale-cron-proof-pending" in out
     assert "governance-stale-mutation-count-regression" in out
+    assert "governance-stale-python-count-regression" in out
     assert "governance-stale-import-linter-count-regression" in out
     assert "governance-stale-import-linter-formalization-regression" in out
+    assert "governance-local-first-ci-default-regression" in out
+    assert "governance-local-first-ci-skill-default-regression" in out
+    assert "governance-workflow-hosted-only-contract" in out
     assert "governance-stale-dashboard-source-wording" in out
+    assert "governance-stale-f-nextjs-requirements-fixture" in out
+    assert "governance-stale-f-nextjs-fixture-review" in out
     assert "governance-f-cr-superseded-fixture-boundary" in out
     assert "governance-stale-visual-evidence-regression" in out
     assert "review-public-hosting-probe-status-overclaim" in out
     assert "public-hosting-probe-expected-hash-drift" in out
     assert "governance-test-registry-count-drift" in out
     assert "mutation-test-registry-count-drift" in out
+    assert "python-mutation-report-survivor-drift" in out
     assert "b-scheduled-observer-manual-pending" in out
     assert "manual-showcase-payload-sync-regression" in out
     assert "frontend-showcase-payload-sync-regression" in out
     assert "f-showcase-retired-fixture-marker" in out
+    assert "f-showcase-visual-diff-contract-gate" in out
+    assert "f-showcase-public-probe-freshness-gate" in out
+    assert "f-showcase-public-probe-observed-at-gate" in out
+    assert "f-showcase-public-probe-observed-at-age-gate" in out
     assert "review-pytest-gate-transcript-regression" in out
     assert "review-frontend-count-shorthand-regression" in out
+    assert "review-frontend-coverage-artifact-drift" in out
     assert "review-audit-gate-transcript-regression" in out
+
+
+def test_main_writes_machine_readable_report_for_selected_mutations(tmp_path, monkeypatch):
+    import scripts.run_mutation_spot_checks as runner
+
+    report_path = tmp_path / "mutation-report.json"
+
+    def fake_run_mutation(root, spec):
+        assert root == Path.cwd()
+        return spec.name != "engine-event-driven-date-gate"
+
+    monkeypatch.setattr(runner, "run_mutation", fake_run_mutation)
+
+    result = runner.main(
+        [
+            "--only",
+            "engine-regime-selector",
+            "--only",
+            "engine-event-driven-date-gate",
+            "--report-json",
+            str(report_path),
+        ]
+    )
+
+    assert result == 1
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report == {
+        "status": "failed",
+        "total": 2,
+        "killed": 1,
+        "survived": 1,
+        "mutations": [
+            {"name": "engine-regime-selector", "status": "killed"},
+            {"name": "engine-event-driven-date-gate", "status": "survived"},
+        ],
+    }

@@ -8,7 +8,7 @@ References: [requirements.md](./requirements.md), [design.md](./design.md).
     - _Eval: `cd frontend && npm test -- --run` fails before source modules exist._
 
 - [x] 2. GREEN: implement Next.js dashboard
-  - [x] 2.1 Add Next.js app/page, route handler, typed contract, fixture, and dashboard component.
+  - [x] 2.1 Add Next.js app/page, route handler, typed contract, generated local `local_result_store` payload consumption, and dashboard component.
     - _Requirements: [REQ-FNX-DASH-001], [REQ-FNX-API-001]_
     - _Eval: frontend tests pass._
 

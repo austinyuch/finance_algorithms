@@ -7,12 +7,13 @@ Implemented · Review PASSED (local production-demo readiness).
 ## Evidence
 
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
-- `cd frontend && npm test -- --run` -> 7 passed.
-- `cd frontend && npm run coverage` -> 82.5% line coverage.
-- `cd frontend && npm run mutation` -> 4/4 frontend mutations killed.
+- `cd frontend && npm test -- --run` -> 44 passed.
+- `cd frontend && npm run coverage` -> 89.85% line coverage.
+- `cd frontend && npm run mutation` -> 26/26 frontend mutations killed.
 - `cd frontend && npm run build` -> success.
-- `cd frontend && npm run smoke` -> `/` and `/api/showcase` production smoke passed on `127.0.0.1:3044`.
+- `cd frontend && npm run smoke` -> `/` and `/api/showcase` production smoke passed on a dynamically selected local port; occupied-`3044` chaos smoke also passed.
+- Dashboard payload source is the generated local result-store scenario from CR-FPS-006; this review no longer relies on the retired inline fixture source.
 
 ## Residual Risk
 
-Actual public hosting and visual regression remain `not_proven`; this slice proves a local production server smoke path and clean dependency audit only.
+Actual public hosting remains `not_proven`; repo-side visual regression is now `proven` by CR-FPS-009 browser visual evidence. This slice still proves a local production server smoke path and clean dependency audit only, not external Pages parity.

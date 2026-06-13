@@ -39,13 +39,14 @@ keeping the Epic A LSTM strategy available for a dedicated PyTorch environment.
 - `uv run pytest -q tests/test_mutation_spot_checks.py` -> 8 passed.
 - `uv run python scripts/run_tsmc_hedge_slice.py` -> exits 0 with explicit
   PyTorch-lane skip notice and non-LSTM leaderboard.
-- `uv run pytest -q` -> 188 passed, 1 skipped.
-- `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py --ignore-missing-imports`
-  -> clean over 51 files.
+- `uv run pytest -q` -> 288 passed.
+- `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports`
+  -> clean over 58 files.
 - `uv run lint-imports` -> KEPT.
 
 ## Claim Boundary
 
-This closes root default dependency reachability for Dependabot alert #7. It does
-not prove GitHub has rescanned and closed the alert yet, and it does not remove
-the optional PyTorch strategy lane.
+This closes root default dependency reachability for Dependabot alert #7.
+Dependabot alert #7 fixed after GitHub rescanned the default branch
+(`fixed_at=2026-06-12T01:19:57Z`). This does not remove the optional PyTorch
+strategy lane or make Torch part of the default UAT/runtime lock.

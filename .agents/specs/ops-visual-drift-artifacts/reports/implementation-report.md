@@ -27,14 +27,15 @@
 - `cd frontend && npm run coverage` -> 92.13% line coverage.
 - `cd frontend && npm run build` -> passed.
 - `cd frontend && npm run visual && npm run visual:browser` -> passed; browser hash `823f7a9df2a199d0432d2e448059f69dfe18401595f186149d50706c04a2c92f`.
-- `cd frontend && npm run probe:public-demo` -> proven HTTP 200.
-- `cd frontend && npm run smoke` -> passed on `127.0.0.1:3044`.
+- `cd frontend && npm run probe:public-demo` -> exit 2 with `configured_not_observed` while the deployed `dataHash` is stale; HTTP 200 and deployed manifest contract metadata were observed, but public-hosting parity is not proven.
+- `cd frontend && npm run smoke` -> passed on a dynamically selected local port; occupied-`3044` chaos smoke also passed.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
 - `cd frontend && npm run mutation` -> 8/8 killed.
 
 ## Claim Boundaries
 
-- Scheduled workflow proof is smoke evidence until a live scheduled run artifact exists.
+- Scheduled workflow proof was smoke evidence in this lane; later B scheduled-run evidence records the live scheduled run artifact.
 - Visual diff thresholding currently uses deterministic screenshot hash equality as the local threshold gate.
 - E drift monitoring is assessed-not-automated and still has no serving or retraining claim.
 - Stooq remains default-disabled; live close rows only permit opt-in review.
+- Public hosting proof from this lane is superseded by CR-FPS-007/008 freshness and parity gates; current branch-local proof remains `configured_not_observed` until Pages serves the refreshed `dataHash`.

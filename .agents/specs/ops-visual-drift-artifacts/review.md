@@ -25,14 +25,14 @@ Verdict: **PASSED** on 2026-06-11.
 - `cd frontend && npm run build` -> passed.
 - `cd frontend && npm run visual` -> passed.
 - `cd frontend && npm run visual:browser` -> passed.
-- `cd frontend && npm run probe:public-demo` -> proven HTTP 200.
+- `cd frontend && npm run probe:public-demo` -> exit 2 with `configured_not_observed` while the deployed `dataHash` is stale; HTTP 200 and deployed manifest contract metadata were observed, but public-hosting parity is not proven.
 - `cd frontend && npm run smoke` -> passed.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
 - `cd frontend && npm run mutation` -> 8/8 killed.
 
 ## Claim Boundary
 
-- This lane upgrades local/governed proof artifacts; it does not prove a live scheduled run occurred.
+- This lane upgrades local/governed proof artifacts; later B scheduled-run evidence proves a live scheduled run, and later F public-hosting CRs supersede this lane's original HTTP-200-only public proof.
 - The visual diff gate is deterministic hash-equality thresholding, not pixel-tolerance CI regression.
 - E drift is assessed-not-automated and does not claim serving or retraining.
 - Stooq remains default-disabled; live close rows only permit opt-in review.

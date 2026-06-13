@@ -1,11 +1,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
-const mutations = [
+export const mutations = [
   {
     name: "frontend-claim-boundary",
     path: "lib/showcase-payload.json",
@@ -28,6 +28,13 @@ const mutations = [
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx"]
   },
   {
+    name: "frontend-visual-regression-underclaim",
+    path: "lib/showcase-payload.json",
+    original: '"visualRegression": "proven"',
+    mutated: '"visualRegression": "not_proven"',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "visual-regression underclaims"]
+  },
+  {
     name: "frontend-dependency-audit-regression",
     path: "lib/showcase-payload.json",
     original: '"dependencyAudit": "clean",',
@@ -37,8 +44,15 @@ const mutations = [
   {
     name: "frontend-dashboard-stale-gate-evidence",
     path: "lib/showcase-payload.json",
-    original: '"frontend mutation 16/16 killed"',
+    original: '"frontend mutation 26/26 killed"',
     mutated: '"mutation 9/9 killed"',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
+  },
+  {
+    name: "frontend-coverage-artifact-drift",
+    path: "../docs/review/assets/gate-frontend-coverage.txt",
+    original: "F Next.js line coverage 89.85%",
+    mutated: "F Next.js line coverage 88.00%",
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
   },
   {
@@ -84,11 +98,53 @@ const mutations = [
     command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "observation is stale"]
   },
   {
+    name: "frontend-public-demo-probe-absolute-output-path",
+    path: "scripts/probe-public-demo.mjs",
+    original: "return pathFromEnv ? resolve(cwd, pathFromEnv) : join(cwd, \"out\", \"public-hosting-probe.json\");",
+    mutated: "return pathFromEnv ? join(cwd, pathFromEnv) : join(cwd, \"out\", \"public-hosting-probe.json\");",
+    command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "absolute paths"]
+  },
+  {
+    name: "frontend-public-demo-export-absolute-output-dir",
+    path: "scripts/export-public-demo.tsx",
+    original: "  ? resolve(root, process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR)\n  : join(root, \"out\");",
+    mutated: "  ? join(root, process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR)\n  : join(root, \"out\");",
+    command: ["npm", "test", "--", "--run", "tests/export-public-demo.test.ts", "-t", "absolute output directories"]
+  },
+  {
+    name: "frontend-public-demo-export-stale-evidence-gate",
+    path: "scripts/export-public-demo.tsx",
+    original: "if (!dashboard.evidence.tests.includes(expected)) {",
+    mutated: "if (false && !dashboard.evidence.tests.includes(expected)) {",
+    command: ["npm", "test", "--", "--run", "tests/export-public-demo.test.ts", "-t", "stale frontend gate evidence"]
+  },
+  {
     name: "frontend-public-demo-expected-manifest-gate",
     path: "scripts/probe-public-demo.mjs",
     original: "if (!deployed || !hasCompleteExpectedManifest(expected)) {",
     mutated: "if (!deployed) {",
     command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "complete expected manifest"]
+  },
+  {
+    name: "frontend-public-demo-probe-manifest-colocation",
+    path: "scripts/probe-public-demo.mjs",
+    original: 'join(dirname(probeOutputPath), "deployment-manifest.json"),\n    join(process.cwd(), "out", "deployment-manifest.json"),',
+    mutated: 'join(process.cwd(), "out", "deployment-manifest.json"),',
+    command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "beside the requested probe output"]
+  },
+  {
+    name: "frontend-public-demo-probe-incomplete-manifest-failclosed",
+    path: "scripts/probe-public-demo.mjs",
+    original: "    return undefined;\n  }\n  return undefined;\n}",
+    mutated: "    continue;\n  }\n  return undefined;\n}",
+    command: ["npm", "test", "--", "--run", "tests/probe-public-demo.test.ts", "-t", "beside the requested probe output"]
+  },
+  {
+    name: "frontend-static-export-showcase-sync",
+    path: "lib/public-demo.ts",
+    original: "if (JSON.stringify(showcase) !== canonicalJson) {",
+    mutated: "if (false && JSON.stringify(showcase) !== canonicalJson) {",
+    command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "static export artifacts"]
   },
   {
     name: "frontend-visual-baseline-alpha-claim",
@@ -117,34 +173,104 @@ const mutations = [
     original: "mismatchedPixels += 1;",
     mutated: "mismatchedPixels += 0;",
     command: ["npm", "test", "--", "--run", "tests/public-demo.test.tsx", "-t", "pixel mismatch ratio"]
+  },
+  {
+    name: "frontend-smoke-port-hardcode-regression",
+    path: "scripts/smoke-port.mjs",
+    original: "    return await assertPortAvailable(requested, host);",
+    mutated: "    return requested;",
+    command: ["npm", "test", "--", "--run", "tests/smoke-port.test.ts", "-t", "occupied governed smoke ports"]
+  },
+  {
+    name: "frontend-smoke-html-api-parity-regression",
+    path: "scripts/smoke-assertions.mjs",
+    original: "  if (!normalizedHtml.includes(needle)) {\n    throw new Error(`dashboard HTML smoke missing ${label}: ${needle}`);\n  }",
+    mutated: "  if (false && !normalizedHtml.includes(needle)) {\n    throw new Error(`dashboard HTML smoke missing ${label}: ${needle}`);\n  }",
+    command: ["npm", "test", "--", "--run", "tests/smoke-port.test.ts", "-t", "explicit governed smoke port"]
   }
 ];
 
-let killed = 0;
-
-for (const mutation of mutations) {
-  const target = join(root, mutation.path);
-  const originalText = readFileSync(target, "utf8");
-  const occurrences = originalText.split(mutation.original).length - 1;
-  if (occurrences !== 1) {
-    throw new Error(`${mutation.name}: expected exactly one mutation target, found ${occurrences}`);
-  }
-  writeFileSync(target, originalText.replace(mutation.original, mutation.mutated), "utf8");
-  try {
-    const result = spawnSync(mutation.command[0], mutation.command.slice(1), {
-      cwd: root,
-      stdio: "inherit"
-    });
-    const isKilled = result.status !== 0;
-    console.log(`${mutation.name}: ${isKilled ? "KILLED" : "SURVIVED"}`);
-    if (isKilled) {
-      killed += 1;
+export function parseMutationArgs(argv) {
+  const only = [];
+  let list = false;
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--only") {
+      const name = argv[index + 1];
+      if (!name || name.startsWith("--")) {
+        throw new Error("--only requires a mutation name");
+      }
+      only.push(name);
+      index += 1;
+    } else if (arg === "--list") {
+      list = true;
+    } else {
+      throw new Error(`unknown argument: ${arg}`);
     }
-  } finally {
-    writeFileSync(target, originalText, "utf8");
   }
+  return { only, list };
 }
 
-if (killed !== mutations.length) {
-  process.exit(1);
+export function selectMutations({ only = [] } = {}) {
+  if (only.length === 0) {
+    return mutations;
+  }
+  const selectedNames = new Set(only);
+  const selected = mutations.filter((mutation) => selectedNames.has(mutation.name));
+  const missing = only.filter((name) => !mutations.some((mutation) => mutation.name === name));
+  if (missing.length > 0) {
+    throw new Error(`unknown mutation(s): ${missing.join(", ")}`);
+  }
+  return selected;
+}
+
+export function runMutations(selectedMutations) {
+  let killed = 0;
+
+  for (const mutation of selectedMutations) {
+    const target = join(root, mutation.path);
+    const originalText = readFileSync(target, "utf8");
+    const occurrences = originalText.split(mutation.original).length - 1;
+    if (occurrences !== 1) {
+      throw new Error(`${mutation.name}: expected exactly one mutation target, found ${occurrences}`);
+    }
+    writeFileSync(target, originalText.replace(mutation.original, mutation.mutated), "utf8");
+    try {
+      const result = spawnSync(mutation.command[0], mutation.command.slice(1), {
+        cwd: root,
+        stdio: "inherit"
+      });
+      const isKilled = result.status !== 0;
+      console.log(`${mutation.name}: ${isKilled ? "KILLED" : "SURVIVED"}`);
+      if (isKilled) {
+        killed += 1;
+      }
+    } finally {
+      writeFileSync(target, originalText, "utf8");
+    }
+  }
+
+  return { killed, total: selectedMutations.length };
+}
+
+export function main(argv = process.argv.slice(2)) {
+  const options = parseMutationArgs(argv);
+  if (options.list) {
+    for (const mutation of mutations) {
+      console.log(mutation.name);
+    }
+    return 0;
+  }
+  const selected = selectMutations(options);
+  const result = runMutations(selected);
+  return result.killed === result.total ? 0 : 1;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    process.exit(main());
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
 }

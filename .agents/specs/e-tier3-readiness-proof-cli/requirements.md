@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The E production evidence builders reduce false-green risk at the library layer, but external proof handoff still needs an operational entrypoint. This slice adds a strict CLI gate that validates production proof JSON files and emits a Tier3 readiness gate artifact only through the governed validators.
+The E production evidence builders reduce false-green risk at the library layer, but external proof handoff still needs an operational entrypoint. This slice adds a strict CLI gate that validates production proof JSON files and emits a Tier3 readiness gate artifact only through the governed validators. Final readiness also requires the manifest artifact URI to point to an external artifact, not a local file or bare label.
 
 ## Dependencies, Impacts & CRs
 
@@ -13,8 +13,8 @@ The E production evidence builders reduce false-green risk at the library layer,
 ## Repo-side Closure vs External Execution
 
 - **Repo-side Closure**: add `scripts/tier3_readiness_gate.py`, CLI tests, mutation coverage, and governance updates.
-- **External Execution**: production serving, retraining, and drift monitoring must still run outside this repo and provide evidence JSON files.
-- **External Blockers / Constraints**: without externally produced production evidence JSON, the CLI cannot prove Tier3 readiness.
+- **External Execution**: production serving, retraining, drift monitoring, and the production manifest artifact must still run or exist outside this repo and provide evidence JSON files/URIs.
+- **External Blockers / Constraints**: without externally produced production evidence JSON and an external manifest artifact URI, the CLI cannot prove Tier3 readiness.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ The E production evidence builders reduce false-green risk at the library layer,
 
 #### Acceptance Criteria
 
-1. When the CLI receives a valid Tier3 manifest and all three valid governed production evidence files, then it shall write a `tier3_readiness_gate` artifact with `readiness=tier3_ready`.
+1. When the CLI receives a valid Tier3 manifest with an external artifact URI and all three valid governed production evidence files, then it shall write a `tier3_readiness_gate` artifact with `readiness=tier3_ready`.
 2. When the output path is omitted, then the CLI shall print the gate artifact JSON to stdout.
 3. When the output path is provided, then the CLI shall write deterministic sorted JSON to that file.
 
@@ -34,7 +34,7 @@ The E production evidence builders reduce false-green risk at the library layer,
 
 #### Acceptance Criteria
 
-1. If any evidence file is local-smoke tier, has the wrong artifact kind, or has the wrong readiness target, then the CLI shall return nonzero.
+1. If any evidence file is local-smoke tier, has the wrong artifact kind, has the wrong readiness target, or the manifest artifact URI is local/bare, then the CLI shall return nonzero.
 2. If any evidence file lacks required production proof metadata, then the CLI shall return nonzero.
 3. If any input JSON is invalid or missing, then the CLI shall return nonzero and shall not write a success artifact.
 

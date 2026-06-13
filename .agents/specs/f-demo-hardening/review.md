@@ -19,11 +19,11 @@ Overall: **8.9 / 10**.
 
 ## Verification Coverage
 
-- Current frontend suite: `npm test -- --run` -> 33 passed.
-- Current frontend coverage: `npm run coverage` -> 91.05% line coverage.
-- Current frontend mutation: `npm run mutation` -> 16/16 killed.
+- Current frontend suite: `npm test -- --run` -> 44 passed.
+- Current frontend coverage: `npm run coverage` -> 89.85% line coverage.
+- Current frontend mutation: `npm run mutation` -> 26/26 killed.
 - `npm run build` -> success.
-- Local HTTP smoke on `127.0.0.1:3044` -> `/` and `/api/showcase` returned conservative demo-readiness evidence.
+- Local HTTP smoke on a dynamically selected local port -> `/` and `/api/showcase` returned conservative demo-readiness evidence; chaos proof also passed while legacy port `3044` was occupied.
 
 ## Residual Risk
 

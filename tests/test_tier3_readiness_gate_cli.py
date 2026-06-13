@@ -40,7 +40,10 @@ def _digest(payload: dict) -> str:
 def _production_payloads(tmp_path: Path) -> tuple[dict, dict, dict, dict]:
     registry = ExperimentRegistry(tmp_path / "experiments.jsonl")
     entry = registry.register("return-risk", "ForecastAllocationStrategy", {"lookback": 12})
-    manifest = build_tier3_run_manifest(registry.snapshot_artifact(), artifact_uri="file://artifacts/demo.json")
+    manifest = build_tier3_run_manifest(
+        registry.snapshot_artifact(),
+        artifact_uri="s3://quant-prod/manifests/return-risk-demo.json",
+    )
     serving = build_production_serving_evidence(
         entry,
         endpoint="https://quant.example.com/models/return-risk",
@@ -154,6 +157,42 @@ def test_tier3_readiness_gate_cli_rejects_spoofed_production_map(tmp_path, capsy
     assert rc == 1
     assert not out.exists()
     assert "unknown production serving evidence artifact" in capsys.readouterr().err
+
+
+def test_tier3_readiness_gate_cli_rejects_mismatched_experiment_binding(tmp_path, capsys):
+    mod = _load()
+    manifest, serving, _retraining, drift = _production_payloads(tmp_path)
+    other_entry = ExperimentRegistry(tmp_path / "other.jsonl").register(
+        "robust-portfolio",
+        "RobustOptimizationStrategy",
+        {"vol_cap": 0.2},
+    )
+    retraining = build_production_retraining_evidence(
+        other_entry,
+        orchestrator="github-actions://finance_algorithms/retrain",
+        result={
+            "status": "completed",
+            "run_id": "train-prod-456",
+            "artifact_uri": "s3://quant-prod/models/robust-portfolio/train-prod-456.json",
+            "claim_boundary": "no_alpha_claim",
+            "metrics": [{"segment": "out_of_sample", "basis": "net", "sharpe": 1.1}],
+        },
+        observed_at="2026-06-12T06:10:00Z",
+        external_proof_id="https://github.com/austinyuch/finance_algorithms/actions/runs/456#retraining",
+    )
+    out = tmp_path / "gate.json"
+
+    rc = mod.main([
+        "--manifest", str(_write_json(tmp_path / "manifest.json", manifest)),
+        "--serving-evidence", str(_write_json(tmp_path / "serving.json", serving)),
+        "--retraining-evidence", str(_write_json(tmp_path / "retraining.json", retraining)),
+        "--drift-evidence", str(_write_json(tmp_path / "drift.json", drift)),
+        "--out", str(out),
+    ])
+
+    assert rc == 1
+    assert not out.exists()
+    assert "validated production evidence did not satisfy Tier3 readiness" in capsys.readouterr().err
 
 
 def test_tier3_readiness_gate_cli_invalid_json_is_chaos_safe(tmp_path):

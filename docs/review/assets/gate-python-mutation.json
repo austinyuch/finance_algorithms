@@ -1,0 +1,408 @@
+{
+  "status": "passed",
+  "total": 100,
+  "killed": 100,
+  "survived": 0,
+  "mutations": [
+    {
+      "name": "engine-regime-selector",
+      "status": "killed"
+    },
+    {
+      "name": "engine-event-driven-date-gate",
+      "status": "killed"
+    },
+    {
+      "name": "c3-regime-change",
+      "status": "killed"
+    },
+    {
+      "name": "result-store-finite-oos-net-sharpe",
+      "status": "killed"
+    },
+    {
+      "name": "yahoo-latest-close",
+      "status": "killed"
+    },
+    {
+      "name": "showcase-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "showcase-frontend-transcript-failure-gate",
+      "status": "killed"
+    },
+    {
+      "name": "d2-forecast-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "d3-robust-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "e-registry-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "b-source-health-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "snapshot-report-stooq-default",
+      "status": "killed"
+    },
+    {
+      "name": "snapshot-scoped-source-health",
+      "status": "killed"
+    },
+    {
+      "name": "showcase-experiment-readiness",
+      "status": "killed"
+    },
+    {
+      "name": "g-alt-data-pit-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-snapshot-ops-stooq-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-source-quorum-status-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-source-quorum-proof-exit-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-source-quorum-proof-file-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-registry-snapshot-checksum",
+      "status": "killed"
+    },
+    {
+      "name": "e-evidence-explicit-claim-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "d-model-evaluation-alpha-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-manifest-serving-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-readiness-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-gate-proof-digest",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-gate-production-validator",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-manifest-artifact-uri-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-artifact-scheme-allowlist-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-experiment-binding-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-production-tier-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-serving-smoke-health-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-retraining-smoke-status-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-automated-drift-status-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-serving-endpoint-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-retraining-status-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-external-proof-uri-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-observed-at-utc-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-external-identity-uri-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-retraining-artifact-uri-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-drift-threshold-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-production-digest-format-gate",
+      "status": "killed"
+    },
+    {
+      "name": "e-tier3-cli-serving-validator",
+      "status": "killed"
+    },
+    {
+      "name": "d-result-store-evaluation-source",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-canonical-source",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-evidence-artifact-source",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-visual-diff-contract-gate",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-public-probe-freshness-gate",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-public-probe-observed-at-gate",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-public-probe-observed-at-age-gate",
+      "status": "killed"
+    },
+    {
+      "name": "f-showcase-retired-fixture-marker",
+      "status": "killed"
+    },
+    {
+      "name": "b-schedule-append-only-retention",
+      "status": "killed"
+    },
+    {
+      "name": "b-stooq-decision-default-disabled",
+      "status": "killed"
+    },
+    {
+      "name": "b-schedule-proof-exit-status",
+      "status": "killed"
+    },
+    {
+      "name": "e-drift-threshold-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-stooq-live-close-positive",
+      "status": "killed"
+    },
+    {
+      "name": "b-stooq-proof-exit-gate",
+      "status": "killed"
+    },
+    {
+      "name": "b-stooq-proof-file-gate",
+      "status": "killed"
+    },
+    {
+      "name": "d-evaluation-artifact-checksum",
+      "status": "killed"
+    },
+    {
+      "name": "root-torch-default-dependency",
+      "status": "killed"
+    },
+    {
+      "name": "demo-tsmc-store-close-gate",
+      "status": "killed"
+    },
+    {
+      "name": "demo-vintage-store-close-gate",
+      "status": "killed"
+    },
+    {
+      "name": "demo-showcase-payload-tempdir-gate",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-next-steps-alert",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-post-merge-sync-promotion",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-cron-proof-pending",
+      "status": "killed"
+    },
+    {
+      "name": "governance-exhaustive-pr-ledger-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-mutation-count-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-python-count-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-spec-report-pytest-count",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-import-linter-count-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-import-linter-formalization-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-local-first-ci-default-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-local-first-ci-skill-default-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-workflow-hosted-only-contract",
+      "status": "killed"
+    },
+    {
+      "name": "local-ci-matrix-report-command-placeholder-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-refresh-review-stale-evidence-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-dashboard-source-wording",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-f-nextjs-requirements-fixture",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-f-nextjs-fixture-review",
+      "status": "killed"
+    },
+    {
+      "name": "governance-f-cr-superseded-fixture-boundary",
+      "status": "killed"
+    },
+    {
+      "name": "governance-stale-visual-evidence-regression",
+      "status": "killed"
+    },
+    {
+      "name": "browser-visual-doc-sync-gate-regression",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-manifest-status-overclaim",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-probe-status-overclaim",
+      "status": "killed"
+    },
+    {
+      "name": "review-public-hosting-probe-status-overclaim",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-manifest-hash-overclaim",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-probe-hash-overclaim",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-probe-expected-hash-drift",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-manifest-contract-regression",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-taxonomy-authority-regression",
+      "status": "killed"
+    },
+    {
+      "name": "manual-showcase-payload-sync-regression",
+      "status": "killed"
+    },
+    {
+      "name": "frontend-showcase-payload-sync-regression",
+      "status": "killed"
+    },
+    {
+      "name": "review-pytest-gate-transcript-regression",
+      "status": "killed"
+    },
+    {
+      "name": "governance-test-registry-count-drift",
+      "status": "killed"
+    },
+    {
+      "name": "mutation-test-registry-count-drift",
+      "status": "killed"
+    },
+    {
+      "name": "python-mutation-report-survivor-drift",
+      "status": "killed"
+    },
+    {
+      "name": "review-frontend-count-shorthand-regression",
+      "status": "killed"
+    },
+    {
+      "name": "review-frontend-coverage-artifact-drift",
+      "status": "killed"
+    },
+    {
+      "name": "review-audit-gate-transcript-regression",
+      "status": "killed"
+    },
+    {
+      "name": "b-scheduled-observer-manual-pending",
+      "status": "killed"
+    }
+  ]
+}

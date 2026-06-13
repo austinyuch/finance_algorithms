@@ -26,7 +26,7 @@ the manual or review MUST carry at least:
 
 | Field | Allowed values | Meaning |
 |---|---|---|
-| `Evidence Source` | `live_screenshot`, `live_command_output`, `report_artifact`, `fixture-backed`, `canonical_local_result_store`, `static_export`, `css_illustration`, `static_placeholder` | How the artifact was produced. |
+| `Evidence Source` | `live_screenshot`, `live_command_output`, `report_artifact`, `fixture-backed` (legacy-only), `canonical_local_result_store`, `static_export`, `css_illustration`, `static_placeholder` | How the artifact was produced. |
 | `Coverage Tier` | `full-integration`, `hybrid`, `mock-heavy`, `not_assessed` | Strength of *this* artifact's evidence — not the product total. |
 | `Readiness State` | `PASS`, `CONDITIONAL`, `FAIL`, `not_assessed` | Copied from the owning `review.md`; never derived from task counts. |
 | `Source Ref` | path | The `review.md` / `SPECS.md` / guide the readiness was copied from. |
@@ -43,8 +43,12 @@ When emitting a `benchmark-evidence-map.json` or similar index, use:
 
 - `ready`, `validated`, `full-integration`, `production-proven` wording is only
   permitted when a product-level authority (`review.md`) states it.
-- `fixture-backed` / `canonical_local_result_store` / `static_export` / `css_illustration` evidence MUST be paired
-  with the relevant warning code from
+- `fixture-backed` is a legacy/retired evidence-source label. New or current
+  dashboard evidence MUST use `canonical_local_result_store` when it is produced
+  from governed local result-store records, and MUST NOT describe that payload as
+  fixture-backed.
+- `fixture-backed` / `canonical_local_result_store` / `static_export` /
+  `css_illustration` evidence MUST be paired with the relevant warning code from
   [`DEMO_RISK_WARNING_TAXONOMY.md`](./DEMO_RISK_WARNING_TAXONOMY.md).
 
 ## Project-specific application (finance_algorithms)

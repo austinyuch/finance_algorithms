@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 
@@ -69,6 +69,47 @@ def test_leaderboard_ignores_non_oos_net_metrics(tmp_path):
     board = store.leaderboard()
     assert board[0]["run_id"] == rid_b          # 誠實的 B 勝出,A 的高 full 被忽略
     assert board[1]["run_id"] == rid_a
+
+
+def test_leaderboard_rejects_unsupported_metric_instead_of_silent_fallback(tmp_path):
+    store = _store(tmp_path)
+    store.log(_record("honest", 0.8))
+
+    with pytest.raises(ValueError, match="unsupported leaderboard metric"):
+        store.leaderboard(metric="in_sample_sharpe")
+
+
+def test_result_store_rejects_non_finite_oos_net_sharpe(tmp_path):
+    store = _store(tmp_path)
+
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError, match="finite oos_net_sharpe"):
+            store.log(_record("bad", bad))
+
+
+@settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(sharpe=st.one_of(
+    st.none(),
+    st.text(min_size=0, max_size=6),
+    st.floats(allow_nan=True, allow_infinity=True),
+))
+def test_pbt_result_store_only_accepts_finite_oos_net_sharpe(tmp_path, sharpe):
+    store = _store(tmp_path)
+    record = _record("maybe-bad", 0.1)
+    record["metrics"][0]["sharpe"] = sharpe
+
+    try:
+        value = float(sharpe)  # type: ignore[arg-type]
+        should_accept = value == value and value not in (float("inf"), float("-inf"))
+    except (TypeError, ValueError):
+        should_accept = False
+
+    if should_accept:
+        rid = store.log(record)
+        assert store.get(rid)["metrics"][0]["sharpe"] == sharpe
+    else:
+        with pytest.raises(ValueError, match="finite oos_net_sharpe"):
+            store.log(record)
 
 
 # --- PBT-3:任意 seed → 引擎兩次 run 指標完全一致(可重現) ---

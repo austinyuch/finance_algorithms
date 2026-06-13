@@ -26,14 +26,14 @@ Verdict: **Implemented · Review PASSED**.
 - `cd frontend && npm run mutation` → 7/7 mutations killed.
 - `cd frontend && npm run visual` → static visual contract passed.
 - `cd frontend && npm run visual:browser` → browser screenshot evidence written.
-- `cd frontend && npm run probe:public-demo` → `https://austinyuch.github.io/finance_algorithms/` returned HTTP 200.
+- `cd frontend && npm run probe:public-demo` → exit 2 with `configured_not_observed` while the deployed `dataHash` is stale; `https://austinyuch.github.io/finance_algorithms/` returned HTTP 200 and deployed manifest metadata was observed.
 - `cd frontend && npm run build` → build passed.
 - `cd frontend && npm run smoke` → local production smoke passed.
 - `cd frontend && npm audit --json` → 0 vulnerabilities.
 
 ## Claim Boundaries
 
-- Public static hosting is proven for the generated `docs/` artifact URL only.
+- Public static hosting has HTTP 200 and deployed manifest metadata observed, but current branch-local parity is `configured_not_observed` until Pages serves the refreshed `dataHash`.
 - Dashboard runtime readiness remains `local_demo_only`; the public static page is not a live QuantLab service.
 - Browser visual evidence is a first screenshot-hash proof, not a mature pixel-diff regression threshold workflow.
 - E Tier3 remains `artifact_manifest_only`; serving, retraining, and automated drift monitoring are not implemented.

@@ -60,20 +60,21 @@ def main() -> int:
            "seed": 0, "data_version": "synth-v1",
            "walk_forward": {"train_window_months": 36, "test_window_months": 12, "step_months": 12}}
 
-    store = LocalResultStore(Path(tempfile.mkdtemp()) / "slice.db")
-    run_hedge_slice(data, cfg, store, target="TSMC", candidates=["PLANT", "RAND"], hedge_fraction=0.3)
-    lstm_strategy = load_lstm_strategy()
-    if lstm_strategy is None:
-        print("[optional] LSTMStrategy skipped: PyTorch lane not installed; see quantlab/envs/pytorch.txt",
-              file=sys.stderr)
-    else:
-        run_and_log(lstm_strategy("TSMC", seed=0), data, cfg, store)
+    with tempfile.TemporaryDirectory(prefix="quantlab-tsmc-slice-") as tmp:
+        with LocalResultStore(Path(tmp) / "slice.db") as store:
+            run_hedge_slice(data, cfg, store, target="TSMC", candidates=["PLANT", "RAND"], hedge_fraction=0.3)
+            lstm_strategy = load_lstm_strategy()
+            if lstm_strategy is None:
+                print("[optional] LSTMStrategy skipped: PyTorch lane not installed; see quantlab/envs/pytorch.txt",
+                      file=sys.stderr)
+            else:
+                run_and_log(lstm_strategy("TSMC", seed=0), data, cfg, store)
 
-    print(f"{'strategy':<16}{'OOS net Sharpe':>16}")
-    print("-" * 32)
-    for r in store.leaderboard():
-        s = r["oos_net_sharpe"]
-        print(f"{r['strategy_name']:<16}{('n/a' if s is None else f'{s:.4f}'):>16}")
+            print(f"{'strategy':<16}{'OOS net Sharpe':>16}")
+            print("-" * 32)
+            for r in store.leaderboard():
+                s = r["oos_net_sharpe"]
+                print(f"{r['strategy_name']:<16}{('n/a' if s is None else f'{s:.4f}'):>16}")
     return 0
 
 

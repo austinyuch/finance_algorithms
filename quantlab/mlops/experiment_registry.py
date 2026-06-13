@@ -7,6 +7,7 @@ claim boundary for dashboard consumers.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -189,6 +190,10 @@ _TIER3_READY_EVIDENCE_KEYS = [
     "retraining_evidence",
     "automated_drift_monitoring_evidence",
 ]
+_TIER3_READY_MANIFEST_KEY = "production_manifest_artifact"
+_TIER3_READY_BINDING_KEY = "experiment_binding"
+_EXTERNAL_ARTIFACT_URI_SCHEMES = frozenset({"https", "s3", "gs", "az", "abfs", "abfss"})
+_EXTERNAL_IDENTITY_URI_SCHEMES = frozenset({"https", "github-actions"})
 
 
 def _is_production_evidence(value: Mapping[str, Any] | None, target: str) -> bool:
@@ -206,6 +211,12 @@ def _is_production_evidence(value: Mapping[str, Any] | None, target: str) -> boo
     except ValueError:
         return False
     return True
+
+
+def _is_bound_to_manifest_experiment(manifest: Mapping[str, Any], evidence: Mapping[str, Mapping[str, Any]]) -> bool:
+    manifest_ids = {str(experiment_id) for experiment_id in manifest.get("experiment_ids", [])}
+    evidence_ids = {str(payload.get("experiment_id") or "") for payload in evidence.values()}
+    return len(evidence_ids) == 1 and "" not in evidence_ids and evidence_ids.issubset(manifest_ids)
 
 
 def build_tier3_readiness_gate(
@@ -229,11 +240,19 @@ def build_tier3_readiness_gate(
         key for key in _TIER3_READY_EVIDENCE_KEYS
         if not _is_production_evidence(evidence[key], key)
     ]
+    if not missing and not _is_bound_to_manifest_experiment(manifest, evidence):
+        missing.append(_TIER3_READY_BINDING_KEY)
+    if not missing and not _is_external_artifact_uri(str(manifest.get("artifact_uri") or "")):
+        missing.append(_TIER3_READY_MANIFEST_KEY)
     return {
         "artifact_kind": "tier3_readiness_gate",
         "claim_boundary": "no_alpha_claim",
         "readiness": "tier3_ready" if not missing else "not_ready",
         "source_manifest_readiness": manifest["readiness"],
+        "manifest_artifact_uri": manifest.get("artifact_uri"),
+        "manifest_artifact_evidence": (
+            "external_uri" if _is_external_artifact_uri(str(manifest.get("artifact_uri") or "")) else "local_or_missing"
+        ),
         "manifest_digest": _digest_payload(dict(manifest)),
         "required_evidence": list(_TIER3_READY_EVIDENCE_KEYS),
         "missing_evidence": missing,
@@ -473,8 +492,48 @@ def _require_production_https(endpoint: str) -> str:
 
 def _require_external_identity(value: str, label: str) -> str:
     normalized = value.strip()
-    if not normalized or _is_local_identity(normalized):
-        raise ValueError(f"production evidence requires an external {label}")
+    parsed = urlparse(normalized)
+    if (
+        not normalized
+        or parsed.scheme not in _EXTERNAL_IDENTITY_URI_SCHEMES
+        or not parsed.netloc
+        or _is_local_identity(normalized)
+    ):
+        raise ValueError(f"production evidence requires an external {label} URI")
+    return normalized
+
+
+def _is_external_artifact_uri(value: str) -> bool:
+    normalized = value.strip()
+    parsed = urlparse(normalized)
+    return bool(
+        normalized
+        and parsed.scheme in _EXTERNAL_ARTIFACT_URI_SCHEMES
+        and parsed.netloc
+        and not _is_local_identity(normalized)
+    )
+
+
+def _require_positive_threshold(value: Any, label: str) -> float:
+    try:
+        threshold = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{label} requires a positive threshold") from exc
+    if threshold <= 0:
+        raise ValueError(f"{label} requires a positive threshold")
+    return threshold
+
+
+def _require_utc_observed_at(value: str, label: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{label} requires observed_at")
+    try:
+        parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{label} requires observed_at as a UTC timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(None):
+        raise ValueError(f"{label} requires observed_at as a UTC timestamp")
     return normalized
 
 
@@ -486,6 +545,13 @@ def _require_external_proof_id(value: str) -> str:
     if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id):
         raise ValueError("production evidence requires external_proof_id to be a traceable external HTTPS URL")
     return proof_id
+
+
+def _require_sha256_digest(value: Any, label: str) -> str:
+    digest = str(value or "").strip()
+    if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest.lower()):
+        raise ValueError(f"production evidence requires {label} to be a 64-character SHA-256 hex digest")
+    return digest
 
 
 def build_production_serving_evidence(
@@ -501,8 +567,7 @@ def build_production_serving_evidence(
     """Build production serving evidence from externally observed health and prediction payloads."""
     if entry.claim_boundary != "no_alpha_claim":
         raise ValueError("production serving evidence only accepts no_alpha_claim entries")
-    if not observed_at.strip():
-        raise ValueError("production serving evidence requires observed_at")
+    observed = _require_utc_observed_at(observed_at, "production serving evidence")
     production_endpoint = _require_production_https(endpoint)
     proof_id = _require_external_proof_id(external_proof_id)
     request = _json_native(dict(sample_request))
@@ -525,7 +590,7 @@ def build_production_serving_evidence(
         "experiment_id": entry.experiment_id,
         "model_family": entry.model_family,
         "strategy_name": entry.strategy_name,
-        "observed_at": observed_at,
+        "observed_at": observed,
         "endpoint": production_endpoint,
         "external_proof_id": proof_id,
         "health": health_payload,
@@ -552,9 +617,11 @@ def validate_production_serving_evidence(evidence: Mapping[str, Any]) -> None:
     health = evidence.get("health")
     if not isinstance(health, Mapping) or str(health.get("status") or "").lower() != "ok":
         raise ValueError("production serving evidence requires healthy health payload")
-    for key in ["experiment_id", "observed_at", "request_digest", "prediction_digest"]:
-        if not str(evidence.get(key) or "").strip():
-            raise ValueError(f"production serving evidence missing {key}")
+    _require_utc_observed_at(str(evidence.get("observed_at") or ""), "production serving evidence")
+    if not str(evidence.get("experiment_id") or "").strip():
+        raise ValueError("production serving evidence missing experiment_id")
+    _require_sha256_digest(evidence.get("request_digest"), "request_digest")
+    _require_sha256_digest(evidence.get("prediction_digest"), "prediction_digest")
 
 
 def build_production_retraining_evidence(
@@ -568,8 +635,7 @@ def build_production_retraining_evidence(
     """Build production retraining evidence from an externally orchestrated run result."""
     if entry.claim_boundary != "no_alpha_claim":
         raise ValueError("production retraining evidence only accepts no_alpha_claim entries")
-    if not observed_at.strip():
-        raise ValueError("production retraining evidence requires observed_at")
+    observed = _require_utc_observed_at(observed_at, "production retraining evidence")
     external_orchestrator = _require_external_identity(orchestrator, "orchestrator")
     proof_id = _require_external_proof_id(external_proof_id)
     payload = _json_native(dict(result))
@@ -582,8 +648,8 @@ def build_production_retraining_evidence(
     artifact_uri = str(payload.get("artifact_uri") or "").strip()
     if not run_id:
         raise ValueError("production retraining evidence requires run_id")
-    if not artifact_uri:
-        raise ValueError("production retraining evidence requires artifact_uri")
+    if not _is_external_artifact_uri(artifact_uri):
+        raise ValueError("production retraining evidence requires external artifact_uri")
     return {
         "artifact_kind": "production_retraining_evidence",
         "claim_boundary": "no_alpha_claim",
@@ -594,7 +660,7 @@ def build_production_retraining_evidence(
         "experiment_id": entry.experiment_id,
         "model_family": entry.model_family,
         "strategy_name": entry.strategy_name,
-        "observed_at": observed_at,
+        "observed_at": observed,
         "orchestrator": external_orchestrator,
         "external_proof_id": proof_id,
         "run_id": run_id,
@@ -619,12 +685,16 @@ def validate_production_retraining_evidence(evidence: Mapping[str, Any]) -> None
         raise ValueError("production retraining evidence must remain production_retraining")
     _require_external_identity(str(evidence.get("orchestrator") or ""), "orchestrator")
     _require_external_proof_id(str(evidence.get("external_proof_id") or ""))
+    if not _is_external_artifact_uri(str(evidence.get("artifact_uri") or "")):
+        raise ValueError("production retraining evidence requires external artifact_uri")
     metrics = evidence.get("oos_net_metrics")
     if not isinstance(metrics, Mapping) or not metrics:
         raise ValueError("production retraining evidence requires out_of_sample net metrics")
-    for key in ["experiment_id", "observed_at", "run_id", "artifact_uri", "result_digest"]:
+    _require_utc_observed_at(str(evidence.get("observed_at") or ""), "production retraining evidence")
+    for key in ["experiment_id", "run_id", "artifact_uri"]:
         if not str(evidence.get(key) or "").strip():
             raise ValueError(f"production retraining evidence missing {key}")
+    _require_sha256_digest(evidence.get("result_digest"), "result_digest")
 
 
 def build_production_automated_drift_monitoring_evidence(
@@ -638,8 +708,7 @@ def build_production_automated_drift_monitoring_evidence(
     """Build production automated drift-monitoring evidence from an external monitor result."""
     if entry.claim_boundary != "no_alpha_claim":
         raise ValueError("production drift monitoring evidence only accepts no_alpha_claim entries")
-    if not observed_at.strip():
-        raise ValueError("production drift monitoring evidence requires observed_at")
+    observed = _require_utc_observed_at(observed_at, "production drift monitoring evidence")
     external_monitor = _require_external_identity(monitor, "monitor")
     proof_id = _require_external_proof_id(external_proof_id)
     payload = _json_native(dict(result))
@@ -651,6 +720,7 @@ def build_production_automated_drift_monitoring_evidence(
     deltas = payload.get("metric_deltas")
     if not isinstance(deltas, Mapping) or not deltas:
         raise ValueError("production drift monitoring evidence requires metric_deltas")
+    threshold = _require_positive_threshold(payload.get("threshold"), "production drift monitoring evidence")
     return {
         "artifact_kind": "production_automated_drift_monitoring_evidence",
         "claim_boundary": "no_alpha_claim",
@@ -662,11 +732,11 @@ def build_production_automated_drift_monitoring_evidence(
         "experiment_id": entry.experiment_id,
         "model_family": entry.model_family,
         "strategy_name": entry.strategy_name,
-        "observed_at": observed_at,
+        "observed_at": observed,
         "monitor": external_monitor,
         "external_proof_id": proof_id,
         "metric_deltas": {str(key): float(value) for key, value in deltas.items()},
-        "threshold": float(payload.get("threshold", 0.0)),
+        "threshold": threshold,
         "result_digest": _digest_payload(payload),
     }
 
@@ -691,9 +761,11 @@ def validate_production_automated_drift_monitoring_evidence(evidence: Mapping[st
     deltas = evidence.get("metric_deltas")
     if not isinstance(deltas, Mapping) or not deltas:
         raise ValueError("production drift monitoring evidence requires metric_deltas")
-    for key in ["experiment_id", "observed_at", "result_digest"]:
-        if not str(evidence.get(key) or "").strip():
-            raise ValueError(f"production drift monitoring evidence missing {key}")
+    _require_positive_threshold(evidence.get("threshold"), "production drift monitoring evidence")
+    _require_utc_observed_at(str(evidence.get("observed_at") or ""), "production drift monitoring evidence")
+    if not str(evidence.get("experiment_id") or "").strip():
+        raise ValueError("production drift monitoring evidence missing experiment_id")
+    _require_sha256_digest(evidence.get("result_digest"), "result_digest")
 
 
 def build_drift_report_skeleton(

@@ -26,10 +26,10 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 
 Current refreshed evidence (2026-06-13):
 
-- `cd frontend && npm test -- --run` -> 33 passed.
-- `cd frontend && npm run visual && npm run visual:browser` -> passed; current pixel diff `1007 / 1,296,000`, `mismatchRatio=0.0007770061728395062`, threshold `0.001`, screenshot hash `3e671908be38211b4f250472804b851de47396c8f6e01644dbb8c5b13d95dcb1`.
-- `cd frontend && npm run coverage` -> 91.05% line coverage.
-- `cd frontend && npm run mutation` -> 16/16 frontend mutations killed.
+- `cd frontend && npm test -- --run` -> 44 passed.
+- `cd frontend && npm run visual && npm run visual:browser` -> passed; current pixel diff `236 / 1,296,000`, `mismatchRatio=0.00018209876543209876`, threshold `0.001`, screenshot hash `2fe7d5e612bbb28072b8829af4db020e04a9a23e1cd6ff3ff2f7bea97994563d`.
+- `cd frontend && npm run coverage` -> 89.85% line coverage.
+- `cd frontend && npm run mutation` -> 26/26 frontend mutations killed.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
 
 Original lane evidence:
@@ -39,11 +39,11 @@ Original lane evidence:
 - `cd frontend && npm run coverage` -> passed.
 - `cd frontend && npm run mutation` -> killed all configured frontend mutations.
 - `cd frontend && npm run build` -> passed.
-- `cd frontend && npm run smoke` -> passed on `127.0.0.1:3044`.
+- `cd frontend && npm run smoke` -> passed on a dynamically selected local port; occupied-`3044` chaos smoke also passed.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.
 
 ## Residuals
 
 - Dashboard data is now generated from the canonical local result-store scenario and remains `local_demo_only`; this lane does not prove full backend/live-data dashboard readiness. The export readiness panel intentionally remains `not_proven` by local dashboard contract.
 - Visual baseline history is repo-committed, not CI-managed historical storage.
-- Live scheduled GitHub Actions snapshot artifact remains unproven; existing schedule proof is smoke-tier.
+- Scheduled GitHub Actions proof is governed outside this F visual lane by `b-live-scheduled-snapshot-proof` / `b-scheduled-run-observer`; current external proof is still smoke-tier, not a visual-readiness dependency.

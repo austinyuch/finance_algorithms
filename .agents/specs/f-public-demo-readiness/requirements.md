@@ -2,7 +2,7 @@
 
 ## Boundary
 
-Improve the local production-demo path and dependency hygiene while keeping actual public hosting and visual regression marked `not_proven` until external evidence exists.
+Improve the local production-demo path and dependency hygiene while keeping actual public hosting marked `not_proven` until external evidence exists. Repo-side visual regression can be marked `proven` only from committed browser visual evidence.
 
 #### AC-FPUB-01 — Dependency Hygiene
 1. Frontend dependency audit must report zero vulnerabilities.
@@ -16,5 +16,5 @@ Improve the local production-demo path and dependency hygiene while keeping actu
 
 #### AC-FPUB-03 — Readiness Honesty
 1. `publicHosting` remains `not_proven`.
-2. `visualRegression` remains `not_proven`.
+2. `visualRegression` remains `proven` only when committed browser visual evidence is current and passed.
 3. `claim` remains `local_demo_only`.

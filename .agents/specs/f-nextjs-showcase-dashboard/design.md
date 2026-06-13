@@ -4,14 +4,14 @@ References: [requirements.md](./requirements.md), [f-showcase-read-api-dashboard
 
 ## Overview
 
-Add a contained `frontend/` Next.js app. The first runtime consumes a checked-in canonical fixture derived from the Python showcase payload contract. This proves the real Next.js rendering and route shape without introducing production deployment claims.
+Add a contained `frontend/` Next.js app. The first runtime consumed a checked-in canonical fixture derived from the Python showcase payload contract. Current dashboard payload authority is superseded by CR-FPS-006: a generated canonical local result-store payload (`local_result_store`) that still proves the real Next.js rendering and route shape without introducing production deployment claims.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  Fixture[frontend/lib/showcase-fixture.ts] --> Route[app/api/showcase/route.ts]
-  Fixture --> Page[app/page.tsx]
+  LocalResultStore[canonical local_result_store payload] --> Route[app/api/showcase/route.ts]
+  LocalResultStore --> Page[app/page.tsx]
   Page --> Component[components/Dashboard.tsx]
   Component --> Smoke[next build + next start + curl]
 ```
@@ -36,7 +36,7 @@ Repo-side closure proves local Next.js runtime. Public hosting, screenshots, and
 ## Components and Interfaces
 
 - `Dashboard`: server-renderable React component.
-- `getShowcaseDashboard`: fixture-backed data provider.
+- `getShowcaseDashboard`: reads the generated canonical local result-store payload.
 - `assertDashboardPayload`: runtime validator used by tests and API route.
 - `/api/showcase`: Next route handler returning validated JSON.
 
@@ -56,7 +56,7 @@ Repo-side closure proves local Next.js runtime. Public hosting, screenshots, and
 
 ## Error Handling
 
-Malformed fixture payloads throw during validation, causing tests/build-time usage to fail closed.
+Malformed local result-store dashboard payloads throw during validation, causing tests/build-time usage to fail closed.
 
 ## Evaluation Standards
 

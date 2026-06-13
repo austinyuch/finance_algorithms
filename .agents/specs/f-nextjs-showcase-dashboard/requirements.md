@@ -14,7 +14,7 @@ This spec upgrades the F showcase from repo-side Python payload/HTML smoke to a 
 
 ## Repo-side Closure vs External Execution
 
-- **Repo-side Closure:** Next.js scaffold, dashboard component/page/API route, deterministic fixture, unit/PBT/integration tests, coverage, mutation evidence, build, and local HTTP smoke.
+- **Repo-side Closure:** Next.js scaffold, dashboard component/page/API route, generated canonical local `local_result_store` payload contract, unit/PBT/integration tests, coverage, mutation evidence, build, and local HTTP smoke.
 - **External Execution:** Public hosting and production deployment are not included.
 - **External Blockers / Constraints:** Browser screenshot testing is optional for this slice; local HTTP smoke is required.
 
@@ -37,7 +37,7 @@ This spec upgrades the F showcase from repo-side Python payload/HTML smoke to a 
 #### Acceptance Criteria
 
 1. When `/api/showcase` is requested, it shall return the canonical dashboard payload as JSON.
-2. If the fixture contract is malformed, tests shall fail before the page can be marked ready.
+2. If the canonical local result-store payload contract is malformed, tests shall fail before the page can be marked ready.
 3. When leaderboard rows are served, their order shall remain sorted by OOS-net Sharpe.
 
 ### Requirement 3 [REQ-FNX-SMOKE-001]

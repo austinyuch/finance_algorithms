@@ -47,6 +47,14 @@ export interface PublicDemoManifest {
   dataHash: string;
 }
 
+export interface PublicDemoExportArtifacts {
+  dashboard: ShowcaseDashboard;
+  html: string;
+  showcase: unknown;
+  manifest: PublicDemoManifest;
+  visualSnapshot: VisualSnapshot;
+}
+
 export interface VisualSnapshot {
   baselineKind: "static_visual_contract";
   claimBoundary: "no_alpha_claim";
@@ -99,6 +107,10 @@ export interface PublicHostingFreshnessOptions {
 
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+export function canonicalDashboardDataHash(dashboard: ShowcaseDashboard): string {
+  return sha256(JSON.stringify(dashboard));
 }
 
 function publicHostingFreshness(
@@ -210,7 +222,7 @@ export function buildPublicDemoManifest(
   if (dashboard.demoReadiness.publicHosting !== "not_proven") {
     throw new Error("public hosting remains unobserved until the deployed URL is checked");
   }
-  const dataHash = sha256(JSON.stringify(dashboard));
+  const dataHash = canonicalDashboardDataHash(dashboard);
   return {
     targetUrl: PUBLIC_SHOWCASE_URL,
     artifactKind: "github_pages_static_showcase",
@@ -220,6 +232,28 @@ export function buildPublicDemoManifest(
     sections: dashboardSections(dashboard),
     dataHash,
   };
+}
+
+export function assertPublicDemoExportArtifactsMatch(artifacts: PublicDemoExportArtifacts): void {
+  const { dashboard, html, showcase, manifest, visualSnapshot } = artifacts;
+  const canonicalJson = JSON.stringify(dashboard);
+  if (JSON.stringify(showcase) !== canonicalJson) {
+    throw new Error("public demo showcase.json must match the canonical dashboard payload");
+  }
+  const expectedDataHash = canonicalDashboardDataHash(dashboard);
+  if (manifest.dataHash !== expectedDataHash) {
+    throw new Error("public demo deployment manifest dataHash must match showcase.json");
+  }
+  if (manifest.claimBoundary !== "no_alpha_claim" || manifest.dashboardClaim !== "local_demo_only") {
+    throw new Error("public demo deployment manifest must preserve conservative claim metadata");
+  }
+  if (JSON.stringify(manifest.sections) !== JSON.stringify(dashboardSections(dashboard))) {
+    throw new Error("public demo deployment manifest sections must match dashboard sections");
+  }
+  const expectedSnapshot = buildVisualSnapshot(html, dashboard);
+  if (JSON.stringify(visualSnapshot) !== JSON.stringify(expectedSnapshot)) {
+    throw new Error("public demo visual snapshot must match the exported HTML and dashboard payload");
+  }
 }
 
 export function buildBrowserVisualEvidence(input: {

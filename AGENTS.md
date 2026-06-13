@@ -91,6 +91,75 @@ need no port allocation and are the default evidence path.
 - For imports involving `quantlab.engine` or `quantlab.data`, run `uv run lint-imports`.
 - For legacy `invest_algorithms/` changes, run `uv run pytest -q tests/test_algo_pyramid.py` at minimum.
 
+## Local-First CI Policy
+
+Hosted GitHub Actions are cost-sensitive. Use `.agents/skills/local-first-ci/`
+when a task mentions CI, workflow cost, pre-merge gates, smoke tests, mutation
+tests, or "run what CI would run". Run the matching local gates first and do not
+trigger or rerun GitHub Actions unless the user explicitly asks or the proof
+genuinely depends on GitHub-hosted state. Use local subagents or parallel local
+shells for independent CI-equivalent gates when that can reduce hosted workflow
+usage without weakening evidence. Treat routine CI as local subagent gate
+bundles first: Python, static typing/import architecture, mutation, frontend,
+smoke, visual, audit, and evidence-regeneration checks should complete locally
+before hosted CI is used for confirmation. Normal tests and workflow steps that
+would usually be queued in CI should be treated as local completion work first.
+When this repo has an equivalent command, split the gate into subagent-owned
+bundles when possible. Treat "CI would catch this" as a
+local/subagent responsibility first; use hosted Actions only for confirmation or
+claims that require GitHub-hosted event semantics, secrets, permissions,
+artifact transport, scheduled triggers, or Pages deployment state. Do not leave
+unit/integration, line coverage, PBT, mutation, smoke, build, visual, audit,
+type/import, or generated-evidence sync gates for hosted CI when the repo has a
+local command that can prove them. Before a push intended to trigger Actions,
+complete the local/subagent matrix or record the exact hosted-only gap; do not
+use GitHub Actions as the routine queue for CI-equivalent work that local
+subagents can finish.
+
+Commit, push, and PR-prep requests inherit this policy unless the user
+explicitly asks to skip local gates. Split independent CI-equivalent bundles
+across local subagents when available, but keep file-mutating gates such as
+mutation tests isolated and reconcile all evidence in the main agent before
+claiming readiness. Subagent-owned gates should return the command, exit status,
+key evidence, and any hosted-only gap; treat that as the local CI decision path,
+not just a preflight before spending GitHub Actions minutes. Use the handoff
+fields from `.agents/skills/local-first-ci/`: Scope, Command, Isolation,
+Evidence, Remainder, changed files if any, and a fail-closed stop rule for the
+first unexplained failure.
+
+Completion means producing the same local pass/fail decision the hosted CI step
+would have produced, not merely a preflight before Actions.
+If workflow or Actions cost is the concern, maximize local/subagent completion
+of the normal CI test and workflow matrix. Slow local execution is not by itself
+a hosted-only gap.
+
+When reducing Actions cost, treat the normal CI flow as a local/subagent
+takeover target: inspect the workflow or documented gate, map ordinary test,
+coverage, mutation, smoke, build, visual, audit, type/import, dependency, and
+generated-evidence steps to repo-local commands, and finish those locally before
+hosted confirmation. Only GitHub event semantics, secrets/permissions, artifact
+transport, scheduled triggers, Pages deployment state, protected environments,
+and remote production identity should remain hosted-only.
+If the user explicitly says GitHub workflows or Actions are expensive, complete
+the ordinary CI test and workflow matrix through local commands, subagents, or
+isolated local shells as far as practical. Do not leave a repo-runnable CI step
+for Actions merely because it is slow or normally belongs to the hosted
+workflow.
+Prompts such as "盡可能在local", "CI流程都subagent完成", or "gh workflow and
+actions很貴" mean the normal CI queue should be taken over locally first:
+inspect workflow YAML, translate ordinary steps to local commands, split
+independent gates across local subagents or shells, serialize file-mutating
+mutation/generated-artifact gates, and keep only GitHub-hosted semantics in the
+hosted-only ledger.
+
+For push/PR readiness, build a local CI replacement matrix from the touched
+files and finish it before using hosted Actions for confirmation. The matrix
+should cover any repo-available unit, integration, line coverage, PBT, mutation,
+smoke, build, visual, audit, type/import, dependency, and generated-evidence
+checks. If a remaining gate is truly hosted-only, record the expected workflow,
+why local/subagent evidence is insufficient, the smallest hosted run needed,
+and the local evidence already completed.
+
 ## Style Notes
 
 - Prefer small, spec-aligned changes over broad refactors.

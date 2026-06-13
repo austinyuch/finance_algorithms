@@ -1,7 +1,9 @@
 import { spawn } from "node:child_process";
+import { DEFAULT_SMOKE_HOST, selectSmokePort } from "./smoke-port.mjs";
+import { assertHtmlMatchesPayload, assertPayload } from "./smoke-assertions.mjs";
 
-const host = "127.0.0.1";
-const port = Number(process.env.QUANTLAB_FRONTEND_SMOKE_PORT || 3044);
+const host = DEFAULT_SMOKE_HOST;
+const port = await selectSmokePort(process.env, host);
 const baseUrl = `http://${host}:${port}`;
 
 function sleep(ms) {
@@ -31,31 +33,6 @@ async function waitForServer() {
   throw lastError || new Error("server did not become ready");
 }
 
-function assertPayload(payload) {
-  if (payload.claimBoundary !== "no_alpha_claim") {
-    throw new Error("dashboard payload overclaims alpha");
-  }
-  if (payload.demoReadiness?.publicHosting !== "not_proven") {
-    throw new Error("public hosting must remain not_proven without deployed URL evidence");
-  }
-  if (payload.demoReadiness?.visualRegression !== "not_proven") {
-    throw new Error("visual regression must remain not_proven without screenshot baseline evidence");
-  }
-  if (payload.demoReadiness?.dependencyAudit !== "clean") {
-    throw new Error("dependency audit must be clean");
-  }
-  if (
-    payload.sourceMetadata?.source !== "local_result_store" ||
-    payload.sourceMetadata?.experimentRegistry !== "experiment_registry" ||
-    payload.sourceMetadata?.sourceRecordCount < 2
-  ) {
-    throw new Error("dashboard payload must prove local_result_store source metadata");
-  }
-  if (payload.experiments?.[0]?.readiness !== "registry_only") {
-    throw new Error("experiment registry must remain registry_only");
-  }
-}
-
 const server = spawn("npm", ["run", "start", "--", "--port", String(port)], {
   stdio: "inherit",
 });
@@ -63,11 +40,10 @@ const server = spawn("npm", ["run", "start", "--", "--port", String(port)], {
 try {
   await waitForServer();
   const html = await fetchText("/");
-  if (!html.includes("Experiment Registry") || !html.includes("local_demo_only")) {
-    throw new Error("dashboard HTML smoke did not include expected sections");
-  }
   const payloadText = await fetchText("/api/showcase");
-  assertPayload(JSON.parse(payloadText));
+  const payload = JSON.parse(payloadText);
+  assertPayload(payload);
+  assertHtmlMatchesPayload(html, payload);
   console.log(`public-demo-smoke: PASS ${baseUrl}`);
 } finally {
   server.kill("SIGTERM");

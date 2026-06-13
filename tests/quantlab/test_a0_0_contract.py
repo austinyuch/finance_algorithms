@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import inspect
 from pathlib import Path
 
 import pytest
@@ -71,6 +72,19 @@ def test_result_record_roundtrip_and_required_validation():
             cumulative_return=0, annualized_return=0, annualized_vol=0.1,
             max_drawdown=0.3, sharpe=0, turnover=0, basis="net", segment="full",
         )
+
+
+def test_result_store_contract_uses_oos_net_leaderboard_authority():
+    from quantlab.contracts import ResultStore
+
+    signature = inspect.signature(ResultStore.leaderboard)
+    assert signature.parameters["metric"].default == "oos_net_sharpe"
+
+    ssot = Path(".agents/specs/a0-backtest-foundation/contract/interfaces.py").read_text(
+        encoding="utf-8",
+    )
+    assert 'metric: str = "oos_net_sharpe"' in ssot
+    assert 'metric: str = "sharpe_net"' not in ssot
 
 
 # --- 3. 框架隔離:engine/data 不得 import ML 框架(NFR-A0-FWAGN-001) ---

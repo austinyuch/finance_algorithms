@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local-First CI"
+  short_description: "Complete routine CI locally/subagent-first before Actions"
+  default_prompt: "Use $local-first-ci to complete the repo's CI-equivalent tests and workflow gates locally or through subagents before spending GitHub Actions minutes; reserve Actions for hosted-only semantics."

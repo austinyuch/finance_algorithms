@@ -1,12 +1,15 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const targetUrl = "https://austinyuch.github.io/finance_algorithms/";
 const publicHostingEvidenceMaxAgeHours = 24;
-const outPath = process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH
-  ? join(process.cwd(), process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH)
-  : join(process.cwd(), "out", "public-hosting-probe.json");
+
+export function resolveProbeOutputPath(pathFromEnv, cwd = process.cwd()) {
+  return pathFromEnv ? resolve(cwd, pathFromEnv) : join(cwd, "out", "public-hosting-probe.json");
+}
+
+const outPath = resolveProbeOutputPath(process.env.QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH);
 
 export function publicHostingFreshness(observedAt, now, maxAgeHours = publicHostingEvidenceMaxAgeHours) {
   if (!observedAt) {
@@ -53,8 +56,9 @@ export function classifyManifestContractStatus({ expected, deployed }) {
     : "mismatched";
 }
 
-function readExpectedManifest() {
+export function readExpectedManifest(probeOutputPath = outPath) {
   const candidates = [
+    join(dirname(probeOutputPath), "deployment-manifest.json"),
     join(process.cwd(), "out", "deployment-manifest.json"),
     join(process.cwd(), "..", "docs", "deployment-manifest.json"),
   ];
@@ -72,6 +76,7 @@ function readExpectedManifest() {
         dashboardClaim: manifest.dashboardClaim,
       };
     }
+    return undefined;
   }
   return undefined;
 }

@@ -7,8 +7,9 @@ This slice hardens the existing local Next.js dashboard so demo-readiness eviden
 ## Dependencies, Impacts & CRs
 
 - [Depends On: f-nextjs-showcase-dashboard]
-- [Impacts: f-nextjs-showcase-dashboard] additive contract fields in fixture/dashboard.
+- [Impacts: f-nextjs-showcase-dashboard] additive contract fields in generated payload/dashboard.
 - [Open Change Requests: none]
+- Current payload authority is the CR-FPS-006 generated local result-store scenario; this slice no longer treats inline fixture records as the dashboard source.
 
 ## Repo-side Closure vs External Execution
 
@@ -25,15 +26,15 @@ This slice hardens the existing local Next.js dashboard so demo-readiness eviden
 #### Acceptance Criteria
 
 1. When the dashboard payload is served, it shall include `publicHosting=not_proven`.
-2. When the dashboard payload is served, it shall include `visualRegression=not_proven`.
+2. When the dashboard payload is served with current passed browser visual diff evidence, it shall include `visualRegression=proven`.
 3. When the dashboard renders, it shall show the local-demo claim and not-proven fields.
 
 ### Requirement 2 [REQ-F-DEMO-002]
 
-**User Story:** As a maintainer, I want overclaimed demo readiness rejected, so that future fixtures cannot silently claim public hosting or visual regression evidence.
+**User Story:** As a maintainer, I want overclaimed or under-wired demo readiness rejected, so that future generated payloads cannot silently claim public hosting or drop browser visual evidence.
 
 #### Acceptance Criteria
 
 1. If public hosting is marked `proven` without deployment evidence, the contract validator shall reject the payload.
-2. If visual regression is marked `proven` without screenshot evidence, the contract validator shall reject the payload.
-3. When frontend mutation checks run, public-hosting overclaim mutation shall be killed.
+2. If visual regression proof artifacts are missing or failed, payload generation shall reject the evidence-backed artifact.
+3. When frontend mutation checks run, public-hosting overclaim and visual-regression underclaim mutations shall be killed.

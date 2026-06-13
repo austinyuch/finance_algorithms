@@ -203,6 +203,8 @@ def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
     }
     assert artifact["activeRunId"] == "forecast-run"
     assert artifact["claimBoundary"] == "no_alpha_claim"
+    assert "frontend mutation 26/26 killed" in artifact["evidence"]["tests"]
+    assert "frontend mutation 21/21 killed" not in artifact["evidence"]["tests"]
     assert [row["runId"] for row in artifact["leaderboard"]] == [
         "forecast-run",
         "baseline-run",
@@ -215,11 +217,11 @@ def _write_current_evidence_root(root: Path) -> None:
     (root / ".agents/specs/f-browser-pixel-baseline").mkdir(parents=True)
     (root / "docs").mkdir(exist_ok=True)
     (root / "docs/review/assets/gate-pytest.txt").write_text(
-        "256 passed in 20.00s\n",
+        "288 passed in 20.00s\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
-        " Test Files  3 passed (3)\n      Tests  33 passed (33)\n",
+        " Test Files  6 passed (6)\n      Tests  44 passed (44)\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-audit.txt").write_text(
@@ -227,12 +229,12 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / ".agents/specs/a0-backtest-foundation/reports/mutation-automation-report.md").write_text(
-        "Current evidence is **72/72 configured/killed**.\n",
+        "Current evidence is **100/100 configured/killed**.\n",
         encoding="utf-8",
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
-        "- Frontend coverage: **91.05% line coverage**.\n"
-        "- Frontend mutation: **16/16 killed**.\n",
+        "- Frontend coverage: **89.85% line coverage**.\n"
+        "- Frontend mutation: **26/26 killed**.\n",
         encoding="utf-8",
     )
     (root / "docs/browser-visual-diff.json").write_text(
@@ -240,8 +242,10 @@ def _write_current_evidence_root(root: Path) -> None:
             "artifactKind": "browser_visual_diff",
             "claimBoundary": "no_alpha_claim",
             "status": "passed",
-            "mismatchedPixels": 1049,
+            "mismatchedPixels": 86,
             "totalPixels": 1296000,
+            "mismatchRatio": 86 / 1296000,
+            "maxMismatchRatio": 0.001,
         }),
         encoding="utf-8",
     )
@@ -249,7 +253,16 @@ def _write_current_evidence_root(root: Path) -> None:
         json.dumps({
             "claimBoundary": "no_alpha_claim",
             "status": "configured_not_observed",
+            "targetUrl": "https://austinyuch.github.io/finance_algorithms/",
+            "httpStatus": 200,
+            "deployedManifestStatus": 200,
+            "manifestContractStatus": "matched",
+            "freshnessStatus": "fresh",
+            "maxAgeHours": 24,
+            "observedAt": "2026-06-13T07:24:50.456Z",
             "hashStatus": "mismatched",
+            "deployedDataHash": "old",
+            "expectedDataHash": "new",
         }),
         encoding="utf-8",
     )
@@ -257,22 +270,34 @@ def _write_current_evidence_root(root: Path) -> None:
 
 def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     from quantlab.showcase import build_canonical_dashboard_artifact
+    from quantlab.showcase.scenario import write_canonical_dashboard_artifact
 
     evidence_root = tmp_path / "evidence"
     _write_current_evidence_root(evidence_root)
 
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
+    assert artifact["demoReadiness"]["publicHosting"] == "not_proven"
+    assert artifact["demoReadiness"]["visualRegression"] == "proven"
     assert artifact["evidence"]["tests"] == [
-        "256 passed",
-        "frontend tests 33 passed",
-        "Python mutation 72/72 killed",
-        "frontend mutation 16/16 killed",
-        "F Next.js coverage 91.05%",
+        "288 passed",
+        "frontend tests 44 passed",
+        "Python mutation 100/100 killed",
+        "frontend mutation 26/26 killed",
+        "F Next.js coverage 89.85%",
         "frontend audit 0 vulnerabilities",
-        "browser visual diff 1049/1296000 passed",
+        "browser visual diff passed",
         "public hosting configured_not_observed (hash mismatched)",
     ]
+
+    output = tmp_path / "dashboard" / "showcase.json"
+    written = write_canonical_dashboard_artifact(
+        output,
+        tmp_path / "write-work",
+        evidence_root=evidence_root,
+    )
+    assert written == json.loads(output.read_text(encoding="utf-8"))
+    assert written["demoReadiness"]["visualRegression"] == "proven"
 
 
 def test_canonical_showcase_artifact_rejects_failed_frontend_transcript(tmp_path):
@@ -281,12 +306,253 @@ def test_canonical_showcase_artifact_rejects_failed_frontend_transcript(tmp_path
     evidence_root = tmp_path / "evidence"
     _write_current_evidence_root(evidence_root)
     (evidence_root / "docs/review/assets/gate-frontend-test.txt").write_text(
-        " Test Files  1 failed | 2 passed (3)\n      Tests  1 failed | 32 passed (33)\n",
+        " Test Files  1 failed | 3 passed (4)\n      Tests  1 failed | 35 passed (36)\n",
         encoding="utf-8",
     )
 
     with pytest.raises(ValueError, match="frontend test evidence includes failures"):
         build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
+
+    pytest_evidence_root = tmp_path / "pytest-evidence"
+    _write_current_evidence_root(pytest_evidence_root)
+    (pytest_evidence_root / "docs/review/assets/gate-pytest.txt").write_text(
+        "1 failed, 288 passed in 20.00s\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="pytest evidence includes failures"):
+        build_canonical_dashboard_artifact(tmp_path / "pytest-work", evidence_root=pytest_evidence_root)
+
+
+def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_path):
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    evidence_root = tmp_path / "evidence"
+    _write_current_evidence_root(evidence_root)
+    (evidence_root / "docs/browser-visual-diff.json").write_text(
+        json.dumps({
+            "artifactKind": "browser_visual_diff",
+            "claimBoundary": "no_alpha_claim",
+            "status": "failed",
+            "mismatchedPixels": 2000,
+            "totalPixels": 1296000,
+            "mismatchRatio": 2000 / 1296000,
+            "maxMismatchRatio": 0.001,
+        }),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="browser visual diff evidence is not passed"):
+        build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
+
+    invalid_cases = [
+        (
+            {"artifactKind": "hash_only_visual"},
+            "browser visual diff evidence kind",
+        ),
+        (
+            {"claimBoundary": "alpha_claim"},
+            "browser visual diff evidence must preserve no_alpha_claim",
+        ),
+        (
+            {"mismatchRatio": None},
+            "browser visual diff evidence has invalid numeric fields",
+        ),
+        (
+            {"mismatchRatio": 86 / 1296000, "maxMismatchRatio": -0.001},
+            "browser visual diff evidence has invalid threshold",
+        ),
+        (
+            {
+                "mismatchedPixels": 2000,
+                "mismatchRatio": 2000 / 1296000,
+                "maxMismatchRatio": 0.001,
+            },
+            "browser visual diff evidence exceeds threshold",
+        ),
+        (
+            {"mismatchRatio": 0.0, "maxMismatchRatio": 0.001},
+            "browser visual diff evidence ratio",
+        ),
+        (
+            {"mismatchedPixels": -1},
+            "browser visual diff evidence has invalid pixel counts",
+        ),
+    ]
+    for patch, message in invalid_cases:
+        invalid_root = tmp_path / f"evidence-{len(message)}"
+        _write_current_evidence_root(invalid_root)
+        visual_diff = json.loads((invalid_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+        visual_diff.update(patch)
+        (invalid_root / "docs/browser-visual-diff.json").write_text(
+            json.dumps(visual_diff),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(ValueError, match=message):
+            build_canonical_dashboard_artifact(tmp_path / f"work-{len(message)}", evidence_root=invalid_root)
+
+    missing_field_root = tmp_path / "missing-field-evidence"
+    _write_current_evidence_root(missing_field_root)
+    visual_diff = json.loads((missing_field_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    del visual_diff["mismatchRatio"]
+    (missing_field_root / "docs/browser-visual-diff.json").write_text(
+        json.dumps(visual_diff),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="browser visual diff evidence missing mismatchRatio"):
+        build_canonical_dashboard_artifact(tmp_path / "missing-field-work", evidence_root=missing_field_root)
+
+    json_shape_root = tmp_path / "json-shape-evidence"
+    _write_current_evidence_root(json_shape_root)
+    (json_shape_root / "docs/browser-visual-diff.json").write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="showcase evidence artifact must be a JSON object"):
+        build_canonical_dashboard_artifact(tmp_path / "json-shape-work", evidence_root=json_shape_root)
+
+    public_probe_root = tmp_path / "public-probe-evidence"
+    _write_current_evidence_root(public_probe_root)
+    (public_probe_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps({
+            "claimBoundary": "alpha_claim",
+            "status": "configured_not_observed",
+            "hashStatus": "mismatched",
+        }),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence must preserve no_alpha_claim"):
+        build_canonical_dashboard_artifact(tmp_path / "public-probe-work", evidence_root=public_probe_root)
+
+    public_status_root = tmp_path / "public-status-evidence"
+    _write_current_evidence_root(public_status_root)
+    (public_status_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps({
+            "claimBoundary": "no_alpha_claim",
+            "status": "planned",
+            "hashStatus": "mismatched",
+        }),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence has unsupported status"):
+        build_canonical_dashboard_artifact(tmp_path / "public-status-work", evidence_root=public_status_root)
+
+    public_incomplete_root = tmp_path / "public-incomplete-evidence"
+    _write_current_evidence_root(public_incomplete_root)
+    (public_incomplete_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps({
+            "claimBoundary": "no_alpha_claim",
+            "status": "configured_not_observed",
+            "hashStatus": "mismatched",
+        }),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence has unexpected targetUrl"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-incomplete-work",
+            evidence_root=public_incomplete_root,
+        )
+
+    public_stale_root = tmp_path / "public-stale-evidence"
+    _write_current_evidence_root(public_stale_root)
+    public_probe = json.loads((public_stale_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
+    public_probe["freshnessStatus"] = "stale"
+    (public_stale_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence must be fresh"):
+        build_canonical_dashboard_artifact(tmp_path / "public-stale-work", evidence_root=public_stale_root)
+
+    public_expired_observed_root = tmp_path / "public-expired-observed-evidence"
+    _write_current_evidence_root(public_expired_observed_root)
+    public_probe = json.loads(
+        (public_expired_observed_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+    public_probe["observedAt"] = "2000-01-01T00:00:00.000Z"
+    public_probe["freshnessStatus"] = "fresh"
+    public_probe["maxAgeHours"] = 24
+    (public_expired_observed_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence observedAt is stale"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-expired-observed-work",
+            evidence_root=public_expired_observed_root,
+        )
+
+    public_bad_observed_root = tmp_path / "public-bad-observed-evidence"
+    _write_current_evidence_root(public_bad_observed_root)
+    public_probe = json.loads(
+        (public_bad_observed_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+    public_probe["observedAt"] = "not-a-dateZ"
+    (public_bad_observed_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence requires valid UTC observedAt"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-bad-observed-work",
+            evidence_root=public_bad_observed_root,
+        )
+
+    public_future_observed_root = tmp_path / "public-future-observed-evidence"
+    _write_current_evidence_root(public_future_observed_root)
+    public_probe = json.loads(
+        (public_future_observed_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+    public_probe["observedAt"] = "2999-06-13T07:24:50.456Z"
+    (public_future_observed_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="public hosting probe evidence observedAt is in the future"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-future-observed-work",
+            evidence_root=public_future_observed_root,
+        )
+
+    public_hash_overclaim_root = tmp_path / "public-hash-overclaim-evidence"
+    _write_current_evidence_root(public_hash_overclaim_root)
+    public_probe = json.loads(
+        (public_hash_overclaim_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+    public_probe["status"] = "proven"
+    public_probe["hashStatus"] = "mismatched"
+    (public_hash_overclaim_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="proven public hosting evidence requires matched hash"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-hash-overclaim-work",
+            evidence_root=public_hash_overclaim_root,
+        )
+
+    public_configured_overclaim_root = tmp_path / "public-configured-overclaim-evidence"
+    _write_current_evidence_root(public_configured_overclaim_root)
+    public_probe = json.loads(
+        (public_configured_overclaim_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
+    )
+    public_probe["hashStatus"] = "matched"
+    (public_configured_overclaim_root / "docs/public-hosting-probe.json").write_text(
+        json.dumps(public_probe),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="configured public hosting evidence must not imply matched hash"):
+        build_canonical_dashboard_artifact(
+            tmp_path / "public-configured-overclaim-work",
+            evidence_root=public_configured_overclaim_root,
+        )
+
+    audit_root = tmp_path / "audit-evidence"
+    _write_current_evidence_root(audit_root)
+    (audit_root / "docs/review/assets/gate-frontend-audit.txt").write_text(
+        "found 1 vulnerability\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="frontend audit evidence is not clean"):
+        build_canonical_dashboard_artifact(tmp_path / "audit-work", evidence_root=audit_root)
 
 
 def test_canonical_showcase_artifact_fails_closed_without_evidence_artifacts(tmp_path):

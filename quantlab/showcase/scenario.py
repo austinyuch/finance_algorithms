@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -12,10 +13,11 @@ from quantlab.tracking import LocalResultStore
 
 
 _FALLBACK_EVIDENCE_TESTS = [
-    "256 passed",
-    "Python mutation 72/72 killed",
-    "frontend mutation 16/16 killed",
-    "F Next.js coverage 91.05%",
+    "288 passed",
+    "frontend tests 44 passed",
+    "Python mutation 100/100 killed",
+    "frontend mutation 26/26 killed",
+    "F Next.js coverage 89.85%",
     "E registry coverage 99%",
     "B source-health/Stooq proof coverage 90%",
 ]
@@ -58,6 +60,83 @@ def _extract_ratio(pattern: str, text: str, *, label: str) -> str:
     return match.group(1)
 
 
+def _validate_browser_visual_diff(visual_diff: Mapping[str, Any]) -> None:
+    if visual_diff.get("artifactKind") != "browser_visual_diff":
+        raise ValueError("browser visual diff evidence kind is unsupported")
+    if visual_diff.get("status") != "passed":
+        raise ValueError("browser visual diff evidence is not passed")
+    if visual_diff.get("claimBoundary") != "no_alpha_claim":
+        raise ValueError("browser visual diff evidence must preserve no_alpha_claim")
+
+    try:
+        mismatched = int(visual_diff["mismatchedPixels"])
+        total = int(visual_diff["totalPixels"])
+        mismatch_ratio = float(visual_diff["mismatchRatio"])
+        max_mismatch_ratio = float(visual_diff["maxMismatchRatio"])
+    except KeyError as exc:
+        raise ValueError(f"browser visual diff evidence missing {exc.args[0]}") from exc
+    except (TypeError, ValueError) as exc:
+        raise ValueError("browser visual diff evidence has invalid numeric fields") from exc
+
+    if mismatched < 0 or total <= 0 or mismatched > total:
+        raise ValueError("browser visual diff evidence has invalid pixel counts")
+    if max_mismatch_ratio <= 0:
+        raise ValueError("browser visual diff evidence has invalid threshold")
+
+    expected_ratio = mismatched / total
+    if abs(mismatch_ratio - expected_ratio) > 1e-12:
+        raise ValueError("browser visual diff evidence ratio does not match pixel counts")
+    if mismatch_ratio > max_mismatch_ratio:
+        raise ValueError("browser visual diff evidence exceeds threshold")
+
+
+def _validate_public_hosting_probe(public_probe: Mapping[str, Any]) -> None:
+    if public_probe.get("claimBoundary") != "no_alpha_claim":
+        raise ValueError("public hosting probe evidence must preserve no_alpha_claim")
+
+    status = public_probe.get("status")
+    if status not in {"configured_not_observed", "proven"}:
+        raise ValueError("public hosting probe evidence has unsupported status")
+
+    if public_probe.get("targetUrl") != "https://austinyuch.github.io/finance_algorithms/":
+        raise ValueError("public hosting probe evidence has unexpected targetUrl")
+    if public_probe.get("httpStatus") != 200:
+        raise ValueError("public hosting probe evidence requires HTTP 200")
+    if public_probe.get("deployedManifestStatus") != 200:
+        raise ValueError("public hosting probe evidence requires deployed manifest HTTP 200")
+    if public_probe.get("manifestContractStatus") != "matched":
+        raise ValueError("public hosting probe evidence requires matched manifest contract")
+    if public_probe.get("freshnessStatus") != "fresh":
+        raise ValueError("public hosting probe evidence must be fresh")
+    max_age_hours = public_probe.get("maxAgeHours")
+    if max_age_hours != 24:
+        raise ValueError("public hosting probe evidence has unexpected freshness window")
+
+    observed_at = public_probe.get("observedAt")
+    if not isinstance(observed_at, str) or not observed_at.endswith("Z"):
+        raise ValueError("public hosting probe evidence requires UTC observedAt")
+    try:
+        observed_at_dt = datetime.fromisoformat(observed_at.removesuffix("Z") + "+00:00")
+    except ValueError as exc:
+        raise ValueError("public hosting probe evidence requires valid UTC observedAt") from exc
+    if observed_at_dt.tzinfo != timezone.utc:
+        raise ValueError("public hosting probe evidence requires valid UTC observedAt")
+    now = datetime.now(timezone.utc)
+    if observed_at_dt > now:
+        raise ValueError("public hosting probe evidence observedAt is in the future")
+    if observed_at_dt + timedelta(hours=max_age_hours) < now:
+        raise ValueError("public hosting probe evidence observedAt is stale")
+
+    hash_status = public_probe.get("hashStatus")
+    if status == "proven":
+        if hash_status != "matched":
+            raise ValueError("proven public hosting evidence requires matched hash")
+        if public_probe.get("deployedDataHash") != public_probe.get("expectedDataHash"):
+            raise ValueError("proven public hosting evidence requires matching dataHash")
+    elif hash_status not in {"mismatched", "missing", "not_checked"}:
+        raise ValueError("configured public hosting evidence must not imply matched hash")
+
+
 def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
     """Read current dashboard evidence from committed proof artifacts.
 
@@ -80,7 +159,7 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
     visual_diff = _read_required_json(root, "docs/browser-visual-diff.json")
     public_probe = _read_required_json(root, "docs/public-hosting-probe.json")
 
-    pytest_count = _extract_count(r"(\d+) passed", pytest_text, label="pytest")
+    pytest_count = _extract_successful_test_count(r"(\d+) passed", pytest_text, label="pytest")
     frontend_count = _extract_successful_test_count(
         r"Tests\s+(\d+) passed",
         frontend_text,
@@ -104,17 +183,9 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
 
     if "found 0 vulnerabilities" not in audit_text:
         raise ValueError("frontend audit evidence is not clean")
-    if visual_diff.get("status") != "passed":
-        raise ValueError("browser visual diff evidence is not passed")
-    if visual_diff.get("claimBoundary") != "no_alpha_claim":
-        raise ValueError("browser visual diff evidence must preserve no_alpha_claim")
-    if public_probe.get("claimBoundary") != "no_alpha_claim":
-        raise ValueError("public hosting probe evidence must preserve no_alpha_claim")
-    if public_probe.get("status") not in {"configured_not_observed", "proven"}:
-        raise ValueError("public hosting probe evidence has unsupported status")
+    _validate_browser_visual_diff(visual_diff)
+    _validate_public_hosting_probe(public_probe)
 
-    mismatched = int(visual_diff["mismatchedPixels"])
-    total = int(visual_diff["totalPixels"])
     probe_status = str(public_probe["status"])
     hash_status = str(public_probe.get("hashStatus", "unknown"))
 
@@ -125,7 +196,7 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
         f"frontend mutation {frontend_mutation} killed",
         f"F Next.js coverage {frontend_coverage}%",
         "frontend audit 0 vulnerabilities",
-        f"browser visual diff {mismatched}/{total} passed",
+        "browser visual diff passed",
         f"public hosting {probe_status} (hash {hash_status})",
     ]
 
@@ -190,6 +261,7 @@ def _frontend_payload(
     *,
     source_record_count: int,
     evidence_tests: list[str],
+    visual_regression_status: str,
 ) -> dict[str, Any]:
     warnings = list(summary.get("warnings") or [])
     if "local_runtime_only" not in warnings:
@@ -210,7 +282,7 @@ def _frontend_payload(
         },
         "demoReadiness": {
             "publicHosting": "not_proven",
-            "visualRegression": "not_proven",
+            "visualRegression": visual_regression_status,
             "dependencyAudit": "clean",
             "claim": "local_demo_only",
         },
@@ -272,6 +344,7 @@ def build_canonical_dashboard_artifact(
             summary,
             source_record_count=len(api.leaderboard()),
             evidence_tests=_current_evidence_tests(evidence_root),
+            visual_regression_status="proven" if evidence_root is not None else "not_proven",
         )
 
 

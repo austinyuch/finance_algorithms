@@ -43,7 +43,7 @@ export interface ShowcaseDashboard {
   };
   demoReadiness: {
     publicHosting: "not_proven";
-    visualRegression: "not_proven";
+    visualRegression: "proven";
     dependencyAudit: "clean";
     claim: "local_demo_only";
   };
@@ -106,8 +106,8 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
   if (value.demoReadiness.publicHosting !== "not_proven") {
     throw new Error("public hosting must remain not_proven until deployment evidence exists");
   }
-  if (value.demoReadiness.visualRegression !== "not_proven") {
-    throw new Error("visual regression must remain not_proven until screenshot evidence exists");
+  if (value.demoReadiness.visualRegression !== "proven") {
+    throw new Error("visual regression must be proven by browser visual evidence");
   }
   if (value.demoReadiness.dependencyAudit !== "clean") {
     throw new Error("dependency audit must remain clean after remediation");

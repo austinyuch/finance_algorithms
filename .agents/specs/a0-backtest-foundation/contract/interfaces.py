@@ -89,7 +89,7 @@ class ResultStore(Protocol):
         """寫入一筆 ResultRecord(符合 schema),回傳 run_id。"""
         ...
 
-    def leaderboard(self, metric: str = "sharpe_net",
+    def leaderboard(self, metric: str = "oos_net_sharpe",
                     descending: bool = True) -> Sequence[Mapping[str, Any]]:
         """回傳依指定指標排序的 run 清單(可含 baseline),每列可追溯回設定。"""
         ...

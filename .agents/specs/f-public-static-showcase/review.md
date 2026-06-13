@@ -8,7 +8,7 @@ Post-baseline CRs: [CR-FPS-001](./change-requests/cr-fps-001-hosting-manifest-pr
 
 ## Evidence
 
-- `cd frontend && npm test -- --run` -> 33 passed.
+- `cd frontend && npm test -- --run` -> 44 passed.
 - `cd frontend && npm run visual` -> deterministic static export and visual-contract baseline check passed.
 - `frontend/scripts/export-public-demo.tsx` exports either `frontend/out` or committed `docs/` static artifacts for GitHub Pages branch-source hosting.
 - `docs/public-hosting-probe.json` records HTTP 200 plus deployed `deployment-manifest.json` status/hash/contract/freshness metadata. After CR-FPS-006, the branch-local generated payload has a new `dataHash`, so both `docs/public-hosting-probe.json` and `docs/deployment-manifest.json` correctly record `hashStatus=mismatched` and `status=configured_not_observed` until GitHub Pages serves the refreshed artifact.

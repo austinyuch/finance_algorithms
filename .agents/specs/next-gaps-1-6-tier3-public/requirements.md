@@ -25,7 +25,7 @@ This continuation lane handles the six highest-value follow-ups from the 2026-06
 #### Acceptance Criteria
 
 1. When GitHub Pages is configured but the hosted URL is not HTTP 200, the manifest shall remain `configured_not_observed`.
-2. When GitHub Pages is configured and the hosted URL returns HTTP 200, the manifest shall record `hostingEvidence.status=proven` with HTTP status and observation time.
+2. When GitHub Pages is configured and the hosted URL returns HTTP 200, the manifest shall record the HTTP status and observation time; `hostingEvidence.status=proven` requires deployed `dataHash` parity, manifest-contract parity, and fresh standalone probe evidence.
 3. If dashboard runtime readiness remains local-only, the dashboard payload shall continue to preserve `local_demo_only` and `no_alpha_claim`.
 
 ### Requirement 2 [REQ-NG16-F-VISUAL]

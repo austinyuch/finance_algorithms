@@ -6,6 +6,7 @@ import fc from "fast-check";
 import { Dashboard } from "../components/Dashboard";
 import {
   PUBLIC_SHOWCASE_URL,
+  assertPublicDemoExportArtifactsMatch,
   assertVisualSnapshotMatchesBaseline,
   buildBrowserVisualEvidence,
   buildBrowserVisualDiffEvidence,
@@ -51,6 +52,54 @@ describe("F public static showcase proof", () => {
       expect(manifest.hostingEvidence.status).toBe("configured_not_observed");
       expect(manifest.hostingEvidence.hashStatus).toBe("mismatched");
     }
+  });
+
+  it("keeps committed static export artifacts aligned with the canonical dashboard payload", () => {
+    const dashboard = getShowcaseDashboard();
+    const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
+    const showcase = JSON.parse(
+      readFileSync(new URL("../../docs/showcase.json", import.meta.url), "utf8"),
+    );
+    const manifest = JSON.parse(
+      readFileSync(new URL("../../docs/deployment-manifest.json", import.meta.url), "utf8"),
+    );
+    const visualSnapshot = JSON.parse(
+      readFileSync(new URL("../../docs/visual-snapshot.json", import.meta.url), "utf8"),
+    );
+
+    expect(() =>
+      assertPublicDemoExportArtifactsMatch({
+        dashboard,
+        html,
+        showcase,
+        manifest,
+        visualSnapshot,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertPublicDemoExportArtifactsMatch({
+        dashboard,
+        html,
+        showcase: {
+          ...showcase,
+          activeRunId: "stale-run",
+        },
+        manifest,
+        visualSnapshot,
+      }),
+    ).toThrow(/showcase\.json/);
+    expect(() =>
+      assertPublicDemoExportArtifactsMatch({
+        dashboard,
+        html,
+        showcase,
+        manifest: {
+          ...manifest,
+          dataHash: "0".repeat(64),
+        },
+        visualSnapshot,
+      }),
+    ).toThrow(/dataHash/);
   });
 
   it("builds a GitHub Pages manifest without overclaiming live hosting", () => {

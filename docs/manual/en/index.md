@@ -22,7 +22,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 256 passed
+uv run pytest -q             # sanity: expect 288 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -134,7 +134,7 @@ Regenerate the static export and (optionally) serve locally:
 ```bash
 cd frontend
 npm run export:public-demo     # writes frontend/out/{index.html,showcase.json,...}
-npm run smoke                  # local HTTP smoke on 127.0.0.1 (needs governed port)
+npm run smoke                  # local HTTP smoke on an auto-selected 127.0.0.1 port
 ```
 
 The committed export renders five panels: **Leaderboard** (OOS-net Sharpe,
@@ -154,10 +154,10 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export` + `canonical_local_result_store`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`, while branch-local public-hosting parity is `configured_not_observed` after the regenerated payload changed `dataHash` (`f-public-static-showcase/review.md`)
 > - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
-> - Resolved: visual diff is repo-baseline pixel-backed (`1007 / 1,296,000`
+> - Resolved: visual diff is repo-baseline pixel-backed (`236 / 1,296,000`
 >   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
 >   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
->   probe observed HTTP 200 plus deployed manifest contract metadata; the export's embedded readiness panel remains conservative (`not_proven`) by contract while Pages catches up to the refreshed `dataHash`.
+>   probe observed HTTP 200 plus deployed manifest contract metadata; the export's embedded readiness panel keeps public hosting conservative (`not_proven`) while Pages catches up to the refreshed `dataHash`, and now reports visual regression as `proven` from browser visual evidence.
 
 ---
 
@@ -186,13 +186,13 @@ baseline** — preserved unchanged.
 
 ## Visual gap inventory
 
-**Gaps resolved since last check (2026-06-11 → 2026-06-12):**
+**Gaps resolved since last check (2026-06-11 → 2026-06-13):**
 
-- Test suite is now **256 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **57** files; mutation spot checks are **72/72 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/audit transcript, import-linter count/formalization drift, and governance registry row-count drift, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection.
+- Test suite is now **288 passed** after moving PyTorch LSTM proof to the optional lane and adding current-governance stale-evidence guards; mypy is clean over **58** files; mutation spot checks are **100/100 configured/killed**, including root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift, E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **26/26 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after CR-FPS-006 the regenerated local result-store payload has a new `dataHash`, so branch-local deployment parity is intentionally `configured_not_observed` until Pages serves the refreshed artifact.
-- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `1007 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `236 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
 
@@ -200,7 +200,7 @@ baseline** — preserved unchanged.
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Static export's readiness panel remains conservative (`not_proven`) by dashboard contract | Low | `frontend/out/index.html` |
+| Static export's public-hosting readiness remains conservative (`not_proven`) by dashboard contract; visual regression is repo-side proven | Low | `frontend/out/index.html` |
 | Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |
 

@@ -7,6 +7,7 @@ in_sample/full 指標灌水),NULL(無 OOS-net)排末。run_id 缺則生成,確�
 from __future__ import annotations
 
 import json
+import math
 import sqlite3
 import uuid
 from pathlib import Path
@@ -17,7 +18,13 @@ def _oos_net_sharpe(record: Mapping[str, Any]) -> float | None:
     """擷取 out_of_sample + net 的 Sharpe;不存在回 None(leaderboard 排末)。"""
     for m in record.get("metrics", []):
         if m.get("segment") == "out_of_sample" and m.get("basis") == "net":
-            return float(m.get("sharpe"))
+            try:
+                value = float(m.get("sharpe"))
+            except (TypeError, ValueError) as exc:
+                raise ValueError("result record requires finite oos_net_sharpe") from exc
+            if not math.isfinite(value):
+                raise ValueError("result record requires finite oos_net_sharpe")
+            return value
     return None
 
 
@@ -51,6 +58,8 @@ class LocalResultStore:
         return json.loads(row[0])
 
     def leaderboard(self, metric: str = "oos_net_sharpe", descending: bool = True) -> list[dict]:
+        if metric != "oos_net_sharpe":
+            raise ValueError(f"unsupported leaderboard metric: {metric}")
         order = "DESC" if descending else "ASC"
         rows = self._conn.execute(
             "SELECT run_id, strategy_name, oos_net_sharpe, is_baseline FROM runs "

@@ -37,12 +37,17 @@ risk for future deployment catch-up checks.
 
 ## Evidence
 
-- `cd frontend && npm test -- --run` -> 33 passed.
-- `cd frontend && npm run coverage` -> 33 passed; line coverage 91.05%.
-- `cd frontend && npm run mutation` -> 16/16 killed, including
-  `frontend-public-demo-hosting-freshness-gate` and
-  `frontend-public-demo-probe-freshness-status-gate` and
-  `frontend-public-demo-expected-manifest-gate`.
+- `cd frontend && npm test -- --run` -> 44 passed.
+- `cd frontend && npm run coverage` -> 89.85% line coverage.
+- `cd frontend && npm run mutation` -> 26/26 killed, including
+  `frontend-public-demo-hosting-freshness-gate`,
+  `frontend-public-demo-probe-freshness-status-gate`,
+  `frontend-public-demo-expected-manifest-gate`,
+  `frontend-public-demo-probe-absolute-output-path`,
+  `frontend-public-demo-export-absolute-output-dir`,
+  `frontend-public-demo-export-stale-evidence-gate`,
+  `frontend-public-demo-probe-manifest-colocation`, and
+  `frontend-public-demo-probe-incomplete-manifest-failclosed`.
 - `cd frontend && npm run export:public-demo` -> passed.
 - `cd frontend && npm run probe:public-demo` -> exit 2 as expected while
   deployed hash is stale.

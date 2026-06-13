@@ -9,6 +9,7 @@ macro / price 資料;若價格資產 >=2 且歷史夠,就跑一個靜態配置�
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -45,8 +46,9 @@ def main() -> int:
                            "us_dividend_withholding_pct": 0, "fx_spread_bps": 0},
            "seed": 0, "data_version": "vintage",
            "walk_forward": {"train_window_months": 12, "test_window_months": 6, "step_months": 6}}
-    store = LocalResultStore(Path("/tmp") / "vintage_slice.db")
-    _, res = run_and_log(StaticWeights({s: 1.0 for s in price_assets}), p, cfg, store)
+    with tempfile.TemporaryDirectory(prefix="quantlab-vintage-slice-") as tmp:
+        with LocalResultStore(Path(tmp) / "vintage_slice.db") as store:
+            _, res = run_and_log(StaticWeights({s: 1.0 for s in price_assets}), p, cfg, store)
     full = next(m for m in res["metrics"] if m["segment"] == "full")
     print(f"\n[backtest] StaticWeights 等權 {price_assets}")
     print(f"  cumulative={full['cumulative_return']:.4f} vol={full['annualized_vol']:.4f} "

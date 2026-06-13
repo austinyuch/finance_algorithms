@@ -1,5 +1,12 @@
 name: daily-snapshot
 
+# local-first-ci contract:
+# hosted-only: schedule event semantics and artifact upload transport.
+# hosted-confirmation-only: local/subagent matrix must be completed before manual dispatch.
+# local-equivalent: uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json
+# local-equivalent: uv run python scripts/snapshot_schedule_report.py
+# Routine unit/type/import/mutation/frontend/smoke gates stay local/subagent-owned.
+
 on:
   schedule:
     - cron: "17 2 * * *"

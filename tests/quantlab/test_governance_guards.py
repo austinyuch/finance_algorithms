@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -46,6 +47,110 @@ def _top_level_test_count(path: Path) -> int:
     )
 
 
+def _current_python_mutation_count() -> int:
+    registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
+    match = re.search(r"Python mutation spot checks: (?P<count>\d+)/(?P=count) configured/killed", registry)
+    assert match, "quantlab/TESTS.md must publish the current Python mutation count"
+    return int(match.group("count"))
+
+
+def _current_python_mutation_report() -> dict[str, object]:
+    report = json.loads((ROOT / "docs/review/assets/gate-python-mutation.json").read_text(encoding="utf-8"))
+    assert report.get("status") in {"passed", "failed"}
+    assert isinstance(report.get("total"), int)
+    assert isinstance(report.get("killed"), int)
+    assert isinstance(report.get("survived"), int)
+    assert isinstance(report.get("mutations"), list)
+    return report
+
+
+def _current_pytest_count() -> int:
+    registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
+    match = re.search(r"Python full suite \*\*(?P<count>\d+) passed\*\*", registry)
+    assert match, "quantlab/TESTS.md must publish the current Python full-suite count"
+    return int(match.group("count"))
+
+
+def _current_frontend_test_count() -> int:
+    gate = (ROOT / "docs/review/assets/gate-frontend-test.txt").read_text(encoding="utf-8")
+    match = re.search(r"Tests\s+(?P<count>\d+) passed \((?P=count)\)", gate)
+    assert match, "gate-frontend-test.txt must publish the current frontend test count"
+    return int(match.group("count"))
+
+
+def _current_frontend_mutation_count() -> int:
+    runner = (ROOT / "frontend/scripts/run-mutation-checks.mjs").read_text(encoding="utf-8")
+    count = len(re.findall(r'\n\s+name: "frontend-', runner))
+    assert count > 0, "frontend mutation runner must publish configured frontend mutations"
+    return count
+
+
+def _current_frontend_vulnerability_count() -> int:
+    audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
+    total = audit_gate["metadata"]["vulnerabilities"]["total"]
+    assert isinstance(total, int) and total >= 0
+    return total
+
+
+def _current_frontend_line_coverage_percent() -> str:
+    transcript = (ROOT / "docs/review/assets/gate-frontend-coverage.txt").read_text(encoding="utf-8")
+    match = re.search(r"F Next\.js line coverage (?P<coverage>\d+\.\d+%)", transcript)
+    assert match, "gate-frontend-coverage.txt must publish F Next.js line coverage"
+    return match.group("coverage")
+
+
+def _registry_row_pass_count(catalog: str, row_id: str) -> int:
+    pattern = re.compile(rf"\| `{re.escape(row_id)}` \|[^\n]+\| (?P<count>\d+) pass(?:[^\n|]*) \|")
+    match = pattern.search(catalog)
+    assert match, f"missing pass-count evidence for {row_id}"
+    return int(match.group("count"))
+
+
+def _current_mypy_source_count() -> int:
+    gate = (ROOT / "docs/review/assets/gate-mypy.txt").read_text(encoding="utf-8")
+    match = re.search(r"Success: no issues found in (?P<count>\d+) source files", gate)
+    assert match, "gate-mypy.txt must publish the current checked source-file count"
+    return int(match.group("count"))
+
+
+def _current_lint_import_counts() -> tuple[int, int]:
+    gate = (ROOT / "docs/review/assets/gate-lint-imports.txt").read_text(encoding="utf-8")
+    match = re.search(r"Analyzed (?P<files>\d+) files, (?P<deps>\d+) dependencies\.", gate)
+    assert match, "gate-lint-imports.txt must publish analyzed file/dependency counts"
+    return int(match.group("files")), int(match.group("deps"))
+
+
+def _current_implemented_epic_count() -> int:
+    registry = (ROOT / ".agents/specs/SPECS.md").read_text(encoding="utf-8")
+    epics: set[str] = set()
+    for line in registry.splitlines():
+        if not (line.startswith("| [") or line.startswith("| [_")):
+            continue
+        cols = [col.strip() for col in line.strip("|").split("|")]
+        if len(cols) < 3 or "Implemented" not in cols[2]:
+            continue
+        epics.update(part.strip() for part in cols[1].split("/") if part.strip())
+    assert epics, "SPECS.md must publish implemented epic rows"
+    return len(epics)
+
+
+def _small_number_word(value: int) -> str:
+    words = {
+        0: "zero",
+        1: "one",
+        2: "two",
+        3: "three",
+        4: "four",
+        5: "five",
+        6: "six",
+        7: "seven",
+        8: "eight",
+        9: "nine",
+        10: "ten",
+    }
+    return words.get(value, str(value))
+
+
 def test_contract_interfaces_no_drift():
     """spec contract SSOT 與 quantlab 實作版的 Protocol 結構不得漂移。"""
     spec = _protocol_surface(ROOT / ".agents/specs/a0-backtest-foundation/contract/interfaces.py")
@@ -58,6 +163,7 @@ def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
     """Governance-heavy row counts must track the current test inventory."""
     registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
     governed_rows = {
+        "test_e_1_experiment_registry": ROOT / "tests/quantlab/test_e_1_experiment_registry.py",
         "test_governance_guards": ROOT / "tests/quantlab/test_governance_guards.py",
         "test_mutation_spot_checks": ROOT / "tests/test_mutation_spot_checks.py",
     }
@@ -65,12 +171,231 @@ def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
     for row_id, path in governed_rows.items():
         expected = _top_level_test_count(path)
         assert f"| `{row_id}` |" in registry
-        pattern = re.compile(rf"\| `{re.escape(row_id)}` \|[^\n]+\| (?P<count>\d+) pass \|")
-        match = pattern.search(registry)
-        assert match, f"missing pass-count evidence for {row_id}"
-        assert int(match.group("count")) == expected, (
-            f"quantlab/TESTS.md row {row_id} reports {match.group('count')} pass, "
+        count = _registry_row_pass_count(registry, row_id)
+        assert count == expected, (
+            f"quantlab/TESTS.md row {row_id} reports {count} pass, "
             f"but {path.relative_to(ROOT)} currently has {expected} tests"
+        )
+
+    workspace_rollup = (ROOT / ".agents/specs/TESTS.md").read_text(encoding="utf-8")
+    f_showcase_count = _registry_row_pass_count(registry, "test_f_1_showcase_api")
+    assert f"Python F {f_showcase_count} passed" in workspace_rollup
+    assert "Python F 11 passed" not in workspace_rollup
+
+
+def test_local_first_ci_policy_is_repo_guided_and_skill_backed():
+    """Workflow-cost policy must stay local-first unless hosted state is required."""
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    skill = (ROOT / ".agents/skills/local-first-ci/SKILL.md").read_text(encoding="utf-8")
+    openai_metadata = (ROOT / ".agents/skills/local-first-ci/agents/openai.yaml").read_text(encoding="utf-8")
+
+    assert ".agents/skills/local-first-ci/" in agents
+    assert "Hosted GitHub Actions are cost-sensitive" in agents
+    assert "Run the matching local gates first" in agents
+    assert "do not\ntrigger or rerun GitHub Actions unless the user explicitly asks" in agents
+    assert "Use local subagents or parallel local\nshells for independent CI-equivalent gates" in agents
+    assert "Treat routine CI as local subagent gate\nbundles first" in agents
+    assert "Python, static typing/import architecture, mutation, frontend,\nsmoke, visual, audit, and evidence-regeneration checks" in agents
+    assert "Normal tests and workflow steps" in agents
+    assert "would usually be queued in CI" in agents
+    assert "local completion" in agents
+    assert "When this repo has an equivalent command" in agents
+    assert "split the gate into subagent" in agents
+    assert "bundles when possible" in agents
+    assert "Subagent-owned gates should return the command, exit status,\nkey evidence, and any hosted-only gap" in agents
+    assert "not just a preflight before spending GitHub Actions minutes" in agents
+    assert "Scope, Command, Isolation,\nEvidence, Remainder, changed files if any" in agents
+    assert "fail-closed stop rule for the\nfirst unexplained failure" in agents
+    assert "Completion means producing the same local pass/fail decision" in agents
+    assert "not merely a preflight before Actions" in agents
+    assert "If workflow or Actions cost is the concern" in agents
+    assert "maximize local/subagent completion\nof the normal CI test and workflow matrix" in agents
+    assert "Slow local execution is not by itself\na hosted-only gap" in agents
+    assert "Treat \"CI would catch this\" as a\nlocal/subagent responsibility first" in agents
+    assert "GitHub-hosted event semantics, secrets, permissions,\nartifact transport, scheduled triggers, or Pages deployment state" in agents
+    assert "protected environments" in agents
+    assert "remote production identity" in agents
+    assert "Do not leave\nunit/integration, line coverage, PBT, mutation, smoke, build, visual, audit,\ntype/import, or generated-evidence sync gates for hosted CI" in agents
+    assert "Before a push intended to trigger Actions" in agents
+    assert "complete the local/subagent matrix or record the exact hosted-only gap" in agents
+    assert "do not\nuse GitHub Actions as the routine queue for CI-equivalent work" in agents
+    assert "For push/PR readiness, build a local CI replacement matrix" in agents
+    assert "finish it before using hosted Actions for confirmation" in agents
+    assert "line coverage, PBT, mutation,\nsmoke, build, visual, audit, type/import, dependency, and generated-evidence" in agents
+    assert "If a remaining gate is truly hosted-only" in agents
+    assert "the smallest hosted run needed" in agents
+    assert "complete\nthe ordinary CI test and workflow matrix through local commands, subagents, or\nisolated local shells as far as practical" in agents
+    assert "Do not leave a repo-runnable CI step\nfor Actions merely because it is slow" in agents
+
+    assert "GitHub Actions minutes are cost-sensitive" in skill
+    assert "normal CI loop as local/subagent-owned work first" in skill
+    assert "same pass/fail decision CI would normally produce" in skill
+    assert "Slow local runtime is not a hosted-only reason" in skill
+    assert "Map each ordinary CI step to a repo-local command" in skill
+    assert "Split independent read-only gates across subagents or parallel local shells" in skill
+    assert "Serialize mutation, generated-artifact, and other file-mutating gates" in skill
+    assert "Leave only genuinely GitHub-hosted proof in the hosted-only ledger" in skill
+    assert "Unit, integration, property-based, chaos, coverage, and regression tests" in skill
+    assert "Frontend unit tests, build/export, smoke, visual, audit, and frontend mutation gates" in skill
+    assert "Workflow contract checks that can be proven by reading YAML" in skill
+    assert "Do not push just to let Actions find ordinary failures" in skill
+    assert "Use GitHub Actions only for proof that depends on GitHub-hosted state" in skill
+    assert "Event payload semantics" in skill
+    assert "Repository secrets, permissions, OIDC, protected environments, or deployment approvals" in skill
+    assert "Artifact upload/download behavior" in skill
+    assert "GitHub Pages deployment state" in skill
+    assert "Remote production identity or external service binding" in skill
+    assert "Before a hosted run, record the smallest remaining hosted check" in skill
+    assert "Subagent Dispatch Contract" in skill
+    assert "Scope: the CI job or workflow step being replaced locally" in skill
+    assert "Command: exact command and working directory" in skill
+    assert "Isolation: read-only, generated-artifact, mutation/file-mutating, or hosted-only" in skill
+    assert "Evidence: exit status and the concise output line that matters" in skill
+    assert "Remainder: hosted-only proof still required" in skill
+    assert "The main agent remains responsible for changed-file scoping" in skill
+    assert "Finance Algorithms Default Matrix" in skill
+    assert "Python correctness:" in skill
+    assert "Static architecture:" in skill
+    assert "Mutation:" in skill
+    assert "Frontend:" in skill
+    assert "Evidence/governance:" in skill
+    assert "Workflow contract:" in skill
+    assert "mutation gates and generated evidence gates can edit files" in skill
+    assert "Do not run them in parallel with tests or builds that read those files" in skill
+    assert "Handoff Shape" in skill
+    assert "`local/subagent`: ordinary gate completed locally" in skill
+    assert "`serialized`: mutation or generated-artifact gate completed without racing readers" in skill
+    assert "`hosted-only`: smallest remaining GitHub-hosted proof" in skill
+    assert "local proof is repo-side evidence" in skill
+    assert "not GitHub Actions proof, Pages proof, scheduler proof, or production proof" in skill
+    assert "原本常態要給CI跑得測試and CI流程都subagent完成" in skill
+    assert "workflow cost" in skill
+    assert '"Actions are expensive"' in skill
+
+    assert "Complete routine CI locally/subagent-first before Actions" in openai_metadata
+    assert "locally or through subagents before spending GitHub Actions minutes" in openai_metadata
+    assert "reserve Actions for hosted-only semantics" in openai_metadata
+
+
+def test_github_workflows_are_hosted_only_not_routine_ci_queue():
+    """Committed workflows must not hide local-testable gates in hosted Actions."""
+    workflow_dir = ROOT / ".github/workflows"
+    workflows = sorted(workflow_dir.glob("*.yml")) + sorted(workflow_dir.glob("*.yaml"))
+    assert workflows, "repository workflow contract should stay visible to local-first CI governance"
+
+    workflow_texts = {path: path.read_text(encoding="utf-8") for path in workflows}
+    for path, text in workflow_texts.items():
+        assert "local-first-ci contract:" in text, f"{path.name} must classify hosted workflow use"
+        assert "hosted-only:" in text, f"{path.name} must explain why hosted proof is needed"
+        assert "hosted-confirmation-only:" in text, f"{path.name} must stay confirmation-only"
+        assert "local/subagent matrix must be completed before manual dispatch" in text
+        assert "local-equivalent:" in text, f"{path.name} must publish local equivalents"
+        assert "Routine unit/type/import/mutation/frontend/smoke gates stay local/subagent-owned" in text
+
+    combined = "\n".join(workflow_texts.values())
+    assert "hosted-only:" in combined
+    assert "hosted-confirmation-only:" in combined
+    assert "local-equivalent:" in combined
+    assert "schedule event semantics" in combined
+    assert "artifact upload transport" in combined
+    assert "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json" in combined
+    assert "uv run python scripts/snapshot_schedule_report.py" in combined
+    assert 'name: snapshot-schedule-proof' in combined
+
+    routine_ci_markers = [
+        "uv run pytest",
+        "uv run mypy",
+        "uv run lint-imports",
+        "run_mutation_spot_checks.py",
+        "pytest --cov",
+        "coverage",
+        "ruff",
+        "npm test",
+        "npm run test",
+        "npm run build",
+        "npm run smoke",
+        "npm run visual",
+        "npm run mutation",
+        "npm audit",
+        "npm run audit",
+        "playwright",
+        "pnpm test",
+        "yarn test",
+    ]
+    for marker in routine_ci_markers:
+        assert marker not in combined, f"{marker} should stay local/subagent-owned, not in hosted workflow"
+
+
+def test_local_ci_matrix_exposes_repo_runnable_workflow_equivalents():
+    """Workflow-local equivalents must be machine-readable before hosted confirmation."""
+    from scripts.local_ci_matrix import build_local_ci_matrix, matrix_payload
+
+    gates = build_local_ci_matrix("artifacts")
+    names = {gate.name for gate in gates}
+    assert names == {"daily-snapshot:dry-run-report", "daily-snapshot:schedule-proof"}
+    assert all(gate.isolation == "generated-artifact" for gate in gates)
+    assert all(gate.workdir == "." for gate in gates)
+    assert all("schedule event semantics and artifact upload transport" in gate.remainder for gate in gates)
+
+    commands = [" ".join(gate.command) for gate in gates]
+    assert "uv run python scripts/daily_snapshot.py --dry-run --report-json artifacts/snapshot-report.json" in commands
+    assert any("uv run python scripts/snapshot_schedule_report.py artifacts/snapshot-report.json" in command
+               for command in commands)
+    assert not any("pytest" in command or "npm test" in command for command in commands)
+
+    payload = matrix_payload("artifacts")
+    assert payload["policy"] == "local-first-ci"
+    assert payload["hosted_only"] == ["schedule event semantics", "artifact upload transport"]
+    assert len(payload["gates"]) == 2
+
+
+def test_current_mutation_count_is_single_source_synced_across_governance_surfaces():
+    """Current governance artifacts must not hand-copy divergent mutation counts."""
+    count = _current_python_mutation_count()
+    report = _current_python_mutation_report()
+    expected = f"{count}/{count}"
+    assert report["status"] == "passed"
+    assert report["total"] == count
+    assert report["killed"] == count
+    assert report["survived"] == 0
+    assert len(report["mutations"]) == count
+    assert all(item["status"] == "killed" for item in report["mutations"])
+    surfaces = {
+        "quantlab/CORRECTNESS_CHECKLIST.md": [
+            f"current configured suite is {expected}",
+            f"run_mutation_spot_checks.py`({expected} killed)",
+        ],
+        ".agents/specs/NEXT_STEPS.md": [
+            f"**{expected} configured/killed**",
+        ],
+        ".agents/specs/RTM.md": [
+            f"{expected} configured mutations killed",
+        ],
+        ".agents/specs/SPECS.md": [
+            f"consolidated to {expected}",
+        ],
+        ".agents/specs/ISSUE_LOG.md": [
+            f"{expected} Python mutation spot checks configured",
+        ],
+        "docs/FEATURES.md": [
+            f"**{expected} configured/killed**",
+        ],
+    }
+
+    for rel_path, snippets in surfaces.items():
+        text = (ROOT / rel_path).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet in text, f"{rel_path} does not match current mutation evidence: {snippet}"
+
+    mutation_name_surfaces = [
+        ".agents/specs/NEXT_STEPS.md",
+        ".agents/specs/RTM.md",
+        "docs/FEATURES.md",
+    ]
+    for rel_path in mutation_name_surfaces:
+        text = (ROOT / rel_path).read_text(encoding="utf-8")
+        assert text.count("`browser-visual-doc-sync-gate-regression`") == 1, (
+            f"{rel_path} must not duplicate browser visual doc-sync mutation evidence"
         )
 
 
@@ -98,16 +423,32 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         ROOT / "docs/review/assets/gate-pytest.txt",
         ROOT / "docs/review/assets/gate-frontend-test.txt",
         ROOT / "docs/review/assets/gate-frontend-audit.txt",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/review.md",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/reports/implementation-report.md",
+        ROOT / ".agents/specs/e-tier3-serving-evidence/review.md",
+        ROOT / ".agents/specs/e-tier3-retraining-evidence/review.md",
+        ROOT / ".agents/specs/e-tier3-retraining-evidence/reports/implementation-report.md",
+        ROOT / ".agents/specs/e-tier3-production-evidence-gate/review.md",
+        ROOT / ".agents/specs/e-tier3-production-evidence-gate/reports/implementation-report.md",
+        ROOT / ".agents/specs/e-tier3-production-probes/review.md",
+        ROOT / ".agents/specs/e-tier3-production-probes/tasks.md",
+        ROOT / ".agents/specs/e-tier3-production-probes/reports/implementation-report.md",
+        ROOT / ".agents/specs/e-tier3-readiness-proof-cli/review.md",
+        ROOT / ".agents/specs/e-tier3-readiness-proof-cli/tasks.md",
+        ROOT / ".agents/specs/e-tier3-readiness-proof-cli/reports/implementation-report.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/review.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/reports/implementation-report.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
         ROOT / ".agents/specs/f-demo-hardening/review.md",
         ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-public-static-showcase/change-requests/cr-fps-008-public-probe-freshness-gate.md",
     ]
     stale_markers = [
         "190 pytest",
-        "20 frontend",
+        "20 frontend tests",
+        "stale governance guard 20 passed",
         "22 mutation",
-        "66 passed",
         "156 passed",
         "243 passed",
         "244 passed",
@@ -118,6 +459,8 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "247 suite evidence",
         "248 passed",
         "included in 245 passed",
+        "<b>214</b><span>Python tests passing</span>",
+        "266 passed",
         "242 passed",
         "241 passed",
         "231 passed",
@@ -126,8 +469,16 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "240 passed",
         "239 passed",
         "23 frontend tests",
+        "<b>23</b><span>frontend tests passing</span>",
         "27 frontend tests",
         "27 tests pass",
+        "33 passed",
+        "16/16 killed",
+        "16/16 frontend",
+        "188 passed, 1 skipped",
+        "200 passed, 1 skipped",
+        "204 passed, 1 skipped",
+        "207 passed, 1 skipped",
         "found 1 vulnerability",
         "1 vulnerability",
         "46/46 configured",
@@ -225,19 +576,73 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
             "Python mutation 70/70",
             "mutation spot checks 70/70",
             "mutation spot-checks are **70/70",
-            "71/71 configured",
-            "71/71 Python mutation",
-            "Python mutation 71/71",
-            "mutation spot checks 71/71",
-            "mutation spot-checks are **71/71",
-            "6/6 configured",
+                "71/71 configured",
+                "71/71 Python mutation",
+                "Python mutation 71/71",
+                "mutation spot checks 71/71",
+                "mutation spot-checks are **71/71",
+                    "76/76 configured",
+                    "76/76 Python mutation",
+                    "Python mutation 76/76",
+                    "mutation spot checks 76/76",
+                    "mutation spot-checks are **76/76",
+                    "77/77 configured",
+                    "77/77 Python mutation",
+                    "Python mutation 77/77",
+                    "mutation spot checks 77/77",
+                    "mutation spot-checks are **77/77",
+                    "80/80 configured",
+                    "80/80 Python mutation",
+                    "Python mutation 80/80",
+                    "mutation spot checks 80/80",
+                    "mutation spot-checks are **80/80",
+                        "81/81 configured",
+                        "current configured suite is 81/81",
+                        "81/81 Python mutation",
+                        "Python mutation 81/81",
+                        "mutation spot checks 81/81",
+                        "mutation spot-checks are **81/81",
+                        "run_mutation_spot_checks.py`(81/81 killed)",
+                        "82/82 configured",
+                        "current configured suite is 82/82",
+                        "82/82 Python mutation",
+                        "Python mutation 82/82",
+                        "mutation spot checks 82/82",
+                        "mutation spot-checks are **82/82",
+                        "run_mutation_spot_checks.py`(82/82 killed)",
+                    "79/79 configured",
+                    "79/79 Python mutation",
+                    "Python mutation 79/79",
+                    "mutation spot checks 79/79",
+                    "mutation spot-checks are **79/79",
+                    "6/6 configured",
         "kills 6/6 configured mutations",
         "mutation spot-check 5/5",
         "41/41 Python mutation",
         "236 passed",
         "included in 236 passed",
+        "214 passed",
+        "1 skipped",
+        "264 passed",
+        "275 passed",
+        "275 Python tests",
+        "275 suite evidence",
+        "276 Python tests",
+        "279 passed",
+        "96/96",
+        "88/88",
+        "99/99",
+        "total=99",
+        "killed=99",
+        "35/35 configured",
+        "35/35 configured mutations",
+        "57 source files",
+        "57 files",
         "clean over 55 files",
         "55 source files",
+        "clean over 51 files",
+        "clean over 52 files",
+        "53 files",
         "73 files, 177 deps",
         "3/3 configured mutations",
         "3/3 configured/killed",
@@ -249,6 +654,10 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "74 files, 185 dependencies",
         "74 files / 185 deps",
         "74 files, 185 deps",
+        "75 files / 186 dependencies",
+        "75 files, 186 dependencies",
+        "75 files / 186 deps",
+        "75 files, 186 deps",
         "91.81% line coverage",
         "91.42% line coverage",
         "84.37% line coverage",
@@ -269,11 +678,22 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "14 frontend mutations",
         "mutation 14/14 killed",
         "frontend mutation 14/14",
+        "18/18 frontend mutations",
+        "18/18 frontend mutation",
+        "mutation 18/18 killed",
+        "frontend mutation 18/18",
+        "19/19 frontend mutations",
+        "19/19 frontend mutation",
+        "mutation 19/19 killed",
+        "frontend mutation 19/19",
         "91.07% line coverage",
         "F Next.js coverage 91.07%",
         "221 / 1,296,000",
         "221/1,296,000",
         "latest 221",
+        "505 / 1,296,000",
+        "505/1,296,000",
+        "0.0003896604938271605",
         "1019 / 1,296,000",
         "1019/1,296,000",
         "0.0007862654320987655",
@@ -346,14 +766,41 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "8acc4d0a14aeca1cc95edfcb402dcd72a41f035b5e367e497634839301fb7c29",
         "221 / 1,296,000",
         "221/1,296,000",
-        "0 / 1,296,000",
-        "0/1,296,000",
+        "Public hosting and visual regression remain `not_proven`",
+        "Public hosting and visual regression remain deferred",
+        "not_proven public hosting/visual regression",
+        "prove public hosting + visual regression",
+        "readiness panel remains conservative (`not_proven`) by dashboard contract",
+        "Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 `not_proven`",
+        "## Current State (2026-06-12)",
+        "Latest authoritative gate evidence (2026-06-12)",
+        "Captured live (2026-06-12)",
+        "Gaps resolved since last check (2026-06-11 → 2026-06-12)",
+        "Resolved (2026-06-11 → 2026-06-12)",
+        "自上次檢查以來已解決（2026-06-11 → 2026-06-12）",
     ]
 
     for path in current_surfaces:
         text = path.read_text(encoding="utf-8")
         for marker in stale_markers:
             assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale marker: {marker}"
+
+    governance_count = _top_level_test_count(ROOT / "tests/quantlab/test_governance_guards.py")
+    frontend_count = _current_frontend_test_count()
+    governance_refresh_surfaces = [
+        ROOT / ".agents/specs/governance-evidence-refresh/review.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/reports/implementation-report.md",
+    ]
+    for path in governance_refresh_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert (
+            f"`uv run pytest -q tests/quantlab/test_governance_guards.py` -> {governance_count} passed"
+            in text
+        ), f"{path.relative_to(ROOT)} must track the current governance guard count"
+        assert (
+            f"`cd frontend && npm test -- --run` -> {frontend_count} passed" in text
+            or f"Frontend unit: `cd frontend && npm test -- --run` -> {frontend_count} passed" in text
+        ), f"{path.relative_to(ROOT)} must track the current frontend test count"
 
 
 def test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_boundary():
@@ -378,11 +825,58 @@ def test_f_public_static_showcase_crs_do_not_republish_superseded_fixture_bounda
             )
 
 
+def test_evidence_metadata_contract_keeps_fixture_backed_legacy_only():
+    """Current stakeholder evidence must prefer canonical result-store labels over fixtures."""
+    contract = (ROOT / "docs/EVIDENCE_METADATA_CONTRACT.md").read_text(encoding="utf-8")
+    taxonomy = (ROOT / "docs/DEMO_RISK_WARNING_TAXONOMY.md").read_text(encoding="utf-8")
+    canonical_source_docs = [
+        ROOT / "docs/manual/en/index.md",
+        ROOT / "docs/manual/zh-tw/index.md",
+        ROOT / "docs/manual/en/index.html",
+        ROOT / "docs/manual/zh-tw/index.html",
+        ROOT / "docs/FEATURES.md",
+    ]
+    current_docs = [
+        *canonical_source_docs,
+        ROOT / "docs/review/index.html",
+    ]
+
+    assert "`fixture-backed` is a legacy/retired evidence-source label" in contract
+    assert "MUST use `canonical_local_result_store`" in contract
+    assert "MUST NOT describe that payload as\n  fixture-backed" in contract
+    assert "Do not describe current canonical local result-store payloads as fixture-backed" in taxonomy
+    assert "Use conservative wording (`illustrative`, `fixture-backed`)" not in taxonomy
+
+    for path in canonical_source_docs:
+        text = path.read_text(encoding="utf-8")
+        assert "canonical_local_result_store" in text
+
+    for path in current_docs:
+        text = path.read_text(encoding="utf-8")
+        assert "Evidence Source: fixture-backed" not in text
+        assert "Evidence Source：</b>fixture-backed" not in text
+        assert "Evidence Source:</b> fixture-backed" not in text
+
+
 def test_current_review_gate_transcripts_match_published_evidence():
     """Review gate transcripts and generation guides must match current evidence counts."""
+    pytest_count = _current_pytest_count()
+    frontend_count = _current_frontend_test_count()
+    frontend_mutation_count = _current_frontend_mutation_count()
+    vulnerability_count = _current_frontend_vulnerability_count()
+    frontend_coverage = _current_frontend_line_coverage_percent()
+    mypy_source_count = _current_mypy_source_count()
+    lint_file_count, lint_dependency_count = _current_lint_import_counts()
+    implemented_epic_count = _current_implemented_epic_count()
     review_html = (ROOT / "docs/review/index.html").read_text(encoding="utf-8")
     manual_guide = (ROOT / "docs/MANUAL_GENERATION_GUIDE.md").read_text(encoding="utf-8")
     review_guide = (ROOT / "docs/REVIEW_GENERATION_GUIDE.md").read_text(encoding="utf-8")
+    features = (ROOT / "docs/FEATURES.md").read_text(encoding="utf-8")
+    rtm = (ROOT / ".agents/specs/RTM.md").read_text(encoding="utf-8")
+    quantlab_tests = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
+    spec_tests = (ROOT / ".agents/specs/TESTS.md").read_text(encoding="utf-8")
+    next_steps = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+    showcase_payload = json.loads((ROOT / "docs/showcase.json").read_text(encoding="utf-8"))
     pytest_gate = (ROOT / "docs/review/assets/gate-pytest.txt").read_text(encoding="utf-8")
     frontend_gate = (ROOT / "docs/review/assets/gate-frontend-test.txt").read_text(encoding="utf-8")
     mypy_gate = (ROOT / "docs/review/assets/gate-mypy.txt").read_text(encoding="utf-8")
@@ -390,19 +884,66 @@ def test_current_review_gate_transcripts_match_published_evidence():
     audit_text = (ROOT / "docs/review/assets/gate-frontend-audit.txt").read_text(encoding="utf-8")
     audit_gate = json.loads((ROOT / "docs/review/assets/gate-frontend-audit.json").read_text(encoding="utf-8"))
 
-    assert "256 passed" in pytest_gate
-    assert "256 passed" in manual_guide
-    assert "256 passed" in review_guide
-    assert "Python suite now <b>256 passed</b>" in review_html
-    assert "Tests  33 passed (33)" in frontend_gate
-    assert "Frontend <b>33 tests pass</b>" in review_html
+    if os.environ.get("QUANTLAB_ATOMIC_PYTEST_CAPTURE") != "1":
+        assert f"{pytest_count} passed" in pytest_gate
+    assert f"{pytest_count} passed" in manual_guide
+    assert f"{pytest_count} passed" in review_guide
+    assert f"Python suite now <b>{pytest_count} passed</b>" in review_html
+    assert f"<b>{pytest_count}</b><span>Python tests passing</span>" in review_html
+    assert f"Tests  {frontend_count} passed ({frontend_count})" in frontend_gate
+    assert f"# {frontend_count} passed, {vulnerability_count} vulnerabilities" in manual_guide
+    assert f"# {frontend_count} passed     → gate-frontend-test.txt" in review_guide
+    assert f"`npm test` → **{frontend_count} passed**" in features
+    assert f"| Frontend unit | `cd frontend && npm test` | {frontend_count} passed |" in rtm
+    assert f"Frontend <b>{frontend_count} tests pass</b>" in review_html
+    assert f"frontend mutation {frontend_mutation_count}/{frontend_mutation_count} killed" in features
+    assert (
+        f"frontend mutation {frontend_mutation_count}/{frontend_mutation_count} killed"
+        in review_html
+    )
+    assert "frontend-smoke-html-api-parity-regression" in features
+    assert "frontend-smoke-html-api-parity-regression" in quantlab_tests
+    assert "HTML/API payload parity" in review_html
+    assert f"<b>{frontend_count}</b><span>frontend tests passing</span>" in review_html
+    assert f"<b>{implemented_epic_count}</b><span>spec epics implemented</span>" in review_html
+    assert f"{_small_number_word(implemented_epic_count)} spec epics are implemented" in review_html
     assert "27 tests pass" not in review_html
     assert "28 tests pass" not in review_html
     assert "29 tests pass" not in review_html
-    assert "Success: no issues found in 57 source files" in mypy_gate
-    assert "Analyzed 75 files, 186 dependencies." in lint_gate
-    assert audit_text.strip() == "found 0 vulnerabilities"
-    assert audit_gate["metadata"]["vulnerabilities"]["total"] == 0
+    assert "36 passed, 0 vulnerabilities" not in manual_guide
+    assert "36 passed     → gate-frontend-test.txt" not in review_guide
+    assert "`npm test` → **36 passed**" not in features
+    assert "| Frontend unit | `cd frontend && npm test` | 36 passed |" not in rtm
+    assert "| E registry line coverage |" in rtm
+    assert "| E registry line coverage | `uv run pytest --cov=quantlab.mlops.experiment_registry --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py` | 37 passed; 99% line coverage |" in rtm
+    assert "35 passed; 99% line coverage" not in rtm
+    assert f"Success: no issues found in {mypy_source_count} source files" in mypy_gate
+    assert f"clean, {mypy_source_count} files" in manual_guide
+    assert f"clean {mypy_source_count} files" in review_guide
+    assert f"**{mypy_source_count} source files**" in features
+    assert f"Analyzed {lint_file_count} files, {lint_dependency_count} dependencies." in lint_gate
+    assert f"KEPT, {lint_file_count} files / {lint_dependency_count} dependencies" in manual_guide
+    assert f"KEPT, {lint_file_count} files / {lint_dependency_count} deps" in review_guide
+    assert f"({lint_file_count} files, {lint_dependency_count} deps)" in features
+    assert (
+        f"Import-linter contract KEPT ({lint_file_count} files / {lint_dependency_count} deps)"
+        in review_html
+    )
+    assert audit_text.strip() == f"found {vulnerability_count} vulnerabilities"
+    assert audit_gate["metadata"]["vulnerabilities"]["total"] == vulnerability_count
+    assert f"<b>{vulnerability_count}</b><span>frontend vulnerabilities</span>" in review_html
+    assert f"Frontend audit reports {vulnerability_count} vulnerabilities" in review_html
+    assert (
+        f"Frontend <b>{frontend_count} tests pass</b>, coverage {frontend_coverage}, "
+        f"<b>{vulnerability_count}</b> dependency vulnerabilities"
+        in review_html
+    )
+    assert f"frontend coverage **{frontend_coverage}**" in features
+    assert f"coverage {frontend_coverage}" in quantlab_tests
+    assert f"{frontend_coverage} line coverage" in quantlab_tests
+    assert f"{frontend_coverage} line coverage" in spec_tests
+    assert f"line coverage {frontend_coverage}" in next_steps
+    assert f"F Next.js coverage {frontend_coverage}" in showcase_payload["evidence"]["tests"]
 
 
 def test_current_visual_evidence_assets_are_synchronized():
@@ -425,8 +966,10 @@ def test_current_visual_evidence_assets_are_synchronized():
         ROOT / "docs/browser-visual.png"
     ).read_bytes()
     assert browser_visual["screenshotHash"] == browser_diff["currentHash"]
-    assert browser_diff["mismatchedPixels"] == 1007
     assert browser_diff["maxMismatchRatio"] == 0.001
+    assert browser_diff["status"] == "passed"
+    assert 0 <= browser_diff["mismatchedPixels"] <= browser_diff["totalPixels"]
+    assert browser_diff["mismatchRatio"] == browser_diff["mismatchedPixels"] / browser_diff["totalPixels"]
 
 
 def test_current_stakeholder_payload_assets_are_synchronized():
@@ -439,49 +982,107 @@ def test_current_stakeholder_payload_assets_are_synchronized():
     review_public_probe = json.loads(
         (ROOT / "docs/review/assets/public-hosting-probe.json").read_text(encoding="utf-8")
     )
-    browser_diff = json.loads((ROOT / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
-    visual_evidence = (
-        f"browser visual diff {browser_diff['mismatchedPixels']}/{browser_diff['totalPixels']} passed"
-    )
+    visual_evidence = "browser visual diff passed"
 
     assert frontend_showcase == showcase
     assert manual_showcase == showcase
     assert review_showcase == showcase
     assert review_public_probe == public_probe
+    assert showcase["demoReadiness"]["publicHosting"] == "not_proven"
+    assert showcase["demoReadiness"]["visualRegression"] == "proven"
     assert visual_evidence in showcase["evidence"]["tests"]
+    assert not any(
+        item.startswith("browser visual diff ") and item != visual_evidence
+        for item in showcase["evidence"]["tests"]
+    )
     assert (ROOT / "docs/manual/assets/dashboard-static-export.html").read_text(encoding="utf-8") == (
         ROOT / "docs/index.html"
     ).read_text(encoding="utf-8")
     assert visual_evidence in (ROOT / "docs/index.html").read_text(encoding="utf-8")
+    assert re.search(
+        r"browser visual diff \d+/\d+ passed",
+        (ROOT / "docs/index.html").read_text(encoding="utf-8"),
+    ) is None
 
 
 def test_traceability_visual_evidence_tracks_current_pixel_diff():
     """Governance bridge docs must not publish stale browser visual mismatch counts."""
+    browser_visual = json.loads((ROOT / "docs/browser-visual.json").read_text(encoding="utf-8"))
     browser_diff = json.loads((ROOT / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
     spaced = f"{browser_diff['mismatchedPixels']} / {browser_diff['totalPixels']:,}"
     compact = f"{browser_diff['mismatchedPixels']} / 1,296,000"
+    current_hash = browser_visual["screenshotHash"]
+    baseline_hash = browser_diff["baselineHash"]
     current_surfaces = [
+        ROOT / ".agents/specs/SPECS.md",
         ROOT / ".agents/specs/RTM.md",
+        ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/review.md",
+        ROOT / ".agents/specs/governance-evidence-refresh/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-public-static-showcase/change-requests/cr-fps-009-dashboard-visual-readiness-wireup.md",
         ROOT / "docs/DEMO_RISK_WARNING_TAXONOMY.md",
+        ROOT / "docs/FEATURES.md",
+        ROOT / "docs/manual/en/index.md",
+        ROOT / "docs/manual/en/index.html",
+        ROOT / "docs/manual/zh-tw/index.md",
+        ROOT / "docs/manual/zh-tw/index.html",
+        ROOT / "docs/review/index.html",
+        ROOT / "quantlab/TESTS.md",
+    ]
+    current_hash_surfaces = [
+        ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
     ]
 
-    assert browser_diff["mismatchedPixels"] == 1007
+    assert current_hash == browser_diff["currentHash"]
     for path in current_surfaces:
         text = path.read_text(encoding="utf-8")
         assert spaced in text or compact in text
+        assert "0/1,296,000" not in text
         assert "1089 / 1,296,000" not in text
         assert "1089/1296000" not in text
+    for path in current_hash_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert current_hash in text
+        assert baseline_hash not in text
+
+
+def test_browser_visual_smoke_fails_closed_on_stale_committed_docs():
+    """The browser visual smoke gate must not pass while committed evidence is stale."""
+    script = (ROOT / "frontend/scripts/browser-visual-smoke.mjs").read_text(encoding="utf-8")
+    package = json.loads((ROOT / "frontend/package.json").read_text(encoding="utf-8"))
+
+    assert "QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS" in script
+    assert "assertCommittedDocsFresh(evidence, diff);" in script
+    assert "syncCommittedDocs(evidence, diff);" in script
+    assert "docs/browser-visual.json" in script
+    assert "docs/review/assets/browser-visual-diff.json" in script
+    assert "docs/manual/assets/dashboard-browser-visual.png" in script
+    assert (
+        package["scripts"]["visual:browser:update-docs"]
+        == "QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS=1 node scripts/browser-visual-smoke.mjs"
+    )
 
 
 def test_current_dashboard_source_wording_tracks_canonical_payload():
     """Current F/governance handoff surfaces must not point at the retired inline fixture."""
     current_source_surfaces = [
         ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/review.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/design.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
         ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
         ROOT / ".agents/specs/f-demo-hardening/design.md",
+        ROOT / ".agents/specs/f-demo-hardening/requirements.md",
+        ROOT / ".agents/specs/f-demo-hardening/tasks.md",
         ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/design.md",
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/requirements.md",
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/tasks.md",
+        ROOT / ".agents/specs/f-public-demo-readiness/review.md",
         ROOT / ".agents/specs/governance-evidence-refresh/design.md",
         ROOT / ".agents/specs/governance-evidence-refresh/tasks.md",
         ROOT / ".agents/specs/governance-evidence-refresh/review.md",
@@ -491,6 +1092,11 @@ def test_current_dashboard_source_wording_tracks_canonical_payload():
         "Fixture[showcase fixture]",
         "contract/fixture updates",
         "fixture/API/component render tests",
+        "deterministic fixture",
+        "fixture contract",
+        "typed contract, fixture",
+        "future fixtures cannot silently claim public hosting or visual regression evidence",
+        "Actual public hosting and visual regression remain `not_proven`",
         "dashboard still uses fixture-backed showcase data",
         "Still fixture-backed",
         "fixture-driven/read-only",
@@ -507,14 +1113,68 @@ def test_current_dashboard_source_wording_tracks_canonical_payload():
             assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale source marker: {marker}"
 
 
-def test_next_steps_reflects_post_merge_torch_alert_state():
-    """NEXT_STEPS should be a live resume memo, not a stale local-lane checklist."""
-    text = (ROOT / ".agents/specs/NEXT_STEPS.md").read_text(encoding="utf-8")
+def test_f_nextjs_showcase_review_tracks_superseding_public_and_payload_lanes():
+    """The original F Next.js slice must not republish stale fixture/audit/public-readiness state."""
+    frontend_count = _current_frontend_test_count()
+    surfaces = [
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/review.md",
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-demo-hardening/review.md",
+        ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-public-demo-readiness/review.md",
+        ROOT / ".agents/specs/f-public-static-showcase/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+    ]
+    audit_surfaces = [
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/review.md",
+        ROOT / ".agents/specs/f-nextjs-showcase-dashboard/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-demo-hardening/reports/implementation-report.md",
+        ROOT / ".agents/specs/f-public-demo-readiness/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/review.md",
+        ROOT / ".agents/specs/f-browser-pixel-baseline/reports/implementation-report.md",
+    ]
+    stale_markers = [
+        "lib/showcase-fixture.ts",
+        "canonical fixture",
+        "fixture-backed",
+        "No public hosted URL or visual screenshot baseline is claimed",
+        "npm audit` reports two moderate advisories",
+        "2 moderate severity advisories",
+        "`npm test -- --run` -> 4 passed",
+        "80.76%",
+        "3042",
+        "36 passed",
+    ]
 
-    assert "Commit/push `spec/a-torch-default-dependency-isolation`" not in text
-    assert "implemented locally" not in text
-    assert "post-merge rescan pending" not in text
-    assert "Dependabot alert #7 fixed" in text
+    for path in surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert f"{frontend_count} passed" in text
+        for marker in stale_markers:
+            assert marker not in text, f"{path.relative_to(ROOT)} still publishes stale F Next.js marker: {marker}"
+    for path in audit_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert "0 vulnerabilities" in text
+
+
+def test_next_steps_reflects_post_merge_torch_alert_state():
+    """Current Torch dependency surfaces must not preserve stale rescan-pending state."""
+    surfaces = [
+        ROOT / ".agents/specs/NEXT_STEPS.md",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/design.md",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/review.md",
+        ROOT / ".agents/specs/a-torch-default-dependency-isolation/reports/implementation-report.md",
+    ]
+
+    for path in surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert "Commit/push `spec/a-torch-default-dependency-isolation`" not in text
+        assert "implemented locally" not in text
+        assert "post-merge rescan pending" not in text
+        assert "alert state will remain open" not in text
+        assert "must be rechecked after merge" not in text
+        assert "not prove GitHub has rescanned and closed the alert yet" not in text
+        assert "Dependabot alert #7 fixed" in text
 
 
 def test_next_steps_reflects_post_merge_scheduled_observer_state():
@@ -631,6 +1291,25 @@ def test_public_hosting_manifest_carries_observed_proof():
         assert probe.get("status") == "configured_not_observed"
         assert probe.get("hashStatus") == "mismatched"
         assert probe.get("deployedDataHash") != manifest.get("dataHash")
+
+
+def test_current_spec_reviews_do_not_overclaim_public_hosting_from_http_200_only():
+    """Current review/report surfaces must follow CR-FPS-007/008 fail-closed hosting parity."""
+    current_surfaces = [
+        ROOT / ".agents/specs/ops-visual-drift-artifacts/review.md",
+        ROOT / ".agents/specs/ops-visual-drift-artifacts/reports/implementation-report.md",
+        ROOT / ".agents/specs/next-gaps-1-6-tier3-public/review.md",
+        ROOT / ".agents/specs/next-gaps-1-6-tier3-public/reports/implementation-report.md",
+    ]
+
+    for path in current_surfaces:
+        text = path.read_text(encoding="utf-8")
+        assert "configured_not_observed" in text, f"{path} must name current fail-closed hosting parity"
+        assert "dataHash" in text, f"{path} must explain the deployed hash boundary"
+        assert "proven HTTP 200" not in text
+        assert "hostingEvidence.status=proven" not in text
+        assert "Public static hosting is proven" not in text
+        assert "Public static hosting: proven" not in text
 
 
 def test_demo_risk_taxonomy_names_current_public_hosting_authority():

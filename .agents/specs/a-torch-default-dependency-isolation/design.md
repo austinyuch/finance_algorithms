@@ -37,8 +37,9 @@ installed.
 
 - Repo-side closure is complete when default sync excludes Torch and local tests
   prove graceful no-Torch behavior.
-- External execution remains pending until GitHub Dependabot rescans `main` and
-  updates alert #7 state.
+- External execution is now observed: Dependabot alert #7 fixed on GitHub after
+  `main` rescan (`fixed_at=2026-06-12T01:19:57Z`). This does not make the
+  optional PyTorch lane part of the default UAT/runtime lock.
 
 ## Contracts
 

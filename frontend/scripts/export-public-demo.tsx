@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { Dashboard } from "../components/Dashboard";
 import {
   PUBLIC_SHOWCASE_URL,
+  assertPublicDemoExportArtifactsMatch,
   assertVisualSnapshotMatchesBaseline,
   buildPublicDemoManifest,
   buildVisualSnapshot,
@@ -13,8 +14,9 @@ import {
 import { getShowcaseDashboard } from "../lib/showcase-data";
 
 const root = process.cwd();
+const repoRoot = resolve(root, "..");
 const outDir = process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR
-  ? join(root, process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR)
+  ? resolve(root, process.env.QUANTLAB_PUBLIC_DEMO_OUT_DIR)
   : join(root, "out");
 const baselinePath = join(root, "visual-baselines", "showcase.visual.json");
 
@@ -101,7 +103,30 @@ function hostingProbeFromExistingArtifact(): PublicHostingProbe | undefined {
   };
 }
 
+function currentFrontendTestCount(): number {
+  const transcriptPath =
+    process.env.QUANTLAB_FRONTEND_GATE_TRANSCRIPT_PATH ??
+    join(repoRoot, "docs", "review", "assets", "gate-frontend-test.txt");
+  const transcript = readFileSync(transcriptPath, "utf8");
+  if (/\b[1-9]\d* failed\b/.test(transcript)) {
+    throw new Error("frontend gate transcript includes failures");
+  }
+  const match = transcript.match(/Tests\s+(\d+) passed/);
+  if (!match) {
+    throw new Error("frontend gate transcript does not publish a passed test count");
+  }
+  return Number(match[1]);
+}
+
+function assertDashboardEvidenceFresh(dashboard: ReturnType<typeof getShowcaseDashboard>): void {
+  const expected = `frontend tests ${currentFrontendTestCount()} passed`;
+  if (!dashboard.evidence.tests.includes(expected)) {
+    throw new Error(`dashboard payload stale frontend test evidence: expected ${expected}`);
+  }
+}
+
 const dashboard = getShowcaseDashboard();
+assertDashboardEvidenceFresh(dashboard);
 const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
 const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>QuantLab Showcase</title></head><body>${html}</body></html>`;
 const manifest = buildPublicDemoManifest(dashboard, {
@@ -115,6 +140,14 @@ writeFileSync(join(outDir, "index.html"), page, "utf8");
 writeFileSync(join(outDir, "showcase.json"), `${JSON.stringify(dashboard, null, 2)}\n`, "utf8");
 writeFileSync(join(outDir, "deployment-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 writeFileSync(join(outDir, "visual-snapshot.json"), `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
+
+assertPublicDemoExportArtifactsMatch({
+  dashboard,
+  html,
+  showcase: JSON.parse(readFileSync(join(outDir, "showcase.json"), "utf8")),
+  manifest: JSON.parse(readFileSync(join(outDir, "deployment-manifest.json"), "utf8")),
+  visualSnapshot: JSON.parse(readFileSync(join(outDir, "visual-snapshot.json"), "utf8")),
+});
 
 const baseline = JSON.parse(readFileSync(baselinePath, "utf8"));
 assertVisualSnapshotMatchesBaseline(snapshot, baseline);

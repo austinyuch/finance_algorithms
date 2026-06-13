@@ -25,7 +25,7 @@ The previous E production-evidence gate requires `evidence_tier=production`, but
 #### Acceptance Criteria
 
 1. When a serving evidence payload uses `localhost`, `127.0.0.1`, `in_process`, or a non-HTTPS endpoint, then the system shall reject it as non-production.
-2. When a serving evidence payload contains a healthy production HTTPS endpoint, no-alpha prediction payload, non-empty request, and external proof id, then the system shall emit `readiness_evidence_for=serving_evidence` and `evidence_tier=production`.
+2. When a serving evidence payload contains a healthy production HTTPS endpoint, no-alpha prediction payload, non-empty request, UTC `observed_at`, and external proof id, then the system shall emit `readiness_evidence_for=serving_evidence` and `evidence_tier=production`.
 3. If a serving prediction payload claims `alpha_claim`, then the system shall reject the evidence.
 
 ### Requirement 2 [REQ-E-PRODPROBE-002]
@@ -35,7 +35,7 @@ The previous E production-evidence gate requires `evidence_tier=production`, but
 #### Acceptance Criteria
 
 1. When retraining evidence is produced from `in_process`, `local_smoke`, or a blank orchestrator, then the system shall reject it.
-2. When retraining evidence includes an external orchestrator, completed run status, run id, artifact URI, external proof id, and out-of-sample net metrics, then the system shall emit `readiness_evidence_for=retraining_evidence` and `evidence_tier=production`.
+2. When retraining evidence includes an allowlisted external orchestrator URI (`https` or `github-actions`), completed run status, run id, UTC `observed_at`, allowlisted remote artifact URI (`https`, `s3`, `gs`, `az`, `abfs`, or `abfss`), external proof id, and out-of-sample net metrics, then the system shall emit `readiness_evidence_for=retraining_evidence` and `evidence_tier=production`.
 3. If retraining evidence lacks out-of-sample net metrics or claims `alpha_claim`, then the system shall reject it.
 
 ### Requirement 3 [REQ-E-PRODPROBE-003]
@@ -45,7 +45,7 @@ The previous E production-evidence gate requires `evidence_tier=production`, but
 #### Acceptance Criteria
 
 1. When drift monitoring evidence uses a local monitor identity, then the system shall reject it.
-2. When drift monitoring evidence includes an external monitor URI or id, stable or drift-detected status, metric deltas, threshold, external proof id, and no-alpha claim boundary, then the system shall emit `readiness_evidence_for=automated_drift_monitoring_evidence` and `evidence_tier=production`.
+2. When drift monitoring evidence includes an allowlisted external monitor URI (`https` or `github-actions`), UTC `observed_at`, stable or drift-detected status, metric deltas, explicit positive threshold, external proof id, and no-alpha claim boundary, then the system shall emit `readiness_evidence_for=automated_drift_monitoring_evidence` and `evidence_tier=production`.
 3. If drift monitoring evidence has an unsupported status, empty metric deltas, or `alpha_claim`, then the system shall reject it.
 
 ### Requirement 4 [REQ-E-PRODPROBE-004]
@@ -55,4 +55,6 @@ The previous E production-evidence gate requires `evidence_tier=production`, but
 #### Acceptance Criteria
 
 1. When all three governed production evidence artifacts are valid, then the Tier3 gate may return `tier3_ready`.
-2. If any artifact has a wrong artifact kind, wrong readiness target, wrong tier, missing proof id, or non-production identity, then its validator shall fail before review can use it.
+2. If any artifact has a wrong artifact kind, wrong readiness target, wrong tier, missing proof id, non-production identity, non-allowlisted identity scheme, or non-UTC `observed_at`, then its validator shall fail before review can use it.
+3. If otherwise-valid production evidence artifacts do not all reference the same experiment id from the Tier3 manifest, then the Tier3 gate shall remain `not_ready`.
+4. If the Tier3 manifest or retraining artifact URI uses a local, bare, non-TLS HTTP, shell/control-plane, or otherwise non-allowlisted scheme, then final readiness shall remain `not_ready` or the production artifact validator shall reject it.

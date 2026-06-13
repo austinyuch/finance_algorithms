@@ -9,18 +9,18 @@
     "claim": "local_demo_only",
     "dependencyAudit": "clean",
     "publicHosting": "not_proven",
-    "visualRegression": "not_proven"
+    "visualRegression": "proven"
   },
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "256 passed",
-      "frontend tests 33 passed",
-      "Python mutation 72/72 killed",
-      "frontend mutation 16/16 killed",
-      "F Next.js coverage 91.05%",
+      "288 passed",
+      "frontend tests 44 passed",
+      "Python mutation 100/100 killed",
+      "frontend mutation 26/26 killed",
+      "F Next.js coverage 89.85%",
       "frontend audit 0 vulnerabilities",
-      "browser visual diff 1007/1296000 passed",
+      "browser visual diff passed",
       "public hosting configured_not_observed (hash mismatched)"
     ]
   },

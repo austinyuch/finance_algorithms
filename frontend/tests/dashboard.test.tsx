@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 
@@ -6,6 +7,18 @@ import { Dashboard } from "../components/Dashboard";
 import { GET } from "../app/api/showcase/route";
 import { assertDashboardPayload, isLeaderboardSorted } from "../lib/showcase-contract";
 import { getShowcaseDashboard } from "../lib/showcase-data";
+
+function currentFrontendLineCoveragePercent() {
+  const transcript = readFileSync(
+    new URL("../../docs/review/assets/gate-frontend-coverage.txt", import.meta.url),
+    "utf8"
+  );
+  const match = transcript.match(/F Next\.js line coverage (?<coverage>\d+\.\d+%)/);
+  if (!match?.groups?.coverage) {
+    throw new Error("gate-frontend-coverage.txt must publish F Next.js line coverage");
+  }
+  return match.groups.coverage;
+}
 
 describe("F Next.js showcase dashboard", () => {
   it("renders dashboard sections, warnings, and no-alpha evidence", () => {
@@ -39,15 +52,18 @@ describe("F Next.js showcase dashboard", () => {
     expect(payload.experiments[0].claimBoundary).toBe("no_alpha_claim");
     expect(payload.demoReadiness.dependencyAudit).toBe("clean");
     expect(payload.demoReadiness.publicHosting).toBe("not_proven");
-    expect(payload.demoReadiness.visualRegression).toBe("not_proven");
+    expect(payload.demoReadiness.visualRegression).toBe("proven");
   });
 
   it("keeps dashboard gate evidence aligned with current governed proof", () => {
     const payload = getShowcaseDashboard();
+    const frontendCoverage = currentFrontendLineCoveragePercent();
 
-    expect(payload.evidence.tests).toContain("frontend mutation 16/16 killed");
-    expect(payload.evidence.tests).toContain("F Next.js coverage 91.05%");
+    expect(payload.evidence.tests).toContain("frontend mutation 26/26 killed");
+    expect(payload.evidence.tests).not.toContain("frontend mutation 21/21 killed");
+    expect(payload.evidence.tests).toContain(`F Next.js coverage ${frontendCoverage}`);
     expect(payload.evidence.tests).not.toContain("mutation 9/9 killed");
+    expect(payload.evidence.tests).not.toContain("frontend mutation 18/18 killed");
     expect(payload.evidence.tests).not.toContain("frontend mutation 14/14 killed");
     expect(payload.evidence.tests).not.toContain("F Next.js coverage 91.42%");
   });
@@ -110,7 +126,7 @@ describe("F Next.js showcase dashboard", () => {
     ).toThrow(/local_runtime_only/);
   });
 
-  it("rejects missing demo readiness and visual-regression overclaims", () => {
+  it("rejects missing demo readiness and stale visual-regression underclaims", () => {
     const { demoReadiness: _missing, ...withoutReadiness } = getShowcaseDashboard();
     expect(() => assertDashboardPayload(withoutReadiness)).toThrow(/demoReadiness/);
 
@@ -119,7 +135,7 @@ describe("F Next.js showcase dashboard", () => {
         ...getShowcaseDashboard(),
         demoReadiness: {
           ...getShowcaseDashboard().demoReadiness,
-          visualRegression: "proven"
+          visualRegression: "not_proven"
         }
       })
     ).toThrow(/visual regression/);

@@ -1,0 +1,435 @@
+
+> quantlab-showcase-dashboard@0.1.0 mutation
+> node scripts/run-mutation-checks.mjs
+
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 7 failed) 29ms
+     × renders dashboard sections, warnings, and no-alpha evidence 5ms
+     × serves validated dashboard payload from the API route 16ms
+     × keeps dashboard gate evidence aligned with current governed proof 0ms
+     × rejects malformed claim boundaries 0ms
+     × rejects overclaimed public demo readiness 0ms
+     × rejects experiment registry overclaims 0ms
+     × rejects missing demo readiness and stale visual-regression underclaims 0ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  17:59:53
+   Duration  213ms (transform 47ms, setup 0ms, import 75ms, tests 29ms, environment 0ms)
+
+frontend-claim-boundary: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 7 failed) 17ms
+     × renders dashboard sections, warnings, and no-alpha evidence 2ms
+     × serves validated dashboard payload from the API route 8ms
+     × keeps dashboard gate evidence aligned with current governed proof 0ms
+     × rejects malformed claim boundaries 0ms
+     × rejects overclaimed public demo readiness 0ms
+     × rejects experiment registry overclaims 0ms
+     × rejects missing demo readiness and stale visual-regression underclaims 0ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  17:59:54
+   Duration  180ms (transform 47ms, setup 0ms, import 73ms, tests 17ms, environment 0ms)
+
+frontend-experiment-registry-claim-boundary: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 7 failed) 16ms
+     × renders dashboard sections, warnings, and no-alpha evidence 2ms
+     × serves validated dashboard payload from the API route 8ms
+     × keeps dashboard gate evidence aligned with current governed proof 0ms
+     × rejects malformed claim boundaries 0ms
+     × rejects overclaimed public demo readiness 0ms
+     × rejects experiment registry overclaims 0ms
+     × rejects missing demo readiness and stale visual-regression underclaims 0ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  17:59:54
+   Duration  140ms (transform 33ms, setup 0ms, import 58ms, tests 16ms, environment 0ms)
+
+frontend-public-hosting-overclaim: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx -t visual-regression underclaims
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 1 failed | 7 skipped) 6ms
+     × rejects missing demo readiness and stale visual-regression underclaims 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  17:59:54
+   Duration  177ms (transform 42ms, setup 0ms, import 69ms, tests 6ms, environment 0ms)
+
+frontend-visual-regression-underclaim: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 7 failed) 15ms
+     × renders dashboard sections, warnings, and no-alpha evidence 2ms
+     × serves validated dashboard payload from the API route 8ms
+     × keeps dashboard gate evidence aligned with current governed proof 0ms
+     × rejects malformed claim boundaries 0ms
+     × rejects overclaimed public demo readiness 0ms
+     × rejects experiment registry overclaims 0ms
+     × rejects missing demo readiness and stale visual-regression underclaims 0ms
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  17:59:55
+   Duration  136ms (transform 33ms, setup 0ms, import 59ms, tests 15ms, environment 0ms)
+
+frontend-dependency-audit-regression: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx -t gate evidence
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 1 failed | 7 skipped) 3ms
+     × keeps dashboard gate evidence aligned with current governed proof 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  17:59:55
+   Duration  154ms (transform 40ms, setup 0ms, import 66ms, tests 3ms, environment 0ms)
+
+frontend-dashboard-stale-gate-evidence: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx -t gate evidence
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 1 failed | 7 skipped) 3ms
+     × keeps dashboard gate evidence aligned with current governed proof 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  17:59:56
+   Duration  153ms (transform 38ms, setup 0ms, import 62ms, tests 3ms, environment 0ms)
+
+frontend-coverage-artifact-drift: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/dashboard.test.tsx -t serves validated
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/dashboard.test.tsx (8 tests | 1 failed | 7 skipped) 10ms
+     × serves validated dashboard payload from the API route 9ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  17:59:56
+   Duration  135ms (transform 32ms, setup 0ms, import 57ms, tests 10ms, environment 0ms)
+
+frontend-dashboard-source-regression: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 3 failed) 30ms
+     × records proven public hosting only when Pages and URL evidence agree 3ms
+     × PBT: public hosting classifier never proves non-200 responses 2ms
+     × PBT: public hosting classifier proves only matching deployed data hashes 2ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 19 passed (22)
+   Start at  17:59:57
+   Duration  205ms (transform 41ms, setup 0ms, import 69ms, tests 30ms, environment 0ms)
+
+frontend-public-demo-hosting-classifier: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t deployed data hashes
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 7ms
+     × PBT: public hosting classifier proves only matching deployed data hashes 6ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  17:59:57
+   Duration  172ms (transform 42ms, setup 0ms, import 70ms, tests 7ms, environment 0ms)
+
+frontend-public-demo-hosting-hash-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t weakens claim metadata
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 10ms
+     × keeps public hosting unobserved when the deployed manifest weakens claim metadata 8ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  17:59:57
+   Duration  167ms (transform 68ms, setup 0ms, import 95ms, tests 10ms, environment 0ms)
+
+frontend-public-demo-hosting-manifest-contract-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t probe evidence is stale
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 5ms
+     × keeps otherwise matching public hosting unobserved when probe evidence is stale 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  17:59:58
+   Duration  159ms (transform 38ms, setup 0ms, import 65ms, tests 5ms, environment 0ms)
+
+frontend-public-demo-hosting-freshness-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/probe-public-demo.test.ts -t observation is stale
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/probe-public-demo.test.ts (6 tests | 1 failed | 5 skipped) 4ms
+     × keeps otherwise matching public probe unobserved when observation is stale 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  17:59:58
+   Duration  122ms (transform 18ms, setup 0ms, import 24ms, tests 4ms, environment 0ms)
+
+frontend-public-demo-probe-freshness-status-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/probe-public-demo.test.ts -t absolute paths
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/probe-public-demo.test.ts (6 tests | 1 failed | 5 skipped) 4ms
+     × resolves configured probe output paths without corrupting absolute paths 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  17:59:59
+   Duration  131ms (transform 19ms, setup 0ms, import 26ms, tests 4ms, environment 0ms)
+
+frontend-public-demo-probe-absolute-output-path: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/export-public-demo.test.ts -t absolute output directories
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/export-public-demo.test.ts (2 tests | 1 failed | 1 skipped) 131ms
+     × exports artifacts to absolute output directories without repo-relative path corruption 130ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  17:59:59
+   Duration  260ms (transform 22ms, setup 0ms, import 27ms, tests 131ms, environment 0ms)
+
+frontend-public-demo-export-absolute-output-dir: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/export-public-demo.test.ts -t stale frontend gate evidence
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/export-public-demo.test.ts (2 tests | 1 failed | 1 skipped) 6ms
+     × fails closed on stale frontend gate evidence before writing export artifacts 5ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  18:00:00
+   Duration  111ms (transform 10ms, setup 0ms, import 16ms, tests 6ms, environment 0ms)
+
+frontend-public-demo-export-stale-evidence-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/probe-public-demo.test.ts -t complete expected manifest
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/probe-public-demo.test.ts (6 tests | 1 failed | 5 skipped) 3ms
+     × does not match deployed manifest metadata without a complete expected manifest 2ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  18:00:00
+   Duration  107ms (transform 17ms, setup 0ms, import 23ms, tests 3ms, environment 0ms)
+
+frontend-public-demo-expected-manifest-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/probe-public-demo.test.ts -t beside the requested probe output
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/probe-public-demo.test.ts (6 tests | 1 failed | 5 skipped) 4ms
+     × reads the manifest beside the requested probe output before stale fallback manifests 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  18:00:00
+   Duration  84ms (transform 16ms, setup 0ms, import 22ms, tests 4ms, environment 0ms)
+
+frontend-public-demo-probe-manifest-colocation: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/probe-public-demo.test.ts -t beside the requested probe output
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/probe-public-demo.test.ts (6 tests | 1 failed | 5 skipped) 5ms
+     × reads the manifest beside the requested probe output before stale fallback manifests 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  18:00:01
+   Duration  126ms (transform 18ms, setup 0ms, import 24ms, tests 5ms, environment 0ms)
+
+frontend-public-demo-probe-incomplete-manifest-failclosed: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t static export artifacts
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 8ms
+     × keeps committed static export artifacts aligned with the canonical dashboard payload 7ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  18:00:01
+   Duration  172ms (transform 38ms, setup 0ms, import 66ms, tests 8ms, environment 0ms)
+
+frontend-static-export-showcase-sync: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 visual
+> tsx scripts/export-public-demo.tsx
+
+frontend-visual-baseline-alpha-claim: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t rejects malformed visual baselines
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 18ms
+     × rejects malformed visual baselines 16ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  18:00:02
+   Duration  144ms (transform 39ms, setup 0ms, import 67ms, tests 18ms, environment 0ms)
+
+frontend-browser-visual-hash-gate: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t visual diff status
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 6ms
+     × PBT: visual diff status follows configured threshold 5ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  18:00:02
+   Duration  150ms (transform 49ms, setup 0ms, import 76ms, tests 6ms, environment 0ms)
+
+frontend-browser-visual-diff-threshold: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/public-demo.test.tsx -t pixel mismatch ratio
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/public-demo.test.tsx (22 tests | 1 failed | 21 skipped) 6ms
+     × PBT: pixel mismatch ratio equals changed-pixel count over total pixels 6ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  18:00:02
+   Duration  168ms (transform 44ms, setup 0ms, import 71ms, tests 6ms, environment 0ms)
+
+frontend-browser-pixel-mismatch-count: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/smoke-port.test.ts -t occupied governed smoke ports
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/smoke-port.test.ts (3 tests | 1 failed | 2 skipped) 7ms
+     × rejects invalid or occupied governed smoke ports 7ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  18:00:03
+   Duration  135ms (transform 33ms, setup 0ms, import 40ms, tests 7ms, environment 0ms)
+
+frontend-smoke-port-hardcode-regression: KILLED
+
+> quantlab-showcase-dashboard@0.1.0 test
+> vitest --run tests/smoke-port.test.ts -t explicit governed smoke port
+
+
+ RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
+
+ ❯ tests/smoke-port.test.ts (3 tests | 1 failed | 2 skipped) 4ms
+     × honors an explicit governed smoke port 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  18:00:03
+   Duration  87ms (transform 18ms, setup 0ms, import 24ms, tests 4ms, environment 0ms)
+
+frontend-smoke-html-api-parity-regression: KILLED

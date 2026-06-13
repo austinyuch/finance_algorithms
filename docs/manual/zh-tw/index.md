@@ -21,7 +21,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 256 passed
+uv run pytest -q             # 健檢：預期 288 passed
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -129,7 +129,7 @@ price assets : 1  ['SP500']
 ```bash
 cd frontend
 npm run export:public-demo     # 產生 frontend/out/{index.html,showcase.json,...}
-npm run smoke                  # 127.0.0.1 本地 HTTP smoke（需 governed port）
+npm run smoke                  # 127.0.0.1 自動選 port 的本地 HTTP smoke
 ```
 
 已 commit 的 export 渲染五個面板：**Leaderboard**（OOS-net Sharpe，
@@ -148,10 +148,10 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`，CR-FPS-006 regenerated payload 造成 branch-local public-hosting parity 暫為 `configured_not_observed`（`f-public-static-showcase/review.md`）
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
-> - 已解決：visual diff 為 repo-baseline pixel-backed（`1007 / 1,296,000`
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`236 / 1,296,000`
 >   mismatched pixels，threshold `0.001`）；GitHub Actions autonomous
 >   `event=schedule` dry-run proof 已有 run `27392471359`。Public-hosting
->   probe 已觀測 HTTP 200 與 deployed manifest contract metadata；export 內嵌 readiness 面板依 dashboard contract 仍保守顯示 `not_proven`，直到 Pages 服務 refreshed `dataHash` 後再更新 parity proof。
+>   probe 已觀測 HTTP 200 與 deployed manifest contract metadata；export 內嵌 readiness 面板仍保守顯示 `publicHosting=not_proven`，但 `visualRegression=proven` 已由 repo-side browser visual diff 證明；直到 Pages 服務 refreshed `dataHash` 後再更新 parity proof。
 
 ---
 
@@ -179,13 +179,13 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 ## 視覺缺口盤點
 
-**自上次檢查以來已解決（2026-06-11 → 2026-06-12）：**
+**自上次檢查以來已解決（2026-06-11 → 2026-06-13）：**
 
-- 測試套件目前為 **256 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **57** 檔且 clean；mutation spot checks **72/72 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder and app payload copy drift, retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/audit transcript、import-linter count drift and governance registry row-count drift、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。
+- 測試套件目前為 **288 passed**（PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **58** 檔且 clean；mutation spot checks **100/100 configured/killed**，包含 root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder and app payload copy drift, retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript、import-linter count drift、governance registry row-count drift、E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **26/26 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；CR-FPS-006 regenerated local result-store payload 產生新的 `dataHash`，因此 branch-local deployment parity 正確維持 `configured_not_observed`，直到 Pages 服務 refreshed artifact。
-- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`1007 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`236 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
 
@@ -193,7 +193,7 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Static export 內嵌 readiness 面板依 dashboard contract 保守顯示 `not_proven` | Low | `frontend/out/index.html` |
+| Static export 內嵌 readiness 面板仍顯示 `publicHosting=not_proven`；`visualRegression=proven` 已由 repo-side browser visual diff 證明 | Low | `frontend/out/index.html` |
 | Vintage 真實資料回測仍延後（<2 價格資產） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |
 

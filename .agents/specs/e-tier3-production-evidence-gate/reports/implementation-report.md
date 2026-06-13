@@ -20,8 +20,8 @@ Implemented a fail-closed production evidence predicate for Tier3 readiness and 
 - `uv run pytest --cov=quantlab.mlops.experiment_registry --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py` -> 24 passed, 100% line coverage.
 - `uv run python scripts/run_mutation_spot_checks.py --only e-tier3-production-tier-gate` -> killed.
 - `uv run python scripts/run_mutation_spot_checks.py --only e-automated-drift-status-gate` -> killed.
-- `uv run pytest -q` -> 207 passed, 1 skipped.
-- `uv run mypy quantlab/ scripts/run_tsmc_hedge_slice.py scripts/scheduled_run_observer.py --ignore-missing-imports` -> clean over 52 files.
+- `uv run pytest -q` -> 288 passed.
+- `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` -> clean over 58 files.
 - `uv run lint-imports` -> KEPT.
 
 ## Boundary
