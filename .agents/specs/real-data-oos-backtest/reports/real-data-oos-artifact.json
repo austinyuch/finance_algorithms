@@ -1,19 +1,19 @@
 {
   "artifact_kind": "real_data_oos_backtest_artifact",
   "artifact_uri": "file:///home/ac/projects/finance_algorithms/.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json",
-  "checksum": "3c17f16f20943d4bcfc67245c4c7e674ff17aabcf4b37dba7f9019648abe4363",
+  "checksum": "52cf3fab10b829b3f09a55389e1e8a506362ead11d44de170a2a4c0244851797",
   "claim_boundary": "no_alpha_claim",
-  "generated_at": "2026-06-13T00:00:00Z",
+  "generated_at": "2026-06-14T00:00:00Z",
   "metric_authority": "out_of_sample_net_only",
   "report": {
     "asof_window": {
-      "end": "2026-05-01",
+      "end": "2026-06-11",
       "start": "2016-06-13"
     },
     "asset_set": [
-      "PCOPPUSDM",
       "SP500"
     ],
+    "availability_mode": "approximate_event_date",
     "claim_boundary": "no_alpha_claim",
     "cost_config": {
       "commission_bps": 5,
@@ -23,35 +23,36 @@
       "us_dividend_withholding_pct": 0
     },
     "data_provenance": {
-      "asset_count": 4,
+      "asset_count": 3,
+      "availability_mode": "approximate_event_date",
       "cotemporal_universe": [
-        "PCOPPUSDM",
         "SP500"
       ],
       "history_end": "2026-06-12",
-      "history_span_months": 413.3388,
-      "history_start": "1992-01-01",
-      "overlap_end": "2026-05-01",
-      "overlap_months": 118.5708,
+      "history_span_months": 119.9507,
+      "history_start": "2016-06-13",
+      "overlap_end": "2026-06-11",
+      "overlap_months": 119.9179,
       "overlap_start": "2016-06-13",
       "universe_asof": [
-        "PCOPPUSDM",
-        "SP500"
+        "2330.TW",
+        "SP500",
+        "^TWII"
       ]
     },
     "metric_authority": "out_of_sample_net_only",
     "rows": [
       {
         "is_baseline": true,
-        "oos_net_sharpe": 0.0,
+        "oos_net_sharpe": 0.8769832863084156,
         "run_id": "",
         "strategy_name": "BuyAndHold"
       },
       {
         "is_baseline": false,
-        "oos_net_sharpe": -4.841150979688946,
+        "oos_net_sharpe": 0.8081709328199352,
         "run_id": "",
-        "strategy_name": "RandomStrategy"
+        "strategy_name": "SmaTimingStrategy"
       }
     ],
     "status": "computed"

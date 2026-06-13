@@ -2,5 +2,7 @@
 from quantlab.strategies.baselines import RandomStrategy, StaticWeights
 from quantlab.strategies.buyandhold import BuyAndHold
 from quantlab.strategies.hedge import HedgeStrategy, build_hedge_weights
+from quantlab.strategies.timing import SmaTimingStrategy
 
-__all__ = ["BuyAndHold", "StaticWeights", "RandomStrategy", "HedgeStrategy", "build_hedge_weights"]
+__all__ = ["BuyAndHold", "StaticWeights", "RandomStrategy", "HedgeStrategy",
+           "build_hedge_weights", "SmaTimingStrategy"]

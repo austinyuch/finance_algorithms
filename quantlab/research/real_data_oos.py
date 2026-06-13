@@ -162,11 +162,18 @@ def assess_data_sufficiency(
     )
 
 
-def _oos_net_sharpe(result: Mapping[str, Any]) -> float:
+_DEGENERATE_VOL_EPS = 1e-6
+
+
+def _oos_metric(result: Mapping[str, Any]) -> Mapping[str, Any]:
     for metric in result.get("metrics", []):
         if metric.get("segment") == "out_of_sample" and metric.get("basis") == "net":
-            return float(metric["sharpe"])
+            return metric
     raise ValueError("real-data OOS comparison requires an out_of_sample net Sharpe")
+
+
+def _oos_net_sharpe(result: Mapping[str, Any]) -> float:
+    return float(_oos_metric(result)["sharpe"])
 
 
 def _window(provider: Any, config: Mapping[str, Any]) -> tuple[str, str]:
@@ -179,9 +186,17 @@ def _window(provider: Any, config: Mapping[str, Any]) -> tuple[str, str]:
 def build_real_data_oos_report(
     provider: Any, *, candidate: Any, baseline: Any, config: Mapping[str, Any],
     min_assets: int = 2, min_history_months: float = _DEFAULT_MIN_HISTORY_MONTHS,
-    store: Any | None = None,
+    store: Any | None = None, availability_mode: str = "true_pit",
 ) -> dict[str, Any]:
-    """Run candidate + baseline over real PIT data; rank OOS-net only, baseline visible."""
+    """Run candidate + baseline over real PIT data; rank OOS-net only, baseline visible.
+
+    Fails closed (raises) when the OOS comparison is *degenerate* — every
+    strategy's out-of-sample net return series is flat (≈0 vol). That happens
+    when single-capture vintage data (``available_date`` = capture date) is
+    PIT-invisible to historical as-ofs, so the backtest sees no data and reports
+    a misleading "computed" result. ``availability_mode`` records whether the
+    provider used ``true_pit`` or explicit ``approximate_event_date`` availability.
+    """
     suff = assess_data_sufficiency(provider, min_assets=min_assets,
                                    min_history_months=min_history_months)
     if not suff.sufficient:
@@ -199,14 +214,24 @@ def build_real_data_oos_report(
     run_cfg = {**config, "start": start, "end": end, "mode": "net"}
 
     rows: list[dict[str, Any]] = []
+    max_oos_vol = 0.0
     for strategy, is_baseline in ((candidate, False), (baseline, True)):
         result = _run(strategy, provider, run_cfg, store, is_baseline)
+        oos = _oos_metric(result)
+        max_oos_vol = max(max_oos_vol, float(oos.get("annualized_vol", 0.0)))
         rows.append({
             "strategy_name": str(result.get("strategy_name") or ""),
-            "oos_net_sharpe": _oos_net_sharpe(result),
+            "oos_net_sharpe": float(oos["sharpe"]),
             "is_baseline": is_baseline,
             "run_id": str(result.get("run_id") or ""),
         })
+    if max_oos_vol < _DEGENERATE_VOL_EPS:
+        raise ValueError(
+            "degenerate real-data OOS comparison: flat out-of-sample returns "
+            f"(max OOS vol {max_oos_vol:.2e}). Single-capture vintage data is "
+            "PIT-invisible to historical as-ofs; load with approximate_availability "
+            "or accumulate true-vintage data before claiming a computed comparison."
+        )
     rows.sort(key=lambda r: r["oos_net_sharpe"], reverse=True)
 
     universe_asof = list(provider.universe(end))
@@ -217,8 +242,10 @@ def build_real_data_oos_report(
         "rows": rows,
         "asset_set": list(suff.cotemporal_universe),
         "asof_window": {"start": start, "end": end},
+        "availability_mode": availability_mode,
         "cost_config": dict(config.get("cost_config") or {}),
         "data_provenance": {
+            "availability_mode": availability_mode,
             "asset_count": suff.asset_count,
             "history_start": suff.history_start,
             "history_end": suff.history_end,

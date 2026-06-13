@@ -66,10 +66,40 @@ def test_cli_thin_data_fails_closed_exit_two(tmp_path: Path):
     assert artifact["claim_boundary"] == "no_alpha_claim"
 
 
-def test_cli_single_asset_fails_closed_exit_two():
+def test_cli_single_index_runs_computed_timing_comparison(tmp_path: Path):
+    # CR-RDO-003: a single market index is valid (min_assets=1) — SMA-timing
+    # candidate vs buy-and-hold baseline, a non-degenerate comparison.
     mod = _load()
-    rc = mod.run_real_data_oos(_provider(["AAA"], 24), generated_at="t")
+    out = tmp_path / "art.json"
+    rc = mod.run_real_data_oos(_provider(["AAA"], 24), generated_at="2026-06-14T00:00:00Z",
+                               out=out, availability_mode="approximate_event_date")
+    assert rc == 0
+    artifact = json.loads(out.read_text())
+    assert artifact["status"] == "computed"
+    assert artifact["report"]["availability_mode"] == "approximate_event_date"
+    names = {r["strategy_name"] for r in artifact["report"]["rows"]}
+    assert names == {"SmaTimingStrategy", "BuyAndHold"}
+
+
+def test_cli_min_assets_two_with_one_asset_fails_closed(tmp_path: Path):
+    mod = _load()
+    rc = mod.run_real_data_oos(_provider(["AAA"], 24), generated_at="t", min_assets=2)
     assert rc == 2
+
+
+def test_cli_degenerate_flat_oos_fails_closed(tmp_path: Path):
+    # True-PIT single-capture vintage is invisible to historical as-ofs -> flat
+    # OOS -> the CLI must fail closed (degenerate), not emit a "computed" claim.
+    from quantlab.data.vintage import build_provider_from_vintage
+
+    mod = _load()
+    out = tmp_path / "art.json"
+    provider = build_provider_from_vintage(mod.VINTAGE_ROOT, fred_price_series={"SP500"})  # true PIT
+    rc = mod.run_real_data_oos(provider, generated_at="t", out=out)
+    assert rc == 2
+    artifact = json.loads(out.read_text())
+    assert artifact["status"] == "insufficient_data"
+    assert artifact["report"]["reason"] == "degenerate_flat_oos"
 
 
 def test_real_disk_vintage_data_runs_a_computed_comparison(tmp_path: Path):

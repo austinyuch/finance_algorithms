@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
@@ -29,7 +30,7 @@ from quantlab.research.real_data_oos import (
     build_real_data_oos_artifact,
     build_real_data_oos_report,
 )
-from quantlab.strategies import BuyAndHold, RandomStrategy
+from quantlab.strategies import BuyAndHold, RandomStrategy, SmaTimingStrategy
 
 VINTAGE_ROOT = Path(__file__).resolve().parents[1] / "data" / "vintage" / "raw"
 PRICE_PROXIES = {"SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"}
@@ -46,7 +47,8 @@ def _config() -> dict[str, Any]:
 def run_real_data_oos(
     provider: Any, *, generated_at: str, out: str | Path | None = None,
     candidate: Any | None = None, baseline: Any | None = None,
-    min_assets: int = 2, min_history_months: float = 18.0,
+    min_assets: int = 1, min_history_months: float = 18.0,
+    availability_mode: str = "true_pit",
 ) -> int:
     """Core decision path (dependency-injected for tests). Returns the exit code."""
     config = _config()
@@ -64,12 +66,30 @@ def run_real_data_oos(
         return 2
 
     # CR-RDO-001: trade only the co-temporal subset that shares the walk-forward
-    # window, not every price symbol (avoids a degenerate non-overlapping mix).
+    # window. CR-RDO-003: a single market index compares a timing candidate vs a
+    # buy-and-hold baseline (>=2 assets keeps the cross-sectional random/static mix).
     assets = list(suff.cotemporal_universe)
-    cand = candidate if candidate is not None else RandomStrategy(assets, seed=0)
+    if candidate is not None:
+        cand = candidate
+    elif len(assets) == 1:
+        cand = SmaTimingStrategy(assets[0], window=6)
+    else:
+        cand = RandomStrategy(assets, seed=0)
     base = baseline if baseline is not None else BuyAndHold(assets)
-    report = build_real_data_oos_report(provider, candidate=cand, baseline=base, config=config,
-                                        min_assets=min_assets, min_history_months=min_history_months)
+    try:
+        report = build_real_data_oos_report(provider, candidate=cand, baseline=base, config=config,
+                                            min_assets=min_assets, min_history_months=min_history_months,
+                                            availability_mode=availability_mode)
+    except ValueError as exc:
+        # Degenerate (flat OOS — e.g. PIT-invisible single-capture data): fail
+        # closed gracefully instead of emitting a misleading "computed" artifact.
+        degenerate = replace(suff, sufficient=False, reason="degenerate_flat_oos")
+        report = build_insufficient_data_report(degenerate, config=config)
+        artifact = build_real_data_oos_artifact(report, artifact_uri=artifact_uri,
+                                                generated_at=generated_at)
+        _emit(artifact, out)
+        print(f"[fail-closed] degenerate real-data OOS: {exc}", file=sys.stderr)
+        return 2
     artifact = build_real_data_oos_artifact(report, artifact_uri=artifact_uri,
                                             generated_at=generated_at)
     _emit(artifact, out)
@@ -91,8 +111,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--generated-at", default=None, help="ISO timestamp (default: now UTC)")
     args = parser.parse_args(argv)
     generated_at = args.generated_at or datetime.now(timezone.utc).isoformat()
-    provider = build_provider_from_vintage(VINTAGE_ROOT, fred_price_series=PRICE_PROXIES)
-    return run_real_data_oos(provider, generated_at=generated_at, out=args.out)
+    # CR-RDO-003: use the market index (SP500) — a high-frequency series with real
+    # history — not the low-frequency macro proxies; with explicit approximate
+    # (event-date) availability so single-capture vintage is visible to historical
+    # as-ofs. NOT true PIT; the artifact records availability_mode accordingly.
+    provider = build_provider_from_vintage(
+        VINTAGE_ROOT, fred_price_series={"SP500"}, approximate_availability=True)
+    return run_real_data_oos(provider, generated_at=generated_at, out=args.out,
+                             min_assets=1, availability_mode="approximate_event_date")
 
 
 if __name__ == "__main__":

@@ -80,12 +80,17 @@ def _parse_yahoo(source: str, available_date: str, raw: str) -> list[dict]:
 
 def build_provider_from_vintage(vintage_root: str | Path,
                                 fred_price_series: set | None = None,
-                                strict: bool = False) -> InMemoryPITDataProvider:
+                                strict: bool = False,
+                                approximate_availability: bool = False) -> InMemoryPITDataProvider:
     """vintage JSON → A0 PIT provider。
 
     fred_price_series:指定哪些 FRED series 當「價格資產」載入(symbol=series、close=value),
     其餘 FRED series 仍為 macro。用以繞過 Stooq,以 FRED 的股指/商品/油/匯率序列當價格。
     strict(CR-B5):排除 is_approximate=true 列(每筆 is_approximate 來自 vintage JSON)。
+    approximate_availability:**非真實 PIT**。把每筆觀測的 available_date 設為其 event_date,
+    視為「該期當下即可得」。單次擷取的 vintage(available_date=擷取日)在歷史 as-of 下完全不可見,
+    歷史回測會退化為平坦;此模式讓研究型歷史回測可行,但必須明確標記為 approximate(非真實 PIT,
+    可能引入 lookahead)。對應 CLAUDE.md「無真實 vintage 來源時標記 approximate」。
     """
     price_set = set(fred_price_series or ())
     root = Path(vintage_root)
@@ -123,6 +128,13 @@ def build_provider_from_vintage(vintage_root: str | Path,
                          columns=["series", "event_date", "available_date", "value", "is_approximate"])
     prices = pd.DataFrame(price_rows,
                           columns=["symbol", "event_date", "available_date", "close", "is_approximate"])
+    if approximate_availability:
+        # Explicitly NOT true PIT: treat each observation as available on its
+        # event_date so single-capture vintage supports a historical backtest.
+        if len(prices):
+            prices["available_date"] = prices["event_date"]
+        if len(macro):
+            macro["available_date"] = macro["event_date"]
     if price_rows:
         first = prices.groupby("symbol", as_index=False)["event_date"].min()
         listings = pd.DataFrame({"symbol": first["symbol"], "list_date": first["event_date"],
