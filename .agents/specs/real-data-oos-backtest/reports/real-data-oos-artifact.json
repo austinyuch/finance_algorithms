@@ -1,7 +1,7 @@
 {
   "artifact_kind": "real_data_oos_backtest_artifact",
   "artifact_uri": "file:///home/ac/projects/finance_algorithms/.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json",
-  "checksum": "52cf3fab10b829b3f09a55389e1e8a506362ead11d44de170a2a4c0244851797",
+  "checksum": "421c7fd256b38a9134819c9f3b786f2270aaa3310ed1ecf9089a908de8166767",
   "claim_boundary": "no_alpha_claim",
   "generated_at": "2026-06-14T00:00:00Z",
   "metric_authority": "out_of_sample_net_only",
@@ -34,6 +34,16 @@
       "overlap_end": "2026-06-11",
       "overlap_months": 119.9179,
       "overlap_start": "2016-06-13",
+      "sampling_frequency": {
+        "by_symbol": {
+          "SP500": "daily"
+        },
+        "coarsest_cadence": "daily",
+        "coarsest_native_days": 1.0,
+        "homogeneous": true,
+        "rebalance": "monthly",
+        "rebalance_days": 30.4375
+      },
       "universe_asof": [
         "2330.TW",
         "SP500",

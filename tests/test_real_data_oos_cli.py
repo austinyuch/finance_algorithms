@@ -102,6 +102,33 @@ def test_cli_degenerate_flat_oos_fails_closed(tmp_path: Path):
     assert artifact["report"]["reason"] == "degenerate_flat_oos"
 
 
+def test_cli_oversampled_mixed_frequency_fails_closed(tmp_path: Path):
+    # CR-RDO-004: a quarterly asset under the default monthly rebalance is
+    # oversampled (stale forward-fill would fabricate flat returns) -> fail closed
+    # with an explicit reason, never a misleading "computed" claim.
+    mod = _load()
+    monthly = pd.date_range("2010-01-31", periods=180, freq="ME")
+    quarterly = pd.date_range("2010-03-31", periods=60, freq="QE")
+    factors = [1.03, 0.98, 1.02, 0.97, 1.04, 0.99]
+    prows = []
+    for si, (sym, dates) in enumerate((("MON", monthly), ("QTR", quarterly))):
+        c = 100.0 + si * 7.0
+        for i, d in enumerate(dates):
+            c *= factors[(i + si) % len(factors)]
+            prows.append({"symbol": sym, "event_date": d, "available_date": d, "close": round(c, 4)})
+    listings = pd.DataFrame([{"symbol": s, "list_date": pd.Timestamp("2000-01-01"),
+                              "delist_date": pd.NaT} for s in ("MON", "QTR")])
+    macro = pd.DataFrame(columns=["series", "event_date", "available_date", "value"])
+    provider = InMemoryPITDataProvider(pd.DataFrame(prows), listings, macro)
+
+    out = tmp_path / "art.json"
+    rc = mod.run_real_data_oos(provider, generated_at="t", out=out, min_assets=2)
+    assert rc == 2
+    artifact = json.loads(out.read_text())
+    assert artifact["status"] == "insufficient_data"
+    assert artifact["report"]["reason"] == "oversampled_vs_native_frequency"
+
+
 def test_real_disk_vintage_data_runs_a_computed_comparison(tmp_path: Path):
     # Honest current-state guard: real accumulated vintage data (FRED price
     # proxies carry decades of history) IS sufficient for a walk-forward OOS

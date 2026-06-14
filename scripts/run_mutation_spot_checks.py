@@ -134,6 +134,15 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_real_data_oos_index.py::test_degeneracy_guard_raises_on_flat_oos"),
     ),
     MutationSpec(
+        name="real-data-oos-sampling-frequency-guard",
+        path="quantlab/research/real_data_oos.py",
+        original="return coarsest_native_days > rebalance_days * (1.0 + tol)",
+        mutated="return coarsest_native_days < rebalance_days * (1.0 + tol)",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_real_data_oos_frequency.py::test_report_fails_closed_on_quarterly_asset_under_monthly_rebalance",
+                      "tests/quantlab/test_real_data_oos_frequency.py::test_pbt_is_oversampled_matches_formula"),
+    ),
+    MutationSpec(
         name="visual-baseline-repin-hash-guard",
         path="tests/quantlab/test_governance_guards.py",
         original="    if baseline_hash != current_hash:\n        assert baseline_hash not in text",
@@ -640,7 +649,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**109/109 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**110/110 configured/killed**, including CR-RDO-004 real-data OOS sampling-frequency guard, CR-A0 event replay, and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -648,7 +657,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 355 suite evidence",
+        original="current registries use 367 suite evidence",
         mutated="current registries use 275 suite evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
