@@ -126,6 +126,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
                       "tests/quantlab/test_real_data_oos_cotemporal.py::test_report_uses_cotemporal_universe_and_is_non_degenerate"),
     ),
     MutationSpec(
+        name="real-data-oos-degeneracy-guard",
+        path="quantlab/research/real_data_oos.py",
+        original="if max_oos_vol < _DEGENERATE_VOL_EPS:",
+        mutated="if max_oos_vol < -1.0:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_real_data_oos_index.py::test_degeneracy_guard_raises_on_flat_oos"),
+    ),
+    MutationSpec(
         name="visual-baseline-repin-hash-guard",
         path="tests/quantlab/test_governance_guards.py",
         original="    if baseline_hash != current_hash:\n        assert baseline_hash not in text",
@@ -632,7 +640,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**106/106 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**107/107 configured/killed**, including CR-A0 event replay and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -640,7 +648,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 338 suite evidence",
+        original="current registries use 345 suite evidence",
         mutated="current registries use 275 suite evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -656,7 +664,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-import-linter-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="`uv run lint-imports` → KEPT over 77 files / 198 dependencies",
+        original="`uv run lint-imports` → KEPT over 78 files / 201 dependencies",
         mutated="`uv run lint-imports` → KEPT over 75 files / 186 dependencies",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -744,7 +752,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-visual-evidence-regression",
         path=".agents/specs/SPECS.md",
-        original="current CR-FPS-006/009 browser visual diff is `236 / 1,296,000`",
+        original="current CR-FPS-006/009 browser visual diff is `0 / 1,296,000`",
         mutated="visual diff `1089 / 1,296,000`",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_traceability_visual_evidence_tracks_current_pixel_diff"),
@@ -872,7 +880,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-frontend-count-shorthand-regression",
         path="docs/review/index.html",
-        original="<b>44</b><span>frontend tests passing</span>",
+        original="<b>46</b><span>frontend tests passing</span>",
         mutated="<b>29</b><span>frontend tests passing</span>",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
@@ -880,7 +888,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-frontend-coverage-artifact-drift",
         path="docs/review/assets/gate-frontend-coverage.txt",
-        original="F Next.js line coverage 89.85%",
+        original="F Next.js line coverage 90.00%",
         mutated="F Next.js line coverage 88.00%",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),

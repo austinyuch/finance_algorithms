@@ -14,14 +14,14 @@
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "338 passed",
+      "345 passed",
       "frontend tests 46 passed",
-      "Python mutation 106/106 killed",
+      "Python mutation 107/107 killed",
       "frontend mutation 26/26 killed",
       "F Next.js coverage 90.00%",
       "frontend audit 0 vulnerabilities",
       "browser visual diff passed",
-      "public hosting configured_not_observed (hash mismatched)"
+      "public hosting proven (hash matched)"
     ]
   },
   "experiments": [
@@ -61,23 +61,22 @@
   ],
   "realData": {
     "assetSet": [
-      "PCOPPUSDM",
       "SP500"
     ],
     "claimBoundary": "no_alpha_claim",
-    "overlapEnd": "2026-05-01",
-    "overlapMonths": 118.5708,
+    "overlapEnd": "2026-06-11",
+    "overlapMonths": 119.9179,
     "overlapStart": "2016-06-13",
     "rows": [
       {
         "isBaseline": true,
-        "oosNetSharpe": 0,
+        "oosNetSharpe": 0.8769832863084156,
         "strategyName": "BuyAndHold"
       },
       {
         "isBaseline": false,
-        "oosNetSharpe": -4.841150979688946,
-        "strategyName": "RandomStrategy"
+        "oosNetSharpe": 0.8081709328199352,
+        "strategyName": "SmaTimingStrategy"
       }
     ],
     "source": "real_data_oos_backtest_artifact",

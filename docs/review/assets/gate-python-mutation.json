@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 106,
-  "killed": 106,
+  "total": 107,
+  "killed": 107,
   "survived": 0,
   "mutations": [
     {
@@ -38,6 +38,10 @@
     },
     {
       "name": "real-data-oos-cotemporal-asset-set",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-degeneracy-guard",
       "status": "killed"
     },
     {
