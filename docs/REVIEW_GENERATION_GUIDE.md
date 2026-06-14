@@ -67,4 +67,10 @@ every feature card showing Evidence Source / Coverage Tier / Readiness State.
 
 1. Re-run §4 gates; refresh `docs/review/assets/`.
 2. Re-copy readiness from `review.md`.
-3. Rebuild `index.html`; keep gap analysis honest (no false greens).
+3. Rebuild `index.html`; keep gap analysis honest (no false greens). Split the
+   Gap Analysis into *resolved since last check* vs *still open*; when public
+   hosting has been re-proven for the current `dataHash`, record it as resolved
+   (live probe `status=proven`) while keeping the dashboard self-claim
+   `not_proven` by static-artifact contract.
+4. Record an audit row in `.agents/specs/ISSUE_LOG.md` (e.g. `DOC-RECON-<date>`)
+   noting the evidence snapshot and that no new unowned items surfaced.
