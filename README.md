@@ -80,10 +80,14 @@ Run the synthetic TSMC hedge slice:
 uv run python scripts/run_tsmc_hedge_slice.py
 ```
 
-Inspect vintage data readiness and run a real-data demo once enough price proxies exist:
+Inspect vintage data readiness and run the real-data OOS-net demo. Accumulated
+vintage data is now sufficient, so the SP500 market-index slice runs a *computed*
+candidate-vs-baseline comparison (fail-closed to `insufficient_data` / exit 2 on
+thin, degenerate, or sampling-oversampled universes; `no_alpha_claim` throughout):
 
 ```bash
 uv run python scripts/run_vintage_slice.py
+uv run python scripts/run_real_data_oos_backtest.py   # SP500 index OOS-net comparison
 ```
 
 Capture today's append-only point-in-time snapshot:
