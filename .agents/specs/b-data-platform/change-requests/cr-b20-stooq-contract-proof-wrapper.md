@@ -43,3 +43,15 @@ file and positive close row.
 Stooq remains blocked/default-disabled. This CR reduces false-green risk around
 future restoration attempts, but it does not restore Stooq, change defaults, or
 replace the Yahoo/FRED/NOAA proven quorum path.
+
+## Decision (2026-06-15): de-scoped / WONT-DO — not worth pursuing
+
+Live re-diagnosis shows the break is on Stooq's side and is not auth-related:
+the `/q/l/` CSV quote endpoint now returns **HTTP 404 for every symbol** (incl.
+`aapl.us` — the endpoint was removed, not a bad ticker), and the `/q/d/l/`
+history endpoint is gated behind a **JavaScript anti-bot challenge**. Stooq has
+**no API key** to apply for. Restoring it would require a fragile headless-browser
+JS-challenge bypass (likely ToS-violating) for no real benefit, since the
+FRED/Yahoo/NOAA quorum already supplies the project's real data. **Stooq is
+therefore off the roadmap**; `scripts/stooq_contract_proof.py` is retained purely
+as a fail-closed guard so any future accidental re-enable stays `not_proven`.

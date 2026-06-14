@@ -110,7 +110,7 @@
 ## Recommended Next Action
 
 1. Keep `daily-snapshot.yml` observer evidence current after future cron runs; do not regress autonomous schedule proof from run `27392471359` back to pending without fresher contradictory Actions evidence.
-2. Route any Stooq re-enable attempt through `scripts/stooq_contract_proof.py` and require positive finite live close rows before opt-in review; default enablement remains separate maintainer policy.
+2. **Stooq is de-scoped — do not pursue (not worth it).** Re-diagnosed live 2026-06-15: the `/q/l/` CSV quote endpoint returns HTTP 404 for *every* symbol (incl. `aapl.us`, so the endpoint was removed, not a symbol error) and the `/q/d/l/` history endpoint now sits behind a JavaScript anti-bot challenge. Stooq has **no API key to apply for**; restoring it would need a fragile headless-browser JS-challenge bypass (likely ToS-violating) with no payoff — FRED/Yahoo/NOAA already cover the proven source quorum. Stooq stays blocked/default-disabled permanently; `scripts/stooq_contract_proof.py` is retained only as a fail-closed guard, not a backlog item.
 3. Use `scripts/tier3_readiness_gate.py` for any external E production proof handoff; local smoke artifacts, invalid JSON, hand-written production-looking maps, plain proof IDs, and bare orchestrator/monitor labels must remain nonzero failures.
 4. Keep stakeholder docs copied from `review.md` verdicts and avoid deriving readiness from test counts.
 
