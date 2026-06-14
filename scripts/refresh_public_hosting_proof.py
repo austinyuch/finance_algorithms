@@ -26,7 +26,6 @@ import argparse
 import json
 import subprocess
 import sys
-import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -148,14 +147,23 @@ def refresh_hosting_proof(
 
 
 def _live_observation(repo_root: Path) -> dict[str, Any]:  # pragma: no cover - shells out to npm
-    out_path = Path(tempfile.gettempdir()) / "refresh-public-hosting-probe.json"
-    subprocess.run(
-        ["npm", "run", "probe:public-demo"],
-        cwd=str(repo_root / "frontend"),
-        check=True,
-        env={"QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH": str(out_path), **_os_environ()},
-    )
-    return json.loads(out_path.read_text(encoding="utf-8"))
+    # Write the probe output inside docs/ so the probe reads the committed
+    # docs/deployment-manifest.json for the expected dataHash. Do NOT use
+    # check=True: the probe fails closed with exit 2 when the deployed hash is
+    # stale (a legitimate configured_not_observed observation, not an error).
+    out_path = repo_root / "docs" / ".refresh-live-probe.json"
+    try:
+        subprocess.run(
+            ["npm", "run", "probe:public-demo"],
+            cwd=str(repo_root / "frontend"),
+            check=False,
+            env={"QUANTLAB_PUBLIC_DEMO_PROBE_OUT_PATH": str(out_path), **_os_environ()},
+        )
+        if not out_path.exists():
+            raise RuntimeError("live probe did not write an observation")
+        return json.loads(out_path.read_text(encoding="utf-8"))
+    finally:
+        out_path.unlink(missing_ok=True)
 
 
 def _os_environ() -> dict[str, str]:  # pragma: no cover - trivial env passthrough

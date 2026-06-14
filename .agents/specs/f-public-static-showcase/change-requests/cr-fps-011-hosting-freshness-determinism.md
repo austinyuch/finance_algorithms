@@ -89,6 +89,24 @@ write), and never emits `proven` without a matched fresh observation.
   `public-hosting-stale-downgrade-not-proven` (stale must not stay proven).
 - `TESTS.md` registry row + count resync.
 
+## Evidence
+
+- `uv run pytest -q` → **355 passed** (deterministic downgrade, inclusive 24h
+  boundary, PBT window, default-asof non-rot in `test_f_1_showcase_api.py`;
+  `test_refresh_public_hosting_proof.py` 6 — proven/configured/fail-closed/CLI/
+  validator-accepts). `scripts/refresh_public_hosting_proof.py` 100% line coverage.
+- `uv run mypy quantlab/ scripts/refresh_public_hosting_proof.py
+  --ignore-missing-imports` → clean. `uv run lint-imports` → KEPT.
+- `uv run python scripts/run_mutation_spot_checks.py` → **109/109 killed, 0
+  survived**, including `public-hosting-freshness-downgrade-window` (boundary
+  `<=`→`<`) and `public-hosting-stale-downgrade-not-proven` (stale must not stay
+  proven); 3 pre-existing probe mutations realigned to the `asof`/downgrade code.
+- Adding the CR-FPS-011 tests/mutations moved the dashboard evidence list
+  (pytest 345→355, mutation 107→109) → new `dataHash 68dfae0f…`; static + browser
+  visual baselines re-pinned (0-pixel, CR-FBP-001-legal). After landing on `main`,
+  Pages redeployed and the live probe re-proved hosting at `68dfae0f…`
+  (`status=proven`, deployed==expected, HTTP 200).
+
 ## Boundary
 
 No live backend, live QuantLab data, auth, production MLOps, or Tier3 claims.
