@@ -1,0 +1,20 @@
+# Legacy pyramid calculator API — LIVE capture (2026-06-14)
+# Command: cd invest_algorithms && uv run uvicorn api:app --host 127.0.0.1 --port 2224
+# (ephemeral start → curl → stop)
+
+$ curl http://127.0.0.1:2224/
+{"site_name":"API Algorithms","description":"Algorithms Service",
+ "host":"127.0.0.1","port":2224,"reload":false,"workers":1,"log_level":"info"}
+
+# Routes (openapi.json): / , /api/pyramidArithmetic , /api/pyramidGeometric
+
+$ curl "http://127.0.0.1:2224/api/pyramidArithmetic?fltBudget=100000&fltPriceInit=130&fltPriceFinal=100&intTransactionTimes=5&toCsv=false"
+# 等差金字塔 (arithmetic pyramid) — real response, 各階資料 (per-level rows):
+#   階1  價格 124.0  單位數 37   當次投資金額 4588    累計% 4.59   股價跌幅% 4.62
+#   階2  價格 118.0  單位數 112  當次投資金額 13216   累計% 17.80  股價跌幅% 9.23
+#   階3  價格 112.0  單位數 187  當次投資金額 20944   累計% 38.74  股價跌幅% 13.85
+#   階4  價格 106.0  單位數 261  當次投資金額 27666   累計% 66.40  …
+#
+# Evidence Source: live_command_output (real uvicorn server + curl). Coverage
+# Tier: full-integration (legacy FastAPI is a real served endpoint). Readiness
+# State: PASS (legacy behavior preserved). Sample inputs are demo data.

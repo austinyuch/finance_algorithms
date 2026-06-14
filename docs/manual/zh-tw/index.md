@@ -254,6 +254,12 @@ CLI 絕不輸出誤導性的 `computed`。兩個 guard 會 fail closed（exit 2�
 
 **自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：**
 
+- **前後端服務已 live 驗證（2026-06-14）。** Next.js dashboard smoke 對 ephemeral
+  `next start` 通過（提供 `/` 與真實 `/api/showcase` payload — 見
+  `assets/frontend-smoke-01.txt`），legacy FastAPI 金字塔計算機回傳真實等差金字塔
+  結果（見 `assets/legacy-api-01.txt`），因此「啟動服務」證據已是 live_command_output，
+  不再僅依賴已 commit 的 payload。
+
 - **Sampling-frequency 誠實缺口已關閉（CR-RDO-004）。** 真實資料 OOS library 現會
   估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時
   **fail closed**（`reason=oversampled_vs_native_frequency`），不再默默把陳舊價格

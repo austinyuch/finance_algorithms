@@ -185,6 +185,7 @@ rows（依 OOS-net Sharpe 排名）：
     <h2>視覺缺口盤點</h2>
     <p><b>自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：</b></p>
     <ul>
+      <li><b>前後端服務已 live 驗證（2026-06-14）：</b>Next.js dashboard smoke 對 ephemeral <code>next start</code> 通過（提供 <code>/</code> 與真實 <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>），legacy FastAPI 金字塔計算機回傳真實等差金字塔結果（<code>assets/legacy-api-01.txt</code>），「啟動服務」證據已是 <code>live_command_output</code>，不再僅依賴已 commit 的 payload。</li>
       <li><b>Sampling-frequency 誠實缺口已關閉（CR-RDO-004）：</b>真實資料 OOS 現會估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時 <b>fail closed</b>（<code>reason=oversampled_vs_native_frequency</code>），不再把陳舊價格 forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設單一指數 SP500 run 不受影響、維持 <code>computed</code>（流程 5）。</li>
       <li><b>Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）：</b>stale-baseline-hash guard 只在 <code>baselineHash != currentHash</code> 時觸發，因此 deterministic re-pin（<code>baselineHash == currentHash</code>、<code>mismatchedPixels == 0</code>）不再阻擋誠實 UI 變更；tolerant pixel-diff threshold gate 不變。</li>
       <li><b>Dashboard visual readiness 已 wire-through（CR-FPS-009）：</b>export readiness 面板現由 repo-side browser visual diff 證據回報 <code>visualRegression=proven</code>。</li>
