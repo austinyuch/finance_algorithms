@@ -59,7 +59,11 @@ plus refreshed gate evidence. Keep readiness claims copied from
   governance set (`.agents/specs/{NEXT_STEPS,SPECS,ISSUE_LOG,RTM}.md` +
   [`docs/FEATURES.md`](docs/FEATURES.md)).
 - **Executive review** — `docs/review/index.html`. Regeneration steps:
-  [`docs/REVIEW_GENERATION_GUIDE.md`](docs/REVIEW_GENERATION_GUIDE.md).
+  [`docs/REVIEW_GENERATION_GUIDE.md`](docs/REVIEW_GENERATION_GUIDE.md). Regenerated
+  per that guide with real gate/CLI evidence and started services, a Gap Analysis
+  that separates resolved-since-last-check from still-open (no false greens, claim
+  cap from `review.md`), and an audit row recorded in
+  [`.agents/specs/ISSUE_LOG.md`](.agents/specs/ISSUE_LOG.md).
 - **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
   [`docs/EVIDENCE_METADATA_CONTRACT.md`](docs/EVIDENCE_METADATA_CONTRACT.md),
   [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](docs/DEMO_RISK_WARNING_TAXONOMY.md).
