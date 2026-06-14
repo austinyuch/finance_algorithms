@@ -22,4 +22,4 @@ The public URL target is `https://austinyuch.github.io/finance_algorithms/`. The
 
 ## Residual Risk
 
-This baseline is a static visual contract hash, not a browser pixel screenshot. Browser screenshot regression remains a future stronger proof.
+The original residual — a static visual *contract hash* rather than a browser pixel screenshot — is **closed**: [f-browser-pixel-baseline](../f-browser-pixel-baseline/review.md) (CR-FBP-001) replaced the hash-derived mismatch with a committed 1440×900 PNG baseline and a real pixel mismatch ratio (latest diff `0 / 1,296,000` pixels, `mismatchRatio=0.0`, threshold `0.001`), and CR-FPS-009 wired that browser visual proof into the dashboard payload. The remaining residual is operational, not visual: public-hosting `proven` is a point-in-time observation re-proved after each deploy — CR-FPS-010/011 keep stale evidence honest by downgrading to `configured_not_observed` rather than overclaiming — and the dashboard stays a static `local_demo_only` artifact that cannot self-claim live deployment.
