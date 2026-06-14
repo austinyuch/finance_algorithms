@@ -74,3 +74,9 @@ every feature card showing Evidence Source / Coverage Tier / Readiness State.
    `not_proven` by static-artifact contract.
 4. Record an audit row in `.agents/specs/ISSUE_LOG.md` (e.g. `DOC-RECON-<date>`)
    noting the evidence snapshot and that no new unowned items surfaced.
+5. Visual render-validation: screenshot the built page headless and eyeball it —
+   `/snap/bin/chromium --headless --no-sandbox --disable-gpu --window-size=1440,2400
+   --screenshot="$PWD/out/docshots/review.png" "file://$PWD/docs/review/index.html"`.
+   Note: snap chromium is confined — write the screenshot **inside the repo**
+   (`out/…`), not `/tmp`. Verify cards/captions/badges and CSS; the UX-flow Mermaid
+   renders client-side via CDN, so keep the always-visible text pipeline fallback.

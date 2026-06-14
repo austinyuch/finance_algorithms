@@ -183,6 +183,7 @@ rows（依 OOS-net Sharpe 排名）：
 
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
+    <p><b>Render 驗證（2026-06-14，headless chromium 1440×2400）：</b>本手冊（en/zh）與 executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence caption 與 warning badge（<code>PASS</code>、<code>MOCK_DOMINANT_EVIDENCE</code>）皆完整，無破版 CSS 或缺失 asset。唯一視覺殘留為 review 的 UX-flow 圖（client-side Mermaid CDN，否則顯示文字 pipeline fallback）；因 <code>mermaid-cli</code> 未安裝，暫無法 inline 成 offline SVG（Low）。</p>
     <p><b>自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：</b></p>
     <ul>
       <li><b>前後端服務已 live 驗證（2026-06-14）：</b>Next.js dashboard smoke 對 ephemeral <code>next start</code> 通過（提供 <code>/</code> 與真實 <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>），legacy FastAPI 金字塔計算機回傳真實等差金字塔結果（<code>assets/legacy-api-01.txt</code>），「啟動服務」證據已是 <code>live_command_output</code>，不再僅依賴已 commit 的 payload。</li>

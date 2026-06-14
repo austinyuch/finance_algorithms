@@ -252,6 +252,13 @@ CLI 絕不輸出誤導性的 `computed`。兩個 guard 會 fail closed（exit 2�
 
 ## 視覺缺口盤點
 
+**Render 驗證（2026-06-14，headless chromium `1440×2400`）：** 本手冊（en/zh）與
+executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence
+caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無破版 CSS 或
+缺失 asset。唯一視覺殘留為 review 的 UX-flow 圖，係透過 Mermaid CDN client-side
+渲染（否則顯示 always-visible 的文字 pipeline fallback）；因 `mermaid-cli` 未安裝，
+暫無法 inline 成 offline SVG（Low）。
+
 **自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：**
 
 - **前後端服務已 live 驗證（2026-06-14）。** Next.js dashboard smoke 對 ephemeral
