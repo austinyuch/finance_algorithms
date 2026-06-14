@@ -266,11 +266,10 @@ The default single-index SP500 run is homogeneous (`coarsest_cadence=daily`,
 **Render validation (2026-06-14, headless chromium `1440×2400`):** this manual
 (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal
 code blocks, evidence captions and warning badges (`PASS`,
-`MOCK_DOMINANT_EVIDENCE`) all intact, no broken CSS or missing assets. The only
-visual residual is the review's UX-flow diagram, which renders client-side via
-the Mermaid CDN (an always-visible text pipeline fallback is shown otherwise);
-inlining it as offline SVG is blocked because `mermaid-cli` is not installed
-(Low).
+`MOCK_DOMINANT_EVIDENCE`) all intact, no broken CSS or missing assets. The
+review's UX-flow diagram is now a **self-contained inline SVG** (renders offline
+/ `file://`, no CDN or client-side JS, with an accessible text-equivalent
+caption), so there is no remaining visual residual.
 
 **Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):**
 

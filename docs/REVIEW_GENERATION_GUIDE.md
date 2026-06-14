@@ -78,5 +78,6 @@ every feature card showing Evidence Source / Coverage Tier / Readiness State.
    `/snap/bin/chromium --headless --no-sandbox --disable-gpu --window-size=1440,2400
    --screenshot="$PWD/out/docshots/review.png" "file://$PWD/docs/review/index.html"`.
    Note: snap chromium is confined — write the screenshot **inside the repo**
-   (`out/…`), not `/tmp`. Verify cards/captions/badges and CSS; the UX-flow Mermaid
-   renders client-side via CDN, so keep the always-visible text pipeline fallback.
+   (`out/…`), not `/tmp`. Verify cards/captions/badges and CSS. The UX-flow diagram
+   is a self-contained inline SVG (no Mermaid CDN / client-side JS), so it renders
+   in the static screenshot too; keep its accessible text-equivalent caption.
