@@ -265,6 +265,13 @@ The default single-index SP500 run is homogeneous (`coarsest_cadence=daily`,
 
 **Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):**
 
+- **Front + back services live-verified (2026-06-14).** The Next.js dashboard
+  smoke passed against an ephemeral `next start` (served `/` and the real
+  `/api/showcase` payload — see `assets/frontend-smoke-01.txt`), and the legacy
+  FastAPI pyramid calculator returned a real arithmetic-pyramid response (see
+  `assets/legacy-api-01.txt`), so the "started services" evidence is now
+  live_command_output rather than only the committed payload.
+
 - **Sampling-frequency honesty gap closed (CR-RDO-004).** The real-data OOS
   library now estimates each asset's native cadence and **fails closed**
   (`reason=oversampled_vs_native_frequency`) when the rebalance cadence is finer

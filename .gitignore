@@ -17,3 +17,6 @@ CLAUDE.md
 .kiro/skills
 .codex/skills
 # cross-agents symlink bridge: managed end
+
+# Legacy API runtime logs (not tracked)
+invest_algorithms/logs/
