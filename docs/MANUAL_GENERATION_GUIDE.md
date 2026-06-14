@@ -35,12 +35,37 @@
 Canonical seed/demo commands. Each writes a transcript under
 `docs/manual/assets/`:
 
+All assets are written under **`docs/manual/assets/`** (the single asset output
+dir for both languages). Sample/seed data referenced by these demos:
+
+- `data/vintage/raw/2026-06-09/`, `data/vintage/raw/2026-06-11/` — append-only PIT
+  FRED + NOAA snapshots (immutable) consumed by the snapshot/vintage/real-data demos.
+- `frontend/lib/showcase-payload.json` + `frontend/out/showcase.json` — the
+  canonical local result-store dashboard scenario.
+- `.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json` —
+  the committed real computed OOS artifact (checksum `421c7fd2…`).
+
 ```bash
 uv run python scripts/run_tsmc_hedge_slice.py     # → backend-hedge-slice-01-leaderboard.txt
 uv run python scripts/run_vintage_slice.py        # → backend-vintage-slice-01-readiness.txt
 uv run python scripts/daily_snapshot.py --dry-run # → backend-daily-snapshot-01-dryrun.txt
 uv run python scripts/snapshot_ops_gate.py --help # → backend-ops-gate-01-help.txt
+
+# Flow 5 — real-data OOS-net backtest (SP500 market index, exit 0 computed):
+uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
+#   → real-data-oos-demo-01-run.txt   (trimmed transcript: computed run +
+#      CR-RDO-004 oversampled_vs_native_frequency + degenerate_flat_oos fail-closed)
+#   → real-data-oos-demo-02-artifact.json  (the computed artifact;
+#      byte-for-byte the committed real run at
+#      .agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json)
 ```
+
+The real-data OOS evidence is `report_artifact` + `live_command_output`
+(`no_alpha_claim`, mechanism not strategy verdict, `approximate_event_date` ≠ true
+PIT). The committed `real-data-oos-demo-01-run.txt` was **live-captured on
+2026-06-14** (the computed SP500 run plus both real fail-closed paths). When live
+re-exec is unavailable, regenerate by reconstructing the transcript from the
+committed real computed artifact and record a `Fallback Reason` on the asset block.
 
 Authoritative gates (recorded in the manual evidence panel):
 
@@ -65,9 +90,37 @@ from `LocalResultStore` / `ExperimentRegistry`. A real chromium-headless
 screenshot is captured by:
 
 ```bash
+cd frontend && npm run smoke              # ephemeral 127.0.0.1 start; validates / and /api/showcase (no port allocation)
 cd frontend && npm run visual:browser     # → frontend/out/browser-visual.png (status proven)
-npm run probe:public-demo                 # → frontend/out/public-hosting-probe.json (exit 2 while deployed dataHash is stale)
+npm run probe:public-demo                 # → frontend/out/public-hosting-probe.json
 ```
+
+`npm run smoke` and `npm run visual:browser` are the default **no-port** evidence
+path (ephemeral start, then exit) per CLAUDE.md — they need no registry
+allocation. The committed dashboard screenshot in `docs/manual/assets/` is
+`dashboard-browser-visual.png`; the embedded static export is
+`dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
+
+Public hosting is currently observed `proven` **point-in-time** at
+`dataHash c73d7c88…` (`docs/deployment-manifest.json`,
+`docs/public-hosting-probe.json`, observed `2026-06-14T09:39Z`). The dashboard
+payload's own `publicHosting` self-claim stays `not_proven` by design — a static
+artifact cannot self-claim its deployment. Freshness is deterministic
+(CR-FPS-011): stale committed evidence downgrades to `configured_not_observed`
+rather than crashing.
+
+For Flow 4 the legacy FastAPI pyramid calculator can be started briefly for a
+real response (root + a sample pyramid calc), then stopped:
+
+```bash
+cd invest_algorithms && uv run uvicorn api:app --host 127.0.0.1 --port 2224 &
+curl -s 'http://127.0.0.1:2224/api/pyramidArithmetic?...'   # capture JSON, then stop the server
+```
+
+Any **persistent** port-bound service beyond an ephemeral smoke must go through
+`local-infra-registry-governance`; if governance is unavailable, fall back to the
+static export + headless screenshot and mark the section `Illustrative` with a
+`Fallback Reason`.
 
 The manual embeds `browser-visual.png` as `live_screenshot` evidence (the static
 export ships semantic HTML without the app stylesheet, so the shot is
