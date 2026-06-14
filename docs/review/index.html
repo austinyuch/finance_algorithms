@@ -3,9 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finance Algorithms — Executive Review</title>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-<style>
+<title>Finance Algorithms — Executive Review</title><style>
   :root{--blue:#005EB8;--sky:#04A9FB;--orange:#FF6A39;--green:#97D700;--grey:#3B4559;--line:#e3e8f0}
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;color:var(--grey);background:#f5f7fb;line-height:1.65}
@@ -128,20 +126,45 @@
 
   <section>
     <h2 class="sec">UX Flow</h2>
-    <p class="sub">From data capture to a stakeholder-readable summary. Pipeline (text fallback, in case the Mermaid diagram below has not rendered): <b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>. The diagram renders client-side via Mermaid (CDN) in an online browser.</p>
+    <p class="sub">From data capture to a stakeholder-readable summary — the pipeline (also the accessible text equivalent of the diagram): <b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>. The diagram below is an inline SVG (self-contained; renders offline, no CDN).</p>
     <div class="card">
-      <pre class="mermaid">
-flowchart LR
-  A["daily_snapshot.py\n(PIT capture)"] --> B["vintage loader\navailable_date &le; asof"]
-  B --> C["A0 vectorized\nbacktest engine"]
-  C --> D["OOS-net leaderboard\n(vs baselines)"]
-  D --> E["E-lite registry\n(lineage)"]
-  E --> F["Showcase read API\n/api/showcase"]
-  F --> G["Next.js dashboard\nstatic export"]
-  style A fill:#005EB8,color:#fff
-  style D fill:#97D700,color:#1a2a00
-  style G fill:#04A9FB,color:#022
-      </pre>
+      <svg viewBox="0 0 1320 130" role="img" aria-label="QuantLab pipeline: daily_snapshot.py PIT capture to vintage loader to A0 vectorized backtest engine to OOS-net leaderboard to E-lite registry to Showcase read API to Next.js dashboard static export" style="width:100%;height:auto;display:block">
+        <title>QuantLab UX flow pipeline</title>
+        <defs>
+          <marker id="ux-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#005EB8"></path>
+          </marker>
+        </defs>
+        <line x1="170" y1="65" x2="198" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <line x1="360" y1="65" x2="388" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <line x1="550" y1="65" x2="578" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <line x1="740" y1="65" x2="768" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <line x1="930" y1="65" x2="958" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <line x1="1120" y1="65" x2="1148" y2="65" stroke="#005EB8" stroke-width="2" marker-end="url(#ux-arrow)"></line>
+        <g font-family="inherit">
+          <rect x="10" y="30" width="160" height="70" rx="8" fill="#005EB8"></rect>
+          <text x="90" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">daily_snapshot.py</text>
+          <text x="90" y="76" text-anchor="middle" font-size="11" fill="#dbe9fb">(PIT capture)</text>
+          <rect x="200" y="30" width="160" height="70" rx="8" fill="#eef3fa" stroke="#005EB8" stroke-width="1.5"></rect>
+          <text x="280" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#3B4559">vintage loader</text>
+          <text x="280" y="76" text-anchor="middle" font-size="11" fill="#3B4559">available_date &#8804; asof</text>
+          <rect x="390" y="30" width="160" height="70" rx="8" fill="#eef3fa" stroke="#005EB8" stroke-width="1.5"></rect>
+          <text x="470" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#3B4559">A0 vectorized</text>
+          <text x="470" y="76" text-anchor="middle" font-size="11" fill="#3B4559">backtest engine</text>
+          <rect x="580" y="30" width="160" height="70" rx="8" fill="#97D700"></rect>
+          <text x="660" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#1a2a00">OOS-net leaderboard</text>
+          <text x="660" y="76" text-anchor="middle" font-size="11" fill="#1a2a00">(vs baselines)</text>
+          <rect x="770" y="30" width="160" height="70" rx="8" fill="#eef3fa" stroke="#005EB8" stroke-width="1.5"></rect>
+          <text x="850" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#3B4559">E-lite registry</text>
+          <text x="850" y="76" text-anchor="middle" font-size="11" fill="#3B4559">(lineage)</text>
+          <rect x="960" y="30" width="160" height="70" rx="8" fill="#eef3fa" stroke="#005EB8" stroke-width="1.5"></rect>
+          <text x="1040" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#3B4559">Showcase read API</text>
+          <text x="1040" y="76" text-anchor="middle" font-size="11" fill="#3B4559">/api/showcase</text>
+          <rect x="1150" y="30" width="160" height="70" rx="8" fill="#04A9FB"></rect>
+          <text x="1230" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#02222a">Next.js dashboard</text>
+          <text x="1230" y="76" text-anchor="middle" font-size="11" fill="#02222a">static export</text>
+        </g>
+      </svg>
     </div>
   </section>
 
@@ -159,7 +182,7 @@ flowchart LR
           <li><b>Public hosting re-proven</b> at <code>dataHash c73d7c88…</code> (live probe <code>status=proven</code>, deployed==expected, HTTP 200; PR #97). The dashboard self-claim stays <code>not_proven</code> by static-artifact contract; <code>proven</code> is a point-in-time observation re-proved per deploy <span class="sev sL">hosting</span></li>
           <li><b>Real-data OOS-net demo live-captured</b> (2026-06-14): SP500 <code>computed</code> comparison plus the CR-RDO-004 sampling-frequency and degeneracy fail-closed paths; manual Flow 5 added under <code>no_alpha_claim</code> <span class="sev sL">docs</span></li>
           <li><b>Front + back services live-verified</b> (2026-06-14): Next.js dashboard smoke <code>PASS</code> (served <code>/</code> + <code>/api/showcase</code> on an ephemeral <code>next start</code>) and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>/api/pyramidArithmetic</code>); transcripts under <code>docs/manual/assets/</code> <span class="sev sL">ops</span></li>
-          <li><b>Docs visually render-validated</b> (2026-06-14, headless chromium <code>1440×2400</code>): manual (en/zh) and this review render cleanly — hero/stat cards, feature cards, evidence captions/badges, and code blocks all intact, no broken CSS or assets. The UX-flow Mermaid CDN dependency is mitigated with an always-visible text pipeline fallback <span class="sev sL">visual</span></li>
+          <li><b>Docs visually render-validated</b> (2026-06-14, headless chromium <code>1440×2400</code>): manual (en/zh) and this review render cleanly — hero/stat cards, feature cards, evidence captions/badges, and code blocks all intact, no broken CSS or assets. The UX-flow diagram is now a <b>self-contained inline SVG</b> (renders offline / <code>file://</code>, no CDN or client-side JS), with an accessible text-equivalent pipeline caption <span class="sev sL">visual</span></li>
           <li><b>Visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>) <span class="sev sL">visual</span></li>
           <li><b>Autonomous schedule proof captured</b> (Actions run <code>27392471359</code>, artifact <code>snapshot-schedule-proof</code>) <span class="sev sL">ops</span></li>
           <li><b>Scoped live snapshot write smoke proven</b> (CR-B12: <code>fred_FEDFUNDS</code> write, then same-day skip) <span class="sev sL">ops</span></li>
@@ -172,7 +195,6 @@ flowchart LR
         <h3>⏳ Still open</h3>
         <ul class="clean">
           <li>No CI-managed visual baseline history beyond the repo baseline <span class="sev sL">Low</span></li>
-          <li>UX-flow diagram renders client-side via the Mermaid CDN (text pipeline fallback shown otherwise); no offline-inlined SVG (<code>mermaid-cli</code> not installed) <span class="sev sL">Low</span></li>
           <li>Stooq source contract remains separate from the proven FRED/Yahoo/NOAA source quorum <span class="sev sL">Low</span></li>
           <li>Static export's public-hosting readiness remains conservative (<code>not_proven</code>) by dashboard contract; visual regression is repo-side proven <span class="sev sL">Low</span></li>
           <li>Live-data backtest deferred until &ge;2 real price assets accumulate <span class="sev sL">Low</span></li>
@@ -200,6 +222,5 @@ flowchart LR
   Generated 2026-06-12 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code>, gate transcripts in <code>docs/review/assets/</code> · See <a href="../REVIEW_GENERATION_GUIDE.md" style="color:#04A9FB">REVIEW_GENERATION_GUIDE.md</a>
 </footer>
 
-<script>mermaid.initialize({startOnLoad:true,theme:"base",themeVariables:{primaryColor:"#eef3fa",primaryTextColor:"#3B4559",lineColor:"#005EB8",fontSize:"14px"}});</script>
 </body>
 </html>
