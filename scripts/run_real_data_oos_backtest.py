@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from quantlab.data.vintage import build_provider_from_vintage
 from quantlab.research.real_data_oos import (
+    SamplingFrequencyError,
     assess_data_sufficiency,
     build_insufficient_data_report,
     build_real_data_oos_artifact,
@@ -80,6 +81,16 @@ def run_real_data_oos(
         report = build_real_data_oos_report(provider, candidate=cand, baseline=base, config=config,
                                             min_assets=min_assets, min_history_months=min_history_months,
                                             availability_mode=availability_mode)
+    except SamplingFrequencyError as exc:
+        # CR-RDO-004: rebalance cadence finer than the coarsest asset's native
+        # cadence would fabricate flat returns; fail closed with an explicit reason.
+        oversampled = replace(suff, sufficient=False, reason="oversampled_vs_native_frequency")
+        report = build_insufficient_data_report(oversampled, config=config)
+        artifact = build_real_data_oos_artifact(report, artifact_uri=artifact_uri,
+                                                generated_at=generated_at)
+        _emit(artifact, out)
+        print(f"[fail-closed] oversampled real-data OOS: {exc}", file=sys.stderr)
+        return 2
     except ValueError as exc:
         # Degenerate (flat OOS — e.g. PIT-invisible single-capture data): fail
         # closed gracefully instead of emitting a misleading "computed" artifact.

@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 109,
-  "killed": 109,
+  "total": 110,
+  "killed": 110,
   "survived": 0,
   "mutations": [
     {
@@ -42,6 +42,10 @@
     },
     {
       "name": "real-data-oos-degeneracy-guard",
+      "status": "killed"
+    },
+    {
+      "name": "real-data-oos-sampling-frequency-guard",
       "status": "killed"
     },
     {

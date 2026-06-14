@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from itertools import combinations
 import hashlib
 import json
+import statistics
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -31,6 +32,74 @@ _ARTIFACT_KIND = "real_data_oos_backtest_artifact"
 _STATUSES = {"computed", "insufficient_data"}
 # Default min history = train(12) + test(6) of the default walk-forward window.
 _DEFAULT_MIN_HISTORY_MONTHS = 18.0
+
+# CR-RDO-004: oversampling tolerance — fail closed only when the rebalance cadence
+# is more than (1 + tol)x finer than the coarsest selected asset's native cadence.
+_OVERSAMPLE_TOL = 0.5
+_REBALANCE_DAYS = {"daily": 1.0, "weekly": 7.0, "monthly": 30.4375, "quarterly": 91.3125}
+
+
+class SamplingFrequencyError(ValueError):
+    """Raised when the rebalance cadence is finer than an asset's native cadence.
+
+    Rebalancing/sampling more often than an asset actually updates forward-fills
+    stale prices into fabricated flat-return periods, which understates volatility
+    and inflates the OOS-net Sharpe — a dishonest comparison. CR-RDO-004 fails
+    closed instead of emitting a misleading ``computed`` result.
+    """
+
+
+@dataclass(frozen=True)
+class SamplingFrequency:
+    symbol: str
+    median_spacing_days: float
+    cadence: str  # "daily" | "weekly" | "monthly" | "quarterly" | "irregular"
+
+
+def classify_cadence(days: float) -> str:
+    """Canonical cadence label from a median inter-observation spacing in days."""
+    if days <= 0:
+        return "irregular"
+    if days <= 4:
+        return "daily"
+    if days <= 10:
+        return "weekly"
+    if days <= 45:
+        return "monthly"
+    if days <= 135:
+        return "quarterly"
+    return "irregular"
+
+
+def rebalance_cadence_days(rebalance: str) -> float:
+    """Approximate days between rebalances; unknown labels fall back to monthly."""
+    return _REBALANCE_DAYS.get(str(rebalance), 30.4375)
+
+
+def is_oversampled(coarsest_native_days: float, rebalance_days: float,
+                   *, tol: float = _OVERSAMPLE_TOL) -> bool:
+    """True when the rebalance cadence is meaningfully finer than the coarsest asset."""
+    return coarsest_native_days > rebalance_days * (1.0 + tol)
+
+
+def _median_spacing_days(events: Any) -> float:
+    uniq = sorted({d for d in events})
+    if len(uniq) < 2:
+        return 0.0
+    diffs = [(uniq[i + 1] - uniq[i]).days for i in range(len(uniq) - 1)]
+    return float(statistics.median(diffs))
+
+
+def estimate_sampling_frequencies(provider: Any) -> dict[str, SamplingFrequency]:
+    """Per-asset native sampling frequency from the PIT price panel's event_dates."""
+    prices = provider._prices
+    out: dict[str, SamplingFrequency] = {}
+    if not len(prices):
+        return out
+    for sym, grp in prices.groupby("symbol"):
+        days = _median_spacing_days(grp["event_date"])
+        out[str(sym)] = SamplingFrequency(str(sym), days, classify_cadence(days))
+    return out
 
 
 @dataclass(frozen=True)
@@ -50,6 +119,10 @@ class DataSufficiency:
     overlap_start: str | None = None
     overlap_end: str | None = None
     overlap_months: float = 0.0
+    # CR-RDO-004: native sampling cadence of the traded (co-temporal) universe.
+    sampling_frequencies: tuple[tuple[str, str], ...] = ()
+    coarsest_cadence_days: float = 0.0
+    frequency_homogeneous: bool = True
 
 
 def _asset_spans(provider: Any) -> dict[str, tuple[Any, Any]]:
@@ -141,6 +214,15 @@ def assess_data_sufficiency(
         provider, min_history_months=min_history_months, min_assets=min_assets)
     overlap_months = _overlap_months({k: spans[k] for k in universe})[2] if universe else 0.0
 
+    # CR-RDO-004: cadence of the traded universe (fall back to all assets when no
+    # co-temporal subset qualifies, so provenance stays informative either way).
+    freqs = estimate_sampling_frequencies(provider)
+    scope = universe if universe else assets
+    scoped = {sym: freqs[sym] for sym in scope if sym in freqs}
+    sampling_frequencies = tuple(sorted((sym, f.cadence) for sym, f in scoped.items()))
+    coarsest_cadence_days = max((f.median_spacing_days for f in scoped.values()), default=0.0)
+    frequency_homogeneous = len({f.cadence for f in scoped.values()}) <= 1
+
     if len(assets) < min_assets:
         sufficient, reason = False, "fewer_than_min_assets"
     elif universe:
@@ -159,6 +241,9 @@ def assess_data_sufficiency(
         sufficient=sufficient, reason=reason,
         cotemporal_universe=universe,
         overlap_start=o_start, overlap_end=o_end, overlap_months=round(overlap_months, 4),
+        sampling_frequencies=sampling_frequencies,
+        coarsest_cadence_days=round(coarsest_cadence_days, 4),
+        frequency_homogeneous=frequency_homogeneous,
     )
 
 
@@ -204,6 +289,22 @@ def build_real_data_oos_report(
 
     if config.get("mode", "net") != "net":
         raise ValueError("real-data OOS comparison requires mode=net for OOS-net authority")
+
+    # CR-RDO-004: refuse to rebalance/sample finer than the coarsest selected
+    # asset's native cadence — that would forward-fill stale prices into fabricated
+    # flat returns, understating vol and inflating the OOS-net Sharpe.
+    rebalance = str(config.get("rebalance", "monthly"))
+    rebalance_days = rebalance_cadence_days(rebalance)
+    if is_oversampled(suff.coarsest_cadence_days, rebalance_days):
+        raise SamplingFrequencyError(
+            "oversampled real-data OOS comparison: rebalance cadence "
+            f"({rebalance}, ~{rebalance_days:.1f}d) is finer than the coarsest "
+            f"selected asset native cadence (~{suff.coarsest_cadence_days:.1f}d); "
+            "the loader would forward-fill stale prices into fabricated flat "
+            "returns. Harmonize to the coarsest cadence or drop the low-frequency "
+            "asset before claiming a computed comparison."
+        )
+
     # Run over the co-temporal overlap window so every selected asset has data.
     if config.get("start") and config.get("end"):
         start, end = str(config["start"]), str(config["end"])
@@ -255,6 +356,14 @@ def build_real_data_oos_report(
             "overlap_end": suff.overlap_end,
             "overlap_months": suff.overlap_months,
             "universe_asof": universe_asof,
+            "sampling_frequency": {
+                "by_symbol": dict(suff.sampling_frequencies),
+                "coarsest_cadence": classify_cadence(suff.coarsest_cadence_days),
+                "coarsest_native_days": round(suff.coarsest_cadence_days, 4),
+                "rebalance": rebalance,
+                "rebalance_days": round(rebalance_days, 4),
+                "homogeneous": suff.frequency_homogeneous,
+            },
         },
     }
 
@@ -385,7 +494,13 @@ def write_real_data_oos_artifact(artifact: Mapping[str, Any], path: str | Path) 
 
 __all__ = [
     "DataSufficiency",
+    "SamplingFrequency",
+    "SamplingFrequencyError",
     "assess_data_sufficiency",
+    "classify_cadence",
+    "estimate_sampling_frequencies",
+    "is_oversampled",
+    "rebalance_cadence_days",
     "resolve_cotemporal_universe",
     "build_real_data_oos_report",
     "build_insufficient_data_report",
