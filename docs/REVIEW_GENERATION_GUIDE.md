@@ -63,6 +63,21 @@ Single self-contained `docs/review/index.html` (Hero → Value Prop → Press
 Release → FAQ → Core Features → UX Flow → Gap Analysis → Roadmap → Footer), with
 every feature card showing Evidence Source / Coverage Tier / Readiness State.
 
+**Bilingual (en + zh-tw), switched in-page.** Unlike the manual (separate
+`{en,zh-tw}/index.html` files), the review is **one** file with an in-HTML
+language toggle:
+
+- Every translatable text unit is duplicated as adjacent siblings tagged
+  `class="en"` / `class="zh"` (use `<span>` for inline, block tags for blocks).
+  Keep code identifiers, paths, badges, and the UX-flow SVG labels in English.
+- A small CSS rule hides the inactive language: `.zh{display:none}` and
+  `html.lang-zh .en{display:none}` / `html.lang-zh .zh{display:revert}`. **English
+  is the no-JS default** so the page still renders offline/without scripts.
+- A fixed `EN / 中文` toggle flips `document.documentElement.classList` (a tiny
+  inline script — no external/CDN dependency; keep the page self-contained).
+- Translate zh-tw in the same register as the manual's `zh-tw/index.html`; keep
+  all readiness/claim-cap wording faithful in both languages (no divergent claims).
+
 ## 7. Regeneration checklist
 
 1. Re-run §4 gates; refresh `docs/review/assets/`.
