@@ -13,9 +13,9 @@ from quantlab.tracking import LocalResultStore
 
 
 _FALLBACK_EVIDENCE_TESTS = [
-    "345 passed",
+    "355 passed",
     "frontend tests 46 passed",
-    "Python mutation 107/107 killed",
+    "Python mutation 109/109 killed",
     "frontend mutation 26/26 killed",
     "F Next.js coverage 90.00%",
     "E registry coverage 99%",
@@ -90,7 +90,51 @@ def _validate_browser_visual_diff(visual_diff: Mapping[str, Any]) -> None:
         raise ValueError("browser visual diff evidence exceeds threshold")
 
 
-def _validate_public_hosting_probe(public_probe: Mapping[str, Any]) -> None:
+def _classify_hosting_freshness(
+    public_probe: Mapping[str, Any], asof: datetime
+) -> str:
+    """Return ``"fresh"`` or ``"stale"`` for a committed hosting observation.
+
+    Integrity violations of ``observedAt`` (missing/non-UTC/unparseable/future)
+    still raise — they signal a malformed probe rather than mere age. Time-based
+    staleness (``observedAt + maxAgeHours <= asof``) or a self-declared
+    ``freshnessStatus != "fresh"`` is reported as ``"stale"`` so the consumer can
+    downgrade rather than crash (CR-FPS-011, consistent with the CR-FPS-008
+    frontend contract).
+    """
+    max_age_hours = public_probe.get("maxAgeHours")
+    if max_age_hours != 24:
+        raise ValueError("public hosting probe evidence has unexpected freshness window")
+
+    observed_at = public_probe.get("observedAt")
+    if not isinstance(observed_at, str) or not observed_at.endswith("Z"):
+        raise ValueError("public hosting probe evidence requires UTC observedAt")
+    try:
+        observed_at_dt = datetime.fromisoformat(observed_at.removesuffix("Z") + "+00:00")
+    except ValueError as exc:
+        raise ValueError("public hosting probe evidence requires valid UTC observedAt") from exc
+    if observed_at_dt.tzinfo != timezone.utc:
+        raise ValueError("public hosting probe evidence requires valid UTC observedAt")
+    if observed_at_dt > asof:
+        raise ValueError("public hosting probe evidence observedAt is in the future")
+
+    if public_probe.get("freshnessStatus") != "fresh":
+        return "stale"
+    if observed_at_dt + timedelta(hours=max_age_hours) <= asof:
+        return "stale"
+    return "fresh"
+
+
+def _validate_public_hosting_probe(
+    public_probe: Mapping[str, Any], *, asof: datetime
+) -> str:
+    """Validate probe integrity and return its freshness verdict.
+
+    Raises on integrity violations (overclaim, malformed contract, bad
+    ``observedAt``). Returns ``"fresh"``/``"stale"`` for time-based freshness so
+    callers can downgrade a stale observation to ``configured_not_observed``
+    instead of failing the build.
+    """
     if public_probe.get("claimBoundary") != "no_alpha_claim":
         raise ValueError("public hosting probe evidence must preserve no_alpha_claim")
 
@@ -106,26 +150,8 @@ def _validate_public_hosting_probe(public_probe: Mapping[str, Any]) -> None:
         raise ValueError("public hosting probe evidence requires deployed manifest HTTP 200")
     if public_probe.get("manifestContractStatus") != "matched":
         raise ValueError("public hosting probe evidence requires matched manifest contract")
-    if public_probe.get("freshnessStatus") != "fresh":
-        raise ValueError("public hosting probe evidence must be fresh")
-    max_age_hours = public_probe.get("maxAgeHours")
-    if max_age_hours != 24:
-        raise ValueError("public hosting probe evidence has unexpected freshness window")
 
-    observed_at = public_probe.get("observedAt")
-    if not isinstance(observed_at, str) or not observed_at.endswith("Z"):
-        raise ValueError("public hosting probe evidence requires UTC observedAt")
-    try:
-        observed_at_dt = datetime.fromisoformat(observed_at.removesuffix("Z") + "+00:00")
-    except ValueError as exc:
-        raise ValueError("public hosting probe evidence requires valid UTC observedAt") from exc
-    if observed_at_dt.tzinfo != timezone.utc:
-        raise ValueError("public hosting probe evidence requires valid UTC observedAt")
-    now = datetime.now(timezone.utc)
-    if observed_at_dt > now:
-        raise ValueError("public hosting probe evidence observedAt is in the future")
-    if observed_at_dt + timedelta(hours=max_age_hours) < now:
-        raise ValueError("public hosting probe evidence observedAt is stale")
+    freshness = _classify_hosting_freshness(public_probe, asof)
 
     hash_status = public_probe.get("hashStatus")
     if status == "proven":
@@ -136,8 +162,12 @@ def _validate_public_hosting_probe(public_probe: Mapping[str, Any]) -> None:
     elif hash_status not in {"mismatched", "missing", "not_checked"}:
         raise ValueError("configured public hosting evidence must not imply matched hash")
 
+    return freshness
 
-def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
+
+def _current_evidence_tests(
+    evidence_root: str | Path | None, *, asof: datetime | None = None
+) -> list[str]:
     """Read current dashboard evidence from committed proof artifacts.
 
     ``evidence_root=None`` is retained for direct unit-level callers that only
@@ -184,10 +214,17 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
     if "found 0 vulnerabilities" not in audit_text:
         raise ValueError("frontend audit evidence is not clean")
     _validate_browser_visual_diff(visual_diff)
-    _validate_public_hosting_probe(public_probe)
+    if asof is None:
+        asof = datetime.now(timezone.utc)
+    freshness = _validate_public_hosting_probe(public_probe, asof=asof)
 
-    probe_status = str(public_probe["status"])
     hash_status = str(public_probe.get("hashStatus", "unknown"))
+    if freshness == "stale":
+        # A stale observation can never present as proven; downgrade honestly.
+        hosting_line = f"public hosting configured_not_observed (stale, hash {hash_status})"
+    else:
+        probe_status = str(public_probe["status"])
+        hosting_line = f"public hosting {probe_status} (hash {hash_status})"
 
     return [
         f"{pytest_count} passed",
@@ -197,7 +234,7 @@ def _current_evidence_tests(evidence_root: str | Path | None) -> list[str]:
         f"F Next.js coverage {frontend_coverage}%",
         "frontend audit 0 vulnerabilities",
         "browser visual diff passed",
-        f"public hosting {probe_status} (hash {hash_status})",
+        hosting_line,
     ]
 
 
@@ -346,6 +383,7 @@ def build_canonical_dashboard_artifact(
     work_dir: str | Path,
     *,
     evidence_root: str | Path | None = None,
+    asof: datetime | None = None,
 ) -> dict[str, Any]:
     """Build the frontend dashboard artifact from real local stores.
 
@@ -391,7 +429,7 @@ def build_canonical_dashboard_artifact(
         return _frontend_payload(
             summary,
             source_record_count=len(api.leaderboard()),
-            evidence_tests=_current_evidence_tests(evidence_root),
+            evidence_tests=_current_evidence_tests(evidence_root, asof=asof),
             visual_regression_status="proven" if evidence_root is not None else "not_proven",
             real_data=_real_data_section(evidence_root),
         )
@@ -402,8 +440,11 @@ def write_canonical_dashboard_artifact(
     work_dir: str | Path,
     *,
     evidence_root: str | Path | None = None,
+    asof: datetime | None = None,
 ) -> dict[str, Any]:
-    artifact = build_canonical_dashboard_artifact(work_dir, evidence_root=evidence_root)
+    artifact = build_canonical_dashboard_artifact(
+        work_dir, evidence_root=evidence_root, asof=asof
+    )
     output = Path(target)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(

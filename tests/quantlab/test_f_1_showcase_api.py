@@ -8,6 +8,7 @@ RED/GREEN/REFACTOR trace:
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 
@@ -274,8 +275,13 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
 
     evidence_root = tmp_path / "evidence"
     _write_current_evidence_root(evidence_root)
+    # Fixed asof within the fixture observedAt window keeps this exact-string
+    # assertion deterministic (CR-FPS-011 freshness is asof-relative).
+    fixture_asof = datetime(2026, 6, 13, 8, 0, 0, tzinfo=timezone.utc)
 
-    artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
+    artifact = build_canonical_dashboard_artifact(
+        tmp_path / "work", evidence_root=evidence_root, asof=fixture_asof
+    )
 
     assert artifact["demoReadiness"]["publicHosting"] == "not_proven"
     assert artifact["demoReadiness"]["visualRegression"] == "proven"
@@ -295,6 +301,7 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
         output,
         tmp_path / "write-work",
         evidence_root=evidence_root,
+        asof=fixture_asof,
     )
     assert written == json.loads(output.read_text(encoding="utf-8"))
     assert written["demoReadiness"]["visualRegression"] == "proven"
@@ -474,34 +481,8 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
             evidence_root=public_incomplete_root,
         )
 
-    public_stale_root = tmp_path / "public-stale-evidence"
-    _write_current_evidence_root(public_stale_root)
-    public_probe = json.loads((public_stale_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8"))
-    public_probe["freshnessStatus"] = "stale"
-    (public_stale_root / "docs/public-hosting-probe.json").write_text(
-        json.dumps(public_probe),
-        encoding="utf-8",
-    )
-    with pytest.raises(ValueError, match="public hosting probe evidence must be fresh"):
-        build_canonical_dashboard_artifact(tmp_path / "public-stale-work", evidence_root=public_stale_root)
-
-    public_expired_observed_root = tmp_path / "public-expired-observed-evidence"
-    _write_current_evidence_root(public_expired_observed_root)
-    public_probe = json.loads(
-        (public_expired_observed_root / "docs/public-hosting-probe.json").read_text(encoding="utf-8")
-    )
-    public_probe["observedAt"] = "2000-01-01T00:00:00.000Z"
-    public_probe["freshnessStatus"] = "fresh"
-    public_probe["maxAgeHours"] = 24
-    (public_expired_observed_root / "docs/public-hosting-probe.json").write_text(
-        json.dumps(public_probe),
-        encoding="utf-8",
-    )
-    with pytest.raises(ValueError, match="public hosting probe evidence observedAt is stale"):
-        build_canonical_dashboard_artifact(
-            tmp_path / "public-expired-observed-work",
-            evidence_root=public_expired_observed_root,
-        )
+    # CR-FPS-011: time-based staleness no longer raises here — it downgrades to
+    # configured_not_observed. See test_hosting_freshness_downgrades_deterministically.
 
     public_bad_observed_root = tmp_path / "public-bad-observed-evidence"
     _write_current_evidence_root(public_bad_observed_root)
@@ -576,6 +557,124 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
     )
     with pytest.raises(ValueError, match="frontend audit evidence is not clean"):
         build_canonical_dashboard_artifact(tmp_path / "audit-work", evidence_root=audit_root)
+
+
+_PROVEN_OBSERVED_AT = "2026-06-14T02:00:00.000Z"
+_PROVEN_ASOF = datetime(2026, 6, 14, 3, 0, 0, tzinfo=timezone.utc)
+
+
+def _set_probe(root: Path, **patch) -> None:
+    path = root / "docs/public-hosting-probe.json"
+    probe = json.loads(path.read_text(encoding="utf-8"))
+    probe.update(patch)
+    path.write_text(json.dumps(probe), encoding="utf-8")
+
+
+def _make_proven_root(root: Path) -> None:
+    _write_current_evidence_root(root)
+    _set_probe(
+        root,
+        status="proven",
+        hashStatus="matched",
+        deployedDataHash="same",
+        expectedDataHash="same",
+        observedAt=_PROVEN_OBSERVED_AT,
+        freshnessStatus="fresh",
+    )
+
+
+def _hosting_line(artifact: dict) -> str:
+    return next(t for t in artifact["evidence"]["tests"] if t.startswith("public hosting"))
+
+
+def test_hosting_freshness_downgrades_deterministically(tmp_path):
+    """CR-FPS-011: a fresh proven probe reads proven; once stale-by-asof or
+    self-declared stale it downgrades to configured_not_observed and never crashes."""
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    fresh_root = tmp_path / "fresh"
+    _make_proven_root(fresh_root)
+    fresh = build_canonical_dashboard_artifact(
+        tmp_path / "fresh-work", evidence_root=fresh_root, asof=_PROVEN_ASOF
+    )
+    assert _hosting_line(fresh) == "public hosting proven (hash matched)"
+    assert fresh["demoReadiness"]["publicHosting"] == "not_proven"
+
+    # Same proven probe, but asof is past the 24h window -> downgrade, no raise.
+    stale_asof = _PROVEN_ASOF + timedelta(hours=48)
+    stale = build_canonical_dashboard_artifact(
+        tmp_path / "stale-work", evidence_root=fresh_root, asof=stale_asof
+    )
+    assert _hosting_line(stale) == "public hosting configured_not_observed (stale, hash matched)"
+    assert stale["demoReadiness"]["publicHosting"] == "not_proven"
+
+    # Self-declared freshnessStatus=stale also downgrades (no raise).
+    selfstale_root = tmp_path / "selfstale"
+    _make_proven_root(selfstale_root)
+    _set_probe(selfstale_root, freshnessStatus="stale")
+    selfstale = build_canonical_dashboard_artifact(
+        tmp_path / "selfstale-work", evidence_root=selfstale_root, asof=_PROVEN_ASOF
+    )
+    assert _hosting_line(selfstale).startswith("public hosting configured_not_observed (stale")
+
+
+def test_hosting_freshness_window_boundary_is_inclusive(tmp_path):
+    """Exactly at the 24h window the observation is stale (boundary is `<=`)."""
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    asof = _PROVEN_ASOF
+    root = tmp_path / "boundary"
+    _make_proven_root(root)
+    at_window = (asof - timedelta(hours=24)).isoformat().replace("+00:00", "Z")
+    _set_probe(root, observedAt=at_window)
+    artifact = build_canonical_dashboard_artifact(
+        tmp_path / "boundary-work", evidence_root=root, asof=asof
+    )
+    assert _hosting_line(artifact) == "public hosting configured_not_observed (stale, hash matched)"
+
+    just_inside = (asof - timedelta(hours=24) + timedelta(seconds=1)).isoformat().replace("+00:00", "Z")
+    _set_probe(root, observedAt=just_inside)
+    artifact2 = build_canonical_dashboard_artifact(
+        tmp_path / "boundary-work-2", evidence_root=root, asof=asof
+    )
+    assert _hosting_line(artifact2) == "public hosting proven (hash matched)"
+
+
+def test_hosting_freshness_default_asof_does_not_crash_when_stale(tmp_path):
+    """The committed-evidence path must not rot by wall-clock: an old observedAt
+    degrades instead of raising even with the default (now) asof."""
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    root = tmp_path / "old"
+    _make_proven_root(root)
+    _set_probe(root, observedAt="2000-01-01T00:00:00.000Z")
+    artifact = build_canonical_dashboard_artifact(tmp_path / "old-work", evidence_root=root)
+    assert _hosting_line(artifact) == "public hosting configured_not_observed (stale, hash matched)"
+
+
+@settings(max_examples=60, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(age_hours=st.floats(min_value=0.0, max_value=72.0, allow_nan=False))
+def test_pbt_hosting_freshness_window(tmp_path, age_hours):
+    """For observedAt <= asof, the effective status is proven iff within the
+    24h window; a stale proven probe never presents as proven."""
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    asof = _PROVEN_ASOF
+    observed = (asof - timedelta(hours=age_hours)).isoformat().replace("+00:00", "Z")
+    root = tmp_path / "pbt-root"
+    if not root.exists():
+        _make_proven_root(root)
+    _set_probe(root, observedAt=observed)
+    idx = len(list(tmp_path.glob("pbt-work-*")))
+    artifact = build_canonical_dashboard_artifact(
+        tmp_path / f"pbt-work-{idx}", evidence_root=root, asof=asof
+    )
+    line = _hosting_line(artifact)
+    if age_hours < 24.0:
+        assert line == "public hosting proven (hash matched)"
+    else:
+        assert line == "public hosting configured_not_observed (stale, hash matched)"
+    assert artifact["demoReadiness"]["publicHosting"] == "not_proven"
 
 
 def test_canonical_showcase_artifact_fails_closed_without_evidence_artifacts(tmp_path):

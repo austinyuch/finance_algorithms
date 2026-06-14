@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 107,
-  "killed": 107,
+  "total": 109,
+  "killed": 109,
   "survived": 0,
   "mutations": [
     {
@@ -386,6 +386,14 @@
     },
     {
       "name": "public-hosting-manifest-contract-regression",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-freshness-downgrade-window",
+      "status": "killed"
+    },
+    {
+      "name": "public-hosting-stale-downgrade-not-proven",
       "status": "killed"
     },
     {

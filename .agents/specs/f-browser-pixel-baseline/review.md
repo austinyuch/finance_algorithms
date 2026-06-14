@@ -25,7 +25,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 
 - Gate result: **CONDITIONAL**
 - Coverage tier: **hybrid**
-- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `0 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `0f2b849a424192bea32c2bfe39d6e3bf209c73db863efde41ff6aa092431fae9`.
+- Proven in this lane: real chromium-headless screenshot plus pixel diff evidence. Latest refreshed evidence records `0 / 1,296,000` mismatched pixels at threshold `0.001`, screenshot hash `ddd8c9a58e2bf80e300ffa0029707dd7ccdd8533ccafc11ffcae5c3ce32a804a`.
 - Data source boundary: dashboard data now comes from the generated canonical `local_result_store` payload introduced by CR-FPS-006; no live backend/live market data dashboard path is claimed.
 - No auth surface exists in this dashboard slice.
 
