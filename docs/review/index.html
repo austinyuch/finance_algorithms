@@ -42,13 +42,21 @@
   .alert{background:#fff6e5;border:1px solid var(--orange);border-radius:10px;padding:12px 16px;margin:0 0 22px;color:#7a3600}
   footer{background:#0a0e1a;color:#9fb0c8;text-align:center;padding:26px;font-size:13px}
   @media(max-width:780px){.grid2,.grid3,.gap{grid-template-columns:1fr}header.hero h1{font-size:30px}}
+  .zh{display:none}
+  html.lang-zh .en{display:none}
+  html.lang-zh .zh{display:revert}
+  .langtoggle{position:fixed;top:12px;right:14px;z-index:50;display:inline-flex;gap:2px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:3px;box-shadow:0 2px 8px rgba(10,14,26,.25)}
+  .langtoggle button{border:0;background:transparent;color:var(--grey);font:inherit;font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;line-height:1}
+  .langtoggle button.active{background:var(--blue);color:#fff}
 </style>
 </head>
 <body>
+<div class="langtoggle"><button id="btn-en" class="active" onclick="setLang('en')">EN</button><button id="btn-zh" onclick="setLang('zh')">中文</button></div>
 <header class="hero">
   <div class="wrap">
     <h1>Finance Algorithms · QuantLab</h1>
-    <p>A portfolio-grade personal quant research lab: point-in-time data, vectorized backtesting, strategy comparison, and an honest, no-alpha-claim research dashboard.</p>
+    <p class="en">A portfolio-grade personal quant research lab: point-in-time data, vectorized backtesting, strategy comparison, and an honest, no-alpha-claim research dashboard.</p>
+    <p class="zh">作品集等級的個人量化研究 lab：point-in-time 資料、向量化回測、策略比較，以及一個誠實、無 alpha claim 的研究儀表板。</p>
     <div class="stats">
       <div class="stat"><b>367</b><span>Python tests passing</span></div>
       <div class="stat"><b>46</b><span>frontend tests passing</span></div>
@@ -61,72 +69,100 @@
 <div class="wrap">
 
   <section>
-    <h2 class="sec">Value Proposition</h2>
-    <p class="sub">One lab, two audiences — both served honestly.</p>
+    <h2 class="sec"><span class="en">Value Proposition</span><span class="zh">價值主張</span></h2>
+    <p class="sub en">One lab, two audiences — both served honestly.</p>
+    <p class="sub zh">一個 lab，兩種受眾 — 都誠實地服務。</p>
     <div class="grid2">
       <div class="card">
-        <h3>🔬 For the researcher (internal)</h3>
-        <ul>
+        <h3 class="en">🔬 For the researcher (internal)</h3>
+        <h3 class="zh">🔬 給研究者（內部）</h3>
+        <ul class="en">
           <li>Every strategy is scored against dumb baselines on <b>out-of-sample net</b> metrics — no in-sample self-deception.</li>
           <li>Point-in-time data discipline (<code>available_date &le; asof</code>) prevents lookahead by construction.</li>
           <li>Reproducible CLI demos + a local experiment registry capture lineage.</li>
         </ul>
+        <ul class="zh">
+          <li>每個策略都以<b>樣本外淨值</b>指標對笨 baseline 評分 — 沒有樣本內自我欺騙。</li>
+          <li>Point-in-time 資料紀律（<code>available_date &le; asof</code>）從架構上防止 lookahead。</li>
+          <li>可重現的 CLI demo ＋ 本地實驗登錄擷取 lineage。</li>
+        </ul>
       </div>
       <div class="card">
-        <h3>📈 For the stakeholder (external)</h3>
-        <ul>
+        <h3 class="en">📈 For the stakeholder (external)</h3>
+        <h3 class="zh">📈 給利害關係人（外部）</h3>
+        <ul class="en">
           <li>A portfolio piece that demonstrates <b>methodology honesty</b> over hype: every slice carries <code>no_alpha_claim</code>.</li>
           <li>A read-only showcase dashboard summarizing leaderboard, regime, and allocation.</li>
           <li>Transparent gap reporting — demo readiness is stated, never overclaimed.</li>
+        </ul>
+        <ul class="zh">
+          <li>一件展現<b>方法論誠實度</b>而非炒作的作品：每個切片都標註 <code>no_alpha_claim</code>。</li>
+          <li>一個唯讀的 showcase 儀表板，彙整 leaderboard、regime 與配置。</li>
+          <li>透明的缺口盤點 — demo readiness 如實陳述，絕不過度宣稱。</li>
         </ul>
       </div>
     </div>
   </section>
 
   <section>
-    <h2 class="sec">Press Release</h2>
-    <p class="sub">Amazon-style backwards PR — written as if the lab has already succeeded.</p>
+    <h2 class="sec"><span class="en">Press Release</span><span class="zh">新聞稿</span></h2>
+    <p class="sub en">Amazon-style backwards PR — written as if the lab has already succeeded.</p>
+    <p class="sub zh">Amazon 式回溯新聞稿 — 以 lab 彷彿已經成功的口吻撰寫。</p>
     <div class="press">
-      <h3>QuantLab gives a solo quant a portfolio-grade research lab that never lies about its own results</h3>
-      <p><b>Taipei, 2026 —</b> Finance Algorithms today described QuantLab, a personal research platform that lets one person design, backtest, and compare investment strategies with the same point-in-time and out-of-sample discipline used by serious shops — while refusing to dress up synthetic experiments as alpha.</p>
-      <p>“The point was never to claim I beat the market,” the maintainer said. “The point was to build a lab where every number is reproducible, every backtest respects what I could actually have known at the time, and every demo says exactly how strong its evidence is.”</p>
-      <p><b>The problem:</b> personal quant projects routinely leak future information, compare strategies in-sample, and present mock dashboards as if they were live products. <b>The solution:</b> QuantLab enforces <code>available_date &le; asof</code> in the data layer, reports out-of-sample net metrics on a shared leaderboard, and caps every stakeholder-facing claim with explicit evidence labels. <b>Today:</b> nine spec epics are implemented and reviewed, the default Python suite is governed by current test registry evidence, the root Python lock excludes unpatched Torch, and the showcase dashboard renders a generated local result-store scenario with <code>no_alpha_claim</code>.</p>
+      <h3 class="en">QuantLab gives a solo quant a portfolio-grade research lab that never lies about its own results</h3>
+      <h3 class="zh">QuantLab 讓單兵量化研究者擁有一個作品集等級、且從不對自身結果說謊的研究 lab</h3>
+      <p class="en"><b>Taipei, 2026 —</b> Finance Algorithms today described QuantLab, a personal research platform that lets one person design, backtest, and compare investment strategies with the same point-in-time and out-of-sample discipline used by serious shops — while refusing to dress up synthetic experiments as alpha.</p>
+      <p class="zh"><b>台北，2026 —</b> Finance Algorithms 今日介紹 QuantLab，一個個人研究平台，讓一個人能以與專業機構相同的 point-in-time 與樣本外紀律來設計、回測與比較投資策略 — 同時拒絕把合成實驗包裝成 alpha。</p>
+      <p class="en">“The point was never to claim I beat the market,” the maintainer said. “The point was to build a lab where every number is reproducible, every backtest respects what I could actually have known at the time, and every demo says exactly how strong its evidence is.”</p>
+      <p class="zh">「重點從來不是宣稱我打敗了市場，」維護者說。「重點是打造一個 lab，讓每個數字都可重現、每次回測都尊重我當時真正能知道的資訊，而每個 demo 都明確說明它的證據有多強。」</p>
+      <p class="en"><b>The problem:</b> personal quant projects routinely leak future information, compare strategies in-sample, and present mock dashboards as if they were live products. <b>The solution:</b> QuantLab enforces <code>available_date &le; asof</code> in the data layer, reports out-of-sample net metrics on a shared leaderboard, and caps every stakeholder-facing claim with explicit evidence labels. <b>Today:</b> nine spec epics are implemented and reviewed, the default Python suite is governed by current test registry evidence, the root Python lock excludes unpatched Torch, and the showcase dashboard renders a generated local result-store scenario with <code>no_alpha_claim</code>.</p>
+      <p class="zh"><b>問題：</b>個人量化專案經常洩漏未來資訊、以樣本內比較策略，並把 mock 儀表板當成 live 產品呈現。<b>解法：</b>QuantLab 在資料層強制 <code>available_date &le; asof</code>、在共用 leaderboard 上回報樣本外淨值指標，並以明確的證據標籤為每一項面向利害關係人的宣稱設上限。<b>現況：</b>九個 spec epic 已實作並審閱，預設 Python 測試套件由當前測試登錄證據治理，root Python lock 排除未修補的 Torch，而 showcase 儀表板渲染一個由本地 result-store 生成、標註 <code>no_alpha_claim</code> 的情境。</p>
     </div>
   </section>
 
   <section>
-    <h2 class="sec">FAQ</h2>
-    <p class="sub">Three audiences, straight answers.</p>
-    <details><summary>Internal · How much does this cost to maintain?</summary><p>It is a single Python 3.13 + Next.js workspace with <code>uv</code> and npm. CI-style gates (pytest, mypy, lint-imports, npm test/audit) run in seconds-to-minutes locally. No paid infra is required; external data sources are free (FRED/NOAA/Yahoo) and degrade per-source.</p></details>
-    <details><summary>Internal · Is it safe / compliant?</summary><p>It is paper-only research with no trading execution and no credentials. Frontend audit reports 0 vulnerabilities, and the root Python lock no longer includes unpatched Torch in the default runtime. The architecture linter forbids the data/engine core from importing ML frameworks, keeping the backtest core deterministic.</p></details>
-    <details><summary>External · How is this different from a notebook?</summary><p>It separates contracts, PIT data, a vectorized engine, strategy adapters, portfolio construction, and tracking into reviewed specs. Lookahead protection and out-of-sample net scoring are built into the engine, not bolted on per-experiment.</p></details>
-    <details><summary>External · What's the 6-month roadmap?</summary><p>Accumulate real price vintages until the live-data backtest unblocks, prove public hosting for the dashboard, and expand the model-family evaluation. Visual regression is already repo-side browser-proven. See the Roadmap below.</p></details>
-    <details><summary>User · What does it improve for me day to day?</summary><p>One command produces a baseline-anchored OOS leaderboard; one command captures an immutable daily data snapshot with a machine-readable run report; one dashboard summarizes the latest research state — all without hand-rolling lookahead-safe plumbing.</p></details>
+    <h2 class="sec"><span class="en">FAQ</span><span class="zh">常見問題</span></h2>
+    <p class="sub en">Three audiences, straight answers.</p>
+    <p class="sub zh">三種受眾，直白回答。</p>
+    <details class="en"><summary>Internal · How much does this cost to maintain?</summary><p>It is a single Python 3.13 + Next.js workspace with <code>uv</code> and npm. CI-style gates (pytest, mypy, lint-imports, npm test/audit) run in seconds-to-minutes locally. No paid infra is required; external data sources are free (FRED/NOAA/Yahoo) and degrade per-source.</p></details>
+    <details class="zh"><summary>內部 · 維護成本有多高？</summary><p>它是單一的 Python 3.13 ＋ Next.js workspace，使用 <code>uv</code> 與 npm。CI 式的 gate（pytest、mypy、lint-imports、npm test/audit）在本地數秒到數分鐘內完成。不需要付費基礎設施；外部資料來源（FRED/NOAA/Yahoo）皆免費，且逐 source 容錯降級。</p></details>
+    <details class="en"><summary>Internal · Is it safe / compliant?</summary><p>It is paper-only research with no trading execution and no credentials. Frontend audit reports 0 vulnerabilities, and the root Python lock no longer includes unpatched Torch in the default runtime. The architecture linter forbids the data/engine core from importing ML frameworks, keeping the backtest core deterministic.</p></details>
+    <details class="zh"><summary>內部 · 安全／合規嗎？</summary><p>它是純紙上研究，沒有交易執行、也沒有任何憑證。前端 audit 回報 0 漏洞，root Python lock 在預設 runtime 中已不再包含未修補的 Torch。架構 linter 禁止 data/engine 核心匯入 ML 框架，讓回測核心維持 deterministic。</p></details>
+    <details class="en"><summary>External · How is this different from a notebook?</summary><p>It separates contracts, PIT data, a vectorized engine, strategy adapters, portfolio construction, and tracking into reviewed specs. Lookahead protection and out-of-sample net scoring are built into the engine, not bolted on per-experiment.</p></details>
+    <details class="zh"><summary>外部 · 這跟一份 notebook 有何不同？</summary><p>它把 contract、PIT 資料、向量化引擎、策略 adapter、投資組合建構與追蹤拆分成經審閱的 spec。Lookahead 防護與樣本外淨值評分內建於引擎中，而非逐實驗外掛。</p></details>
+    <details class="en"><summary>External · What's the 6-month roadmap?</summary><p>Accumulate real price vintages until the live-data backtest unblocks, prove public hosting for the dashboard, and expand the model-family evaluation. Visual regression is already repo-side browser-proven. See the Roadmap below.</p></details>
+    <details class="zh"><summary>外部 · 6 個月的 roadmap 是什麼？</summary><p>累積真實價格 vintage 直到 live-data 回測解除阻擋、為儀表板證明 public hosting，並擴充 model-family 評估。視覺回歸已在 repo 端以瀏覽器證明。見下方 Roadmap。</p></details>
+    <details class="en"><summary>User · What does it improve for me day to day?</summary><p>One command produces a baseline-anchored OOS leaderboard; one command captures an immutable daily data snapshot with a machine-readable run report; one dashboard summarizes the latest research state — all without hand-rolling lookahead-safe plumbing.</p></details>
+    <details class="zh"><summary>使用者 · 它在日常為我改善什麼？</summary><p>一道指令產生以 baseline 為錨的 OOS leaderboard；一道指令擷取不可變的每日資料快照並附機器可讀的 run report；一個儀表板彙整最新的研究狀態 — 全程無須自行手刻 lookahead-safe 的底層管路。</p></details>
   </section>
 
   <section>
-    <h2 class="sec">Core Features</h2>
-    <p class="sub">Readiness badges copied from <code>.agents/specs/**/review.md</code>.</p>
+    <h2 class="sec"><span class="en">Core Features</span><span class="zh">核心功能</span></h2>
+    <p class="sub en">Readiness badges copied from <code>.agents/specs/**/review.md</code>.</p>
+    <p class="sub zh">Readiness badge 沿用自 <code>.agents/specs/**/review.md</code>。</p>
     <div class="grid3">
-      <div class="card"><h3>🧱 Backtest foundation (A0)</h3><p>PIT data, vectorized engine, metrics, walk-forward, parallel run, local tracking.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">live_command_output · hybrid · a0-backtest-foundation/review.md</div></div>
-      <div class="card"><h3>⚖️ TSMC hedge slice (A)</h3><p>Hedge strategy + LSTM adapter + baselines, ranked by OOS net Sharpe.</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">live_command_output · hybrid · a-tsmc-hedge-slice/review.md · synthetic data</div></div>
-      <div class="card"><h3>🗂️ Data platform (B)</h3><p>Vintage PIT loader, FRED proxies, source-health, snapshot report + ops gate.</p><div><span class="badge b-pass">PASS (repo-side)</span><span class="badge b-cond">CROSS_SPEC_DEP</span></div><div class="ev">live_command_output · hybrid · b-data-platform/review.md · Stooq blocked</div></div>
-      <div class="card"><h3>📐 Portfolio core (C)</h3><p>Optimizer, multi-period allocation, regime rebalance selector, pyramid adapter.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · c-portfolio-core/review.md</div></div>
-      <div class="card"><h3>🧠 Model families (D)</h3><p>First-regime, return/risk forecaster, robust optimizer, family evaluator.</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">report_artifact · hybrid · d-*/review.md · no_alpha_claim</div></div>
-      <div class="card"><h3>🔭 MLOps E-lite (E)</h3><p>Experiment registry, config catalog, checksum snapshot, dashboard bridge.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · e-mlops-tier3-lite/review.md · registry-only</div></div>
-      <div class="card"><h3>📊 Showcase dashboard (F)</h3><p>Read API + Next.js app: leaderboard, regime, rebalance, experiments, evidence. Browser visual proven; public-hosting hash parity is still pending for the refreshed artifact.</p><div><span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span></div><div class="ev">live_screenshot + static_export · hybrid · f-demo-hardening + ops-visual-drift-artifacts/review.md</div></div>
-      <div class="card"><h3>🧪 Alt-data slices (G)</h3><p>Source-contract-first local CSV loader, two optional default-disabled slices.</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · g-alt-data-first-slice/review.md</div></div>
-      <div class="card"><h3>🏛️ Legacy pyramid API</h3><p>Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
+      <div class="card"><h3 class="en">🧱 Backtest foundation (A0)</h3><h3 class="zh">🧱 回測基礎 (A0)</h3><p class="en">PIT data, vectorized engine, metrics, walk-forward, parallel run, local tracking.</p><p class="zh">PIT 資料、向量化引擎、metrics、walk-forward、parallel run、本地追蹤。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">live_command_output · hybrid · a0-backtest-foundation/review.md</div></div>
+      <div class="card"><h3 class="en">⚖️ TSMC hedge slice (A)</h3><h3 class="zh">⚖️ TSMC 對沖切片 (A)</h3><p class="en">Hedge strategy + LSTM adapter + baselines, ranked by OOS net Sharpe.</p><p class="zh">對沖策略 ＋ LSTM adapter ＋ baseline，依 OOS 淨值 Sharpe 排名。</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">live_command_output · hybrid · a-tsmc-hedge-slice/review.md · synthetic data</div></div>
+      <div class="card"><h3 class="en">🗂️ Data platform (B)</h3><h3 class="zh">🗂️ 資料平台 (B)</h3><p class="en">Vintage PIT loader, FRED proxies, source-health, snapshot report + ops gate.</p><p class="zh">Vintage PIT loader、FRED proxy、source-health、快照 report ＋ ops gate。</p><div><span class="badge b-pass">PASS (repo-side)</span><span class="badge b-cond">CROSS_SPEC_DEP</span></div><div class="ev">live_command_output · hybrid · b-data-platform/review.md · Stooq blocked</div></div>
+      <div class="card"><h3 class="en">📐 Portfolio core (C)</h3><h3 class="zh">📐 投資組合核心 (C)</h3><p class="en">Optimizer, multi-period allocation, regime rebalance selector, pyramid adapter.</p><p class="zh">Optimizer、多期配置、regime 再平衡選擇器、金字塔 adapter。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · c-portfolio-core/review.md</div></div>
+      <div class="card"><h3 class="en">🧠 Model families (D)</h3><h3 class="zh">🧠 模型家族 (D)</h3><p class="en">First-regime, return/risk forecaster, robust optimizer, family evaluator.</p><p class="zh">First-regime、報酬/風險 forecaster、robust optimizer、family evaluator。</p><div><span class="badge b-pass">PASS</span><span class="badge b-mock">MOCK_DOMINANT</span></div><div class="ev">report_artifact · hybrid · d-*/review.md · no_alpha_claim</div></div>
+      <div class="card"><h3 class="en">🔭 MLOps E-lite (E)</h3><h3 class="zh">🔭 MLOps E-lite (E)</h3><p class="en">Experiment registry, config catalog, checksum snapshot, dashboard bridge.</p><p class="zh">實驗登錄、config catalog、checksum 快照、儀表板橋接。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · e-mlops-tier3-lite/review.md · registry-only</div></div>
+      <div class="card"><h3 class="en">📊 Showcase dashboard (F)</h3><h3 class="zh">📊 Showcase 儀表板 (F)</h3><p class="en">Read API + Next.js app: leaderboard, regime, rebalance, experiments, evidence. Browser visual proven; public-hosting hash parity is still pending for the refreshed artifact.</p><p class="zh">Read API ＋ Next.js app：leaderboard、regime、再平衡、實驗、證據。瀏覽器視覺已證明；refreshed artifact 的 public-hosting hash parity 仍待證明。</p><div><span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span></div><div class="ev">live_screenshot + static_export · hybrid · f-demo-hardening + ops-visual-drift-artifacts/review.md</div></div>
+      <div class="card"><h3 class="en">🧪 Alt-data slices (G)</h3><h3 class="zh">🧪 Alt-data 切片 (G)</h3><p class="en">Source-contract-first local CSV loader, two optional default-disabled slices.</p><p class="zh">Source-contract 優先的本地 CSV loader，兩個 optional、預設停用的切片。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · g-alt-data-first-slice/review.md</div></div>
+      <div class="card"><h3 class="en">🏛️ Legacy pyramid API</h3><h3 class="zh">🏛️ 既有金字塔計算機 API</h3><p class="en">Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><p class="zh">等差 ＋ 等比下單量的 FastAPI — 不可變基線，原樣保留。</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
     </div>
 
-    <div class="alert" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, generated from a canonical local <code>LocalResultStore</code> / <code>ExperimentRegistry</code> scenario (<code>local_demo_only</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>), repo-baseline pixel diff (<code>browser-visual-diff.json</code>), GitHub Actions autonomous <code>event=schedule</code> dry-run proof (run <code>27392471359</code>), CR-B12 scoped live write smoke, and CR-B19 FRED/Yahoo/NOAA source-quorum proof are proven. CR-FPS-006 changed the dashboard <code>dataHash</code>, so branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed artifact. CR-B20 proves Stooq restoration attempts fail closed without positive finite live close rows; Stooq remains governed separately.</div>
-    <p style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
+    <div class="alert en" style="margin-top:24px">⚠️ The dashboard below is the committed <b>static export</b>, generated from a canonical local <code>LocalResultStore</code> / <code>ExperimentRegistry</code> scenario (<code>local_demo_only</code>, <code>no_alpha_claim</code>). A real chromium-headless screenshot (<code>browser-visual.png</code>), repo-baseline pixel diff (<code>browser-visual-diff.json</code>), GitHub Actions autonomous <code>event=schedule</code> dry-run proof (run <code>27392471359</code>), CR-B12 scoped live write smoke, and CR-B19 FRED/Yahoo/NOAA source-quorum proof are proven. CR-FPS-006 changed the dashboard <code>dataHash</code>, so branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed artifact. CR-B20 proves Stooq restoration attempts fail closed without positive finite live close rows; Stooq remains governed separately.</div>
+    <div class="alert zh" style="margin-top:24px">⚠️ 下方的儀表板是已 commit 的<b>靜態 artifact</b>，由一個 canonical 的本地 <code>LocalResultStore</code> / <code>ExperimentRegistry</code> 情境（<code>local_demo_only</code>、<code>no_alpha_claim</code>）生成。真實 chromium-headless 截圖（<code>browser-visual.png</code>）、repo-baseline pixel diff（<code>browser-visual-diff.json</code>）、GitHub Actions autonomous <code>event=schedule</code> dry-run 證明（run <code>27392471359</code>）、CR-B12 scoped live write smoke，以及 CR-B19 FRED/Yahoo/NOAA source-quorum 證明皆已證明。CR-FPS-006 變更了儀表板的 <code>dataHash</code>，因此 branch-local public-hosting parity 在 Pages 服務 refreshed artifact 前維持 <code>configured_not_observed</code>。CR-B20 證明 Stooq 還原嘗試在沒有正的有限 live close rows 時會 fail closed；Stooq 仍獨立治理。</div>
+    <p class="en" style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
+    <p class="zh" style="font-size:13px;color:#6b7689;margin:0 0 6px">真實 chromium-headless 截圖 — <code>frontend/out/browser-visual.png</code>（<code>proven</code>、desktop-1440×900）。靜態 artifact 僅輸出語意化 HTML、未內嵌 app 樣式表，故刻意無樣式渲染。</p>
     <img class="preview" style="height:auto;display:block" src="assets/dashboard-browser-visual.png" alt="Chromium-headless screenshot of the QuantLab dashboard">
   </section>
 
   <section>
-    <h2 class="sec">UX Flow</h2>
-    <p class="sub">From data capture to a stakeholder-readable summary — the pipeline (also the accessible text equivalent of the diagram): <b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>. The diagram below is an inline SVG (self-contained; renders offline, no CDN).</p>
+    <h2 class="sec"><span class="en">UX Flow</span><span class="zh">UX 流程</span></h2>
+    <p class="sub en">From data capture to a stakeholder-readable summary — the pipeline (also the accessible text equivalent of the diagram): <b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>. The diagram below is an inline SVG (self-contained; renders offline, no CDN).</p>
+    <p class="sub zh">從資料擷取到利害關係人可讀的摘要 — 整條 pipeline（亦即下圖的 accessible 文字等價）：<b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>。下圖為 inline SVG（self-contained；可離線渲染、無 CDN）。</p>
     <div class="card">
       <svg viewBox="0 0 1320 130" role="img" aria-label="QuantLab pipeline: daily_snapshot.py PIT capture to vintage loader to A0 vectorized backtest engine to OOS-net leaderboard to E-lite registry to Showcase read API to Next.js dashboard static export" style="width:100%;height:auto;display:block">
         <title>QuantLab UX flow pipeline</title>
@@ -169,12 +205,14 @@
   </section>
 
   <section>
-    <h2 class="sec">Gap Analysis</h2>
-    <p class="sub">Resolved since last check vs still open — no false greens.</p>
+    <h2 class="sec"><span class="en">Gap Analysis</span><span class="zh">缺口盤點</span></h2>
+    <p class="sub en">Resolved since last check vs still open — no false greens.</p>
+    <p class="sub zh">自上次檢查以來已解決 vs 仍未解決 — 沒有 false green。</p>
     <div class="gap">
       <div>
-        <h3 class="ok">✅ Resolved (2026-06-11 → 2026-06-14)</h3>
-        <ul class="clean">
+        <h3 class="ok en">✅ Resolved (2026-06-11 → 2026-06-14)</h3>
+        <h3 class="ok zh">✅ 已解決 (2026-06-11 → 2026-06-14)</h3>
+        <ul class="clean en">
           <li>Python suite now <b>367 passed</b>; mypy clean over 61 files; mutation spot checks <b>110/110 configured</b>, including the CR-RDO-004 real-data OOS sampling-frequency oversampling guard, root Torch dependency, demo result-store close gates, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift, E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection <span class="sev sL">gate</span></li>
           <li>Frontend <b>46 tests pass</b>, coverage 90.00%, <b>0</b> dependency vulnerabilities, and frontend mutation 26/26 killed including <code>frontend-smoke-html-api-parity-regression</code> <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
@@ -190,10 +228,27 @@
           <li>First committed <code>docs/</code> manual + review + generation guides <span class="sev sL">docs</span></li>
           <li>Import-linter contract KEPT (78 files / 201 deps); engine/data framework-agnostic <span class="sev sL">arch</span></li>
         </ul>
+        <ul class="clean zh">
+          <li>Python 測試套件現為 <b>367 passed</b>；mypy 在 61 檔上 clean；mutation spot checks <b>110/110 configured</b>，包含 CR-RDO-004 真實資料 OOS sampling-frequency oversampling guard、root Torch dependency、demo result-store close gates、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default 與 skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder 與 app payload copy drift、retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript、import-linter count/formalization drift、governance registry row-count drift、E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護 <span class="sev sL">gate</span></li>
+          <li>前端 <b>46 tests pass</b>，coverage 90.00%，<b>0</b> 個 dependency 漏洞，前端 mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code> <span class="sev sL">gate</span></li>
+          <li><b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>） <span class="sev sL">visual</span></li>
+          <li><b>Dashboard payload source 已強化</b>，由本地 result-store records 加上 source metadata 生成；local smoke 檢查 HTML/API payload parity <span class="sev sL">hosting</span></li>
+          <li><b>Public hosting 已重新證明</b>，於 <code>dataHash c73d7c88…</code>（live probe <code>status=proven</code>、deployed==expected、HTTP 200；PR #97）。儀表板 self-claim 依靜態 artifact 契約維持 <code>not_proven</code>；<code>proven</code> 為 point-in-time 觀測，每次部署重新證明 <span class="sev sL">hosting</span></li>
+          <li><b>真實資料 OOS-net demo 已 live 擷取</b>（2026-06-14）：SP500 <code>computed</code> 比較加上 CR-RDO-004 sampling-frequency 與 degeneracy fail-closed 路徑；手冊流程 5 已在 <code>no_alpha_claim</code> 下新增 <span class="sev sL">docs</span></li>
+          <li><b>前後端服務已 live 驗證</b>（2026-06-14）：Next.js dashboard smoke <code>PASS</code>（在 ephemeral <code>next start</code> 上提供 <code>/</code> ＋ <code>/api/showcase</code>），既有 FastAPI 金字塔計算機回傳真實等差金字塔結果（<code>/api/pyramidArithmetic</code>）；transcript 位於 <code>docs/manual/assets/</code> <span class="sev sL">ops</span></li>
+          <li><b>文件已視覺渲染驗證</b>（2026-06-14，headless chromium <code>1440×2400</code>）：手冊（en/zh）與本審閱皆正常渲染 — hero/stat cards、feature cards、evidence caption/badge 與 code block 皆完整，無破版 CSS 或 asset。UX-flow 圖現為 <b>self-contained inline SVG</b>（可離線 / <code>file://</code> 渲染，無 CDN 或 client-side JS），並附 accessible 文字等價 pipeline caption <span class="sev sL">visual</span></li>
+          <li><b>Visual diff repo-baseline pixel-backed</b>（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>） <span class="sev sL">visual</span></li>
+          <li><b>已擷取 autonomous schedule 證明</b>（Actions run <code>27392471359</code>，artifact <code>snapshot-schedule-proof</code>） <span class="sev sL">ops</span></li>
+          <li><b>Scoped live snapshot write smoke 已證明</b>（CR-B12：<code>fred_FEDFUNDS</code> 寫入，再同日 skip） <span class="sev sL">ops</span></li>
+          <li><b>Broad source-quorum gate 與 live proof 已擷取</b>（CR-B18/CR-B19：scoped/dry/failed/replayed report 無法證明 broad readiness）；<b>Stooq proof fail closed</b>（CR-B20：HTTP 404 維持 <code>not_proven</code>） <span class="sev sL">ops</span></li>
+          <li>首次 commit 的 <code>docs/</code> 手冊 ＋ 審閱 ＋ generation guides <span class="sev sL">docs</span></li>
+          <li>Import-linter contract KEPT（78 檔 / 201 deps）；engine/data 與框架無關 <span class="sev sL">arch</span></li>
+        </ul>
       </div>
       <div>
-        <h3>⏳ Still open</h3>
-        <ul class="clean">
+        <h3 class="en">⏳ Still open</h3>
+        <h3 class="zh">⏳ 仍未解決</h3>
+        <ul class="clean en">
           <li>No CI-managed visual baseline history beyond the repo baseline <span class="sev sL">Low</span></li>
           <li>Stooq source contract remains separate from the proven FRED/Yahoo/NOAA source quorum <span class="sev sL">Low</span></li>
           <li>Static export's public-hosting readiness remains conservative (<code>not_proven</code>) by dashboard contract; visual regression is repo-side proven <span class="sev sL">Low</span></li>
@@ -201,26 +256,41 @@
           <li>Stooq source blocked — external/source-contract (<code>ISSUE-B3-001</code>) <span class="sev sL">Low</span></li>
           <li>Full Tier3 MLOps (serving / retraining / drift) deferred by design <span class="sev sL">Low</span></li>
         </ul>
+        <ul class="clean zh">
+          <li>除 repo baseline 外尚無 CI-managed visual baseline history <span class="sev sL">Low</span></li>
+          <li>Stooq source contract 仍與已證明的 FRED/Yahoo/NOAA source quorum 分開治理 <span class="sev sL">Low</span></li>
+          <li>靜態 artifact 的 public-hosting readiness 依儀表板契約維持保守（<code>not_proven</code>）；視覺回歸已在 repo 端證明 <span class="sev sL">Low</span></li>
+          <li>Live-data 回測延後至累積 &ge;2 個真實價格資產 <span class="sev sL">Low</span></li>
+          <li>Stooq source blocked — external/source-contract（<code>ISSUE-B3-001</code>） <span class="sev sL">Low</span></li>
+          <li>完整 Tier3 MLOps（serving / retraining / drift）依設計延後 <span class="sev sL">Low</span></li>
+        </ul>
       </div>
     </div>
   </section>
 
   <section>
-    <h2 class="sec">Roadmap</h2>
-    <p class="sub">Next milestones, in order.</p>
+    <h2 class="sec"><span class="en">Roadmap</span><span class="zh">Roadmap</span></h2>
+    <p class="sub en">Next milestones, in order.</p>
+    <p class="sub zh">後續里程碑，依序排列。</p>
     <div class="timeline">
-      <div><b>Now</b> — Manual + review docs republished (CR-RDO-004; manual Flow 5 real-data-OOS live-captured); gates refreshed (367 passed, frontend 46, frontend audit 0, frontend mutation 26/26 killed, Python mutation 110/110); browser visual + pixel diff proven; dashboard payload generated from local result-store records; local smoke verifies HTML/API payload parity; E production-ready handoff now requires an external manifest artifact URI; public hosting re-proven at <code>dataHash c73d7c88…</code> (live probe <code>status=proven</code>; PR #97) while the dashboard self-claim stays <code>not_proven</code> by contract; deployment manifest/probe/review-probe/hash/contract, review pytest transcript, review frontend-count shorthand, local-first CI default, and promotion-boundary drift guarded; autonomous cron dry-run proof, CR-B12 scoped live-write smoke, CR-B18/CR-B19 source-quorum gate/proof, CR-B20 Stooq fail-closed proof, and occupied-3044 smoke-port chaos proof captured; default Python lock excludes Torch.</div>
-      <div><b>Next</b> — Keep cron observer evidence fresh after future schedule runs; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
-      <div><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
-      <div><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>
+      <div class="en"><b>Now</b> — Manual + review docs republished (CR-RDO-004; manual Flow 5 real-data-OOS live-captured); gates refreshed (367 passed, frontend 46, frontend audit 0, frontend mutation 26/26 killed, Python mutation 110/110); browser visual + pixel diff proven; dashboard payload generated from local result-store records; local smoke verifies HTML/API payload parity; E production-ready handoff now requires an external manifest artifact URI; public hosting re-proven at <code>dataHash c73d7c88…</code> (live probe <code>status=proven</code>; PR #97) while the dashboard self-claim stays <code>not_proven</code> by contract; deployment manifest/probe/review-probe/hash/contract, review pytest transcript, review frontend-count shorthand, local-first CI default, and promotion-boundary drift guarded; autonomous cron dry-run proof, CR-B12 scoped live-write smoke, CR-B18/CR-B19 source-quorum gate/proof, CR-B20 Stooq fail-closed proof, and occupied-3044 smoke-port chaos proof captured; default Python lock excludes Torch.</div>
+      <div class="zh"><b>現在</b> — 手冊 ＋ 審閱文件重新發布（CR-RDO-004；手冊流程 5 real-data-OOS 已 live 擷取）；gate 已刷新（367 passed、前端 46、前端 audit 0、前端 mutation 26/26 killed、Python mutation 110/110）；瀏覽器視覺 ＋ pixel diff 已證明；dashboard payload 由本地 result-store records 生成；local smoke 驗證 HTML/API payload parity；E production-ready handoff 現要求外部 manifest artifact URI；public hosting 已於 <code>dataHash c73d7c88…</code> 重新證明（live probe <code>status=proven</code>；PR #97），而儀表板 self-claim 依契約維持 <code>not_proven</code>；deployment manifest/probe/review-probe/hash/contract、review pytest transcript、review frontend-count shorthand、local-first CI default 與 promotion-boundary drift 皆已守門；autonomous cron dry-run 證明、CR-B12 scoped live-write smoke、CR-B18/CR-B19 source-quorum gate/proof、CR-B20 Stooq fail-closed 證明，以及 occupied-3044 smoke-port chaos 證明皆已擷取；預設 Python lock 排除 Torch。</div>
+      <div class="en"><b>Next</b> — Keep cron observer evidence fresh after future schedule runs; optionally move visual baselines from repo-stored snapshots to CI-managed history.</div>
+      <div class="zh"><b>接下來</b> — 在未來 schedule run 後保持 cron observer 證據新鮮；可選擇將 visual baseline 從 repo 儲存的快照移至 CI-managed history。</div>
+      <div class="en"><b>Then</b> — Accumulate real price vintages; unblock <code>run_vintage_slice.py</code> live backtest.</div>
+      <div class="zh"><b>然後</b> — 累積真實價格 vintage；解除 <code>run_vintage_slice.py</code> live 回測的阻擋。</div>
+      <div class="en"><b>Later</b> — Expand model-family evaluation; revisit Tier3 MLOps scope.</div>
+      <div class="zh"><b>之後</b> — 擴充 model-family 評估；重新檢視 Tier3 MLOps 範圍。</div>
     </div>
   </section>
 
 </div>
 
 <footer>
-  Generated 2026-06-12 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code>, gate transcripts in <code>docs/review/assets/</code> · See <a href="../REVIEW_GENERATION_GUIDE.md" style="color:#04A9FB">REVIEW_GENERATION_GUIDE.md</a>
+  <span class="en">Generated 2026-06-12 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code>, gate transcripts in <code>docs/review/assets/</code> · See <a href="../REVIEW_GENERATION_GUIDE.md" style="color:#04A9FB">REVIEW_GENERATION_GUIDE.md</a></span>
+  <span class="zh">生成於 2026-06-12 · 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code>、gate transcript 位於 <code>docs/review/assets/</code> · 見 <a href="../REVIEW_GENERATION_GUIDE.md" style="color:#04A9FB">REVIEW_GENERATION_GUIDE.md</a></span>
 </footer>
 
+<script>function setLang(l){var h=document.documentElement;h.classList.toggle('lang-zh',l==='zh');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-zh').classList.toggle('active',l==='zh');}</script>
 </body>
 </html>
