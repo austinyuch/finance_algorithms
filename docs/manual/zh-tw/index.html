@@ -50,6 +50,7 @@
   <a href="#f2">2 · 每日快照</a>
   <a href="#f3">3 · Showcase 儀表板</a>
   <a href="#f4">4 · 既有 API</a>
+  <a href="#f5">5 · 真實資料 OOS-net</a>
   <h2>參考</h2>
   <a href="#gaps">視覺缺口盤點</a>
   <a href="../en/index.html">English version</a>
@@ -131,9 +132,9 @@ npm run smoke                  <span style="color:#7d90b0"># 本地 HTTP smoke�
     <img class="preview" style="height:auto;display:block" src="../assets/dashboard-browser-visual.png" alt="QuantLab 儀表板 chromium-headless 截圖">
     <p class="cap">static export 僅輸出語意化 HTML、未內嵌 app 樣式表，故截圖刻意無 CSS — 證明渲染與內容，不證明視覺精緻度。Live <code>npm run dev</code> 才套用 <code>app/globals.css</code>。</p>
     <div class="evidence">
-      <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span><br>
-      <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export + canonical_local_result_store · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、f-public-static-showcase/review.md<br>
-      <b>已解決：</b>已擷取瀏覽器截圖；visual diff 為 repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；dashboard payload 已改由 generated local result-store scenario 產生。Branch-local public-hosting parity 在 Pages 服務 refreshed dataHash 前維持 <code>configured_not_observed</code>。
+      <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-pass">hosting proven (point-in-time)</span><span class="badge b-mock">local_demo_only</span><br>
+      <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export + canonical_local_result_store · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、f-public-static-showcase/review.md、docs/public-hosting-probe.json<br>
+      <b>已解決：</b>已擷取瀏覽器截圖；visual diff repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>），export readiness 面板現回報 <code>visualRegression=proven</code>（CR-FPS-009）。Public-hosting probe 已觀測 HTTP 200、matched hash + manifest contract、fresh observation（<code>status=proven</code>、<code>dataHash c73d7c88…</code>，CR-FPS-010）；freshness 現為 deterministic，過期證據降級而非 crash（CR-FPS-011）。Dashboard payload 自身的 <code>publicHosting</code> self-claim 依設計<b>維持 <code>not_proven</code></b> — static artifact 不能自我宣稱其部署；<code>proven</code> 為 point-in-time，僅存在於觀測到的 probe/manifest。
     </div>
   </section>
 
@@ -149,21 +150,61 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
     </div>
   </section>
 
+  <section class="card" id="f5">
+    <h2>流程 5 · 真實資料 OOS-net 回測</h2>
+    <p><b>誰／何時：</b>研究者在<b>真實 point-in-time vintage 資料</b>（非合成）上跑回測，以 SP500 指數比較一個 timing 候選策略與笨 baseline，依樣本外<em>淨值</em> Sharpe 排名。</p>
+    <pre>uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json</pre>
+    <p>實際輸出（<code>assets/real-data-oos-demo-01-run.txt</code>；完整 artifact <a href="../assets/real-data-oos-demo-02-artifact.json">real-data-oos-demo-02-artifact.json</a>）：</p>
+    <pre>EXIT=0
+status            = computed
+asset_set         = ["SP500"]
+availability_mode = approximate_event_date   <span style="color:#7d90b0">(非 true PIT)</span>
+metric_authority  = out_of_sample_net_only
+asof_window       = 2016-06-13 .. 2026-06-11
+rows（依 OOS-net Sharpe 排名）：
+  BuyAndHold        0.8770   <span style="color:#7d90b0">(baseline)</span>
+  SmaTimingStrategy 0.8082</pre>
+    <p><b>怎麼讀：</b>組合既有 A0 engine + PIT vintage provider，跑在<b>真實</b> SP500 資料上。扣成本後，2016–2026 多頭中 buy-and-hold 勝過 SMA-timing（SMA-timing 波動較低）。<b>真實 source 資料上的 mechanism 證據 — 不是策略勝負判定、也不是 alpha 宣稱。</b>artifact 明確記錄 <code>approximate_event_date</code> 模式，因其<b>非 true PIT</b>、可能引入 lookahead。</p>
+    <h3>Fail-closed 誠實守門</h3>
+    <pre><span style="color:#7d90b0"># CR-RDO-004 sampling-frequency oversampling（daily+monthly 混合 universe）</span>
+[fail-closed] oversampled real-data OOS: rebalance cadence 'monthly' is finer ...
+  → reason=oversampled_vs_native_frequency   EXIT=2
+
+<span style="color:#7d90b0"># Degeneracy（true-PIT 單次擷取資料對歷史 as-of 不可見 → flat OOS）</span>
+[fail-closed] degenerate real-data OOS: all strategy OOS net return series are flat ...
+  → reason=degenerate_flat_oos   EXIT=2</pre>
+    <p>預設單一指數 SP500 run 為 homogeneous（<code>coarsest_cadence=daily</code>、<code>rebalance=monthly</code>），兩個 guard 都通過、維持 <code>computed</code>。</p>
+    <div class="evidence">
+      <span class="badge b-pass">PASS (Review PASSED)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source：</b>report_artifact（已 commit 真實 computed run，checksum <code>421c7fd2…</code>）+ live_command_output · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>real-data-oos-backtest/review.md、cr-rdo-003、cr-rdo-004<br>
+      <b>Captured：</b>2026-06-14 live 重跑 CLI（真實 vintage 資料）— 計算出的 SP500 run 加上兩條 fail-closed 路徑（degeneracy、CR-RDO-004 sampling-frequency）；artifact JSON（<code>.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json</code>）為 byte-for-byte 的已 commit 真實 run。<code>MOCK_DOMINANT_EVIDENCE</code> 僅適用於資料層（真實但 local-only、<code>approximate_event_date</code>、非 true PIT）。<code>no_alpha_claim</code>；mechanism 而非策略判定。
+    </div>
+  </section>
+
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
-    <p><b>自上次檢查以來已解決（2026-06-11 → 2026-06-13）：</b>測試目前 <b>367 passed</b>，新增 CR-RDO-004 real-data OOS sampling-frequency oversampling fail-closed guard、PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 58 檔 clean；mutation spot checks 110/110 configured/killed，包含 CR-RDO-004 sampling-frequency oversampling guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder and app payload copy drift, retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift，以及 E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/observed-at UTC/drift-threshold gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護；frontend mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>dashboard payload 已由 local result-store records 生成</b>（CR-FPS-006）；branch-local public-hosting parity 在 Pages 服務 refreshed dataHash 前維持 <code>configured_not_observed</code>；<b>visual diff repo-baseline pixel-backed</b>（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；<b>scoped live snapshot write smoke</b> 已由 CR-B12 證明；<b>broad source-quorum gate</b> 已由 CR-B18 補上，且 <b>live quorum proof</b> 已由 CR-B19 擷取；<b>Stooq restoration proof</b> 已由 CR-B20 證明會 fail closed。</p>
+    <p><b>自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：</b></p>
+    <ul>
+      <li><b>Sampling-frequency 誠實缺口已關閉（CR-RDO-004）：</b>真實資料 OOS 現會估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時 <b>fail closed</b>（<code>reason=oversampled_vs_native_frequency</code>），不再把陳舊價格 forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設單一指數 SP500 run 不受影響、維持 <code>computed</code>（流程 5）。</li>
+      <li><b>Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）：</b>stale-baseline-hash guard 只在 <code>baselineHash != currentHash</code> 時觸發，因此 deterministic re-pin（<code>baselineHash == currentHash</code>、<code>mismatchedPixels == 0</code>）不再阻擋誠實 UI 變更；tolerant pixel-diff threshold gate 不變。</li>
+      <li><b>Dashboard visual readiness 已 wire-through（CR-FPS-009）：</b>export readiness 面板現由 repo-side browser visual diff 證據回報 <code>visualRegression=proven</code>。</li>
+      <li><b>Public hosting 已重新證明（CR-FPS-010），point-in-time，於 <code>dataHash c73d7c88…</code>：</b>deployed Pages <code>dataHash</code> 與已 commit manifest 相符、HTTP 200、hash/contract matched、fresh observation（<code>2026-06-14T09:39Z</code>、<code>status=proven</code>）。Dashboard payload 的 <code>publicHosting</code> self-claim 依設計維持 <code>not_proven</code>。</li>
+      <li><b>Hosting-freshness time-bomb 已移除（CR-FPS-011）：</b>freshness 以注入的 <code>asof</code> 做 deterministic 分類；過期的已 commit 證據降級為 <code>configured_not_observed</code>，而非在 re-prove ~24h 後讓 build/suite crash。</li>
+    </ul>
+    <p><b>更早已解決（2026-06-11 → 2026-06-13）：</b>測試目前 <b>367 passed</b>，新增 CR-RDO-004 real-data OOS sampling-frequency oversampling fail-closed guard、PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards；mypy 58 檔 clean；mutation spot checks 110/110 configured/killed，包含 CR-RDO-004 sampling-frequency oversampling guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder and app payload copy drift, retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift，以及 E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/observed-at UTC/drift-threshold gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護；frontend mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity；首次 commit <code>docs/</code> manual+review 集；<b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>）；<b>dashboard payload 已由 local result-store records 生成</b>（CR-FPS-006）；branch-local public-hosting parity 在 Pages 服務 refreshed dataHash 前維持 <code>configured_not_observed</code>；<b>visual diff repo-baseline pixel-backed</b>（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>）；<b>scoped live snapshot write smoke</b> 已由 CR-B12 證明；<b>broad source-quorum gate</b> 已由 CR-B18 補上，且 <b>live quorum proof</b> 已由 CR-B19 擷取；<b>Stooq restoration proof</b> 已由 CR-B20 證明會 fail closed。</p>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
       <tr><td>Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理</td><td>Low</td><td>b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md</td></tr>
-      <tr><td>Static export 內嵌 readiness 面板仍顯示 <code>publicHosting=not_proven</code>；<code>visualRegression=proven</code> 已由 repo-side browser visual diff 證明</td><td>Low</td><td>frontend/out/index.html</td></tr>
-      <tr><td>Vintage 真實資料回測延後（&lt;2 價格資產）</td><td>Low</td><td>run_vintage_slice.py</td></tr>
+      <tr><td>Dashboard payload <code>publicHosting</code> self-claim 依契約維持 <code>not_proven</code>（live 部署僅由已 commit probe/manifest point-in-time 證明 <code>proven</code>，目前 <code>c73d7c88…</code>）</td><td>Low</td><td>frontend/out/index.html、docs/public-hosting-probe.json</td></tr>
+      <tr><td>真實資料 OOS 使用 <code>approximate_event_date</code>（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作</td><td>Low</td><td>real-data-oos-backtest/review.md</td></tr>
+      <tr><td>Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後）</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>
     </table>
   </section>
 
   <footer>
-    生成於 2026-06-12 · 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
+    生成於 2026-06-14 · 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
   </footer>
 </main>
 </div>

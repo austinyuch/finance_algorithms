@@ -17,6 +17,7 @@
 | A data operator capturing snapshots | [Flow 2 — Daily vintage snapshot](#flow-2--daily-vintage-snapshot) |
 | A reviewer reading the dashboard | [Flow 3 — Showcase dashboard](#flow-3--showcase-dashboard) |
 | A legacy API user | [Flow 4 — Pyramid calculator API](#flow-4--legacy-pyramid-calculator-api) |
+| A researcher running a real-data OOS-net backtest | [Flow 5 — Real-data OOS-net backtest](#flow-5--real-data-oos-net-backtest) |
 
 ## Getting started / starter assets
 
@@ -152,12 +153,18 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 `npm run dev` app applies `app/globals.css`.
 
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`, while branch-local public-hosting parity is `configured_not_observed` after the regenerated payload changed `dataHash` (`f-public-static-showcase/review.md`)
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; public hosting observed `proven` **point-in-time** at `dataHash c73d7c88…` (`f-public-static-showcase/review.md`, `docs/public-hosting-probe.json`)
+> - Source Ref: `.agents/specs/f-demo-hardening/review.md`, `.agents/specs/f-public-static-showcase/review.md`, `docs/deployment-manifest.json`
 > - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
 > - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
->   mismatched pixels at threshold `0.001`); GitHub Actions autonomous
->   `event=schedule` dry-run proof exists as run `27392471359`. Public-hosting
->   probe observed HTTP 200 plus deployed manifest contract metadata; the export's embedded readiness panel keeps public hosting conservative (`not_proven`) while Pages catches up to the refreshed `dataHash`, and now reports visual regression as `proven` from browser visual evidence.
+>   mismatched pixels at threshold `0.001`) and the export readiness panel now
+>   reports `visualRegression=proven` (CR-FPS-009). Public-hosting probe observed
+>   HTTP 200, matched hash + manifest contract, fresh observation
+>   (`status=proven`, `dataHash c73d7c88…`, CR-FPS-010); freshness is now
+>   deterministic and stale evidence downgrades rather than crashing (CR-FPS-011).
+>   The dashboard payload's own `publicHosting` self-claim **stays `not_proven`**
+>   by design — a static artifact cannot self-claim its deployment; the `proven`
+>   status lives only in the observed probe/manifest and is point-in-time.
 
 ---
 
@@ -184,9 +191,107 @@ baseline** — preserved unchanged.
 
 ---
 
+## Flow 5 — Real-data OOS-net backtest
+
+**Who/when:** A researcher runs a backtest on **real point-in-time vintage
+data** (not synthetic), comparing a timing candidate against a dumb baseline on
+the SP500 market index, ranked by out-of-sample **net** Sharpe.
+
+```bash
+uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
+```
+
+Live output (`assets/real-data-oos-demo-01-run.txt`; full artifact in
+`assets/real-data-oos-demo-02-artifact.json`):
+
+```
+EXIT=0
+status            = computed
+asset_set         = ["SP500"]
+availability_mode = approximate_event_date   (NOT true PIT)
+metric_authority  = out_of_sample_net_only
+asof_window       = 2016-06-13 .. 2026-06-11
+rows (ranked OOS-net Sharpe):
+  BuyAndHold        0.8770   (baseline)
+  SmaTimingStrategy 0.8082
+```
+
+**How to read it:** this composes the existing A0 engine + PIT vintage provider
+over **real** SP500 data. Buy-and-hold beats SMA-timing net of cost across the
+2016–2026 bull run (SMA-timing carries lower volatility). This is **mechanism
+evidence on real source data — not a strategy verdict and not an alpha claim**.
+The CLI uses `approximate_event_date` availability (single-capture vintage made
+visible to historical as-ofs); the artifact records that mode explicitly because
+it is **NOT true PIT** and may introduce lookahead.
+
+### Fail-closed honesty guards
+
+The CLI never emits a misleading `computed`. Two guards fail closed (exit 2,
+`status=insufficient_data`):
+
+```
+# CR-RDO-004 sampling-frequency oversampling (mixed daily+monthly universe,
+# monthly rebalance would forward-fill stale prices into fabricated flat returns)
+[fail-closed] oversampled real-data OOS: rebalance cadence 'monthly' is finer ...
+  → reason=oversampled_vs_native_frequency   EXIT=2
+
+# Degeneracy (true-PIT single-capture data invisible to historical as-ofs → flat OOS)
+[fail-closed] degenerate real-data OOS: all strategy OOS net return series are flat ...
+  → reason=degenerate_flat_oos   EXIT=2
+```
+
+The default single-index SP500 run is homogeneous (`coarsest_cadence=daily`,
+`rebalance=monthly`), so it passes both guards and stays `computed`.
+
+> - Evidence Source: `report_artifact` (committed real computed run
+>   `.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json`,
+>   checksum `421c7fd2…`) + `live_command_output`
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
+>   PASSED* (`real-data-oos-backtest/review.md`); live-demo readiness `not_assessed`
+>   (CLI/library slice, no served surface)
+> - Source Ref: `.agents/specs/real-data-oos-backtest/review.md`,
+>   `.../change-requests/cr-rdo-003-market-index-availability.md`,
+>   `.../change-requests/cr-rdo-004-sampling-frequency-guard.md`
+> - Captured: live CLI re-execution on 2026-06-14 over real vintage data — the
+>   computed SP500 run plus both fail-closed paths (degeneracy, CR-RDO-004
+>   sampling-frequency). Artifact JSON is the byte-for-byte committed real run.
+> - `MOCK_DOMINANT_EVIDENCE` — real CLI output over real but local-only vintage
+>   data with `availability_mode=approximate_event_date` (not true PIT)
+>   availability (not true PIT); `no_alpha_claim`, mechanism not strategy verdict.
+
+---
+
 ## Visual gap inventory
 
-**Gaps resolved since last check (2026-06-11 → 2026-06-13):**
+**Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):**
+
+- **Sampling-frequency honesty gap closed (CR-RDO-004).** The real-data OOS
+  library now estimates each asset's native cadence and **fails closed**
+  (`reason=oversampled_vs_native_frequency`) when the rebalance cadence is finer
+  than the coarsest selected asset, instead of silently forward-filling stale
+  prices into fabricated flat returns that inflate Sharpe. The default
+  single-index SP500 run is unaffected and stays `computed` (see Flow 5).
+- **Browser pixel baseline now real and re-pin-tolerant (CR-FBP-001).** The
+  stale-baseline-hash guard fires only when `baselineHash != currentHash`, so a
+  legitimate deterministic re-pin (`baselineHash == currentHash`,
+  `mismatchedPixels == 0`) no longer blocks honest UI changes; the tolerant
+  pixel-diff threshold gate is unchanged.
+- **Dashboard visual readiness wired through (CR-FPS-009).** The export's
+  readiness panel now reports `visualRegression=proven` from repo-side browser
+  visual diff evidence (previously unwired).
+- **Public hosting re-proven (CR-FPS-010), point-in-time, at `dataHash c73d7c88…`.**
+  The deployed GitHub Pages `dataHash` matches the committed manifest
+  (`c73d7c8873fb406c…`), HTTP 200, hash/contract matched, observation fresh
+  (`docs/deployment-manifest.json`, `docs/public-hosting-probe.json`, observed
+  `2026-06-14T09:39Z`, `status=proven`). This is **point-in-time** evidence: the
+  dashboard payload's own `publicHosting` self-claim stays `not_proven` by design
+  (a static artifact cannot self-claim its deployment).
+- **Hosting-freshness time-bomb removed (CR-FPS-011).** Freshness is now
+  classified deterministically against an injected `asof` (no hidden wall-clock);
+  stale committed evidence **downgrades** to `configured_not_observed` rather than
+  crashing the build/suite ~24h after a re-prove.
+
+**Gaps resolved earlier (2026-06-11 → 2026-06-13):**
 
 - Test suite is now **367 passed** after adding the CR-RDO-004 real-data OOS sampling-frequency oversampling fail-closed guard, moving PyTorch LSTM proof to the optional lane, and adding current-governance stale-evidence guards; mypy is clean over **58** files; mutation spot checks are **110/110 configured/killed**, including the CR-RDO-004 sampling-frequency oversampling guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift, E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **26/26 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
 - First committed manual/review documentation set under `docs/`.
@@ -200,8 +305,9 @@ baseline** — preserved unchanged.
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Static export's public-hosting readiness remains conservative (`not_proven`) by dashboard contract; visual regression is repo-side proven | Low | `frontend/out/index.html` |
-| Vintage real-data backtest still deferred (<2 price assets) | Low | `run_vintage_slice.py` output |
+| Dashboard payload `publicHosting` self-claim stays `not_proven` by contract (live deployment is `proven` only point-in-time via the committed probe/manifest, currently `c73d7c88…`) | Low | `frontend/out/index.html`, `docs/public-hosting-probe.json` |
+| Real-data OOS uses `approximate_event_date` (not true PIT); a co-temporal multi-asset default universe with true vintage history is the follow-up | Low | `real-data-oos-backtest/review.md` |
+| Vintage co-temporal multi-asset readiness still accumulating (single-capture FRED; daily-vintage backtest deferred) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |
 
 See [`docs/review/index.html`](../../review/index.html) for the executive gap

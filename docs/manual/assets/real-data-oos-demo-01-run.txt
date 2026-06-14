@@ -1,0 +1,45 @@
+# Real-data OOS-net backtest — LIVE CLI capture (2026-06-14, real vintage data)
+# Source: scripts/run_real_data_oos_backtest.py over data/vintage/raw/  (no_alpha_claim)
+# This is genuine command output captured by re-executing the CLI; the full
+# computed payload is in real-data-oos-demo-02-artifact.json (committed real run).
+
+# ============================================================
+# (1) Default computed run — SP500 market index, exit 0
+# ============================================================
+$ uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
+[exit 0] status=computed  asset_set=['SP500']  OOS-net: BuyAndHold 0.877 | SmaTimingStrategy 0.808
+#
+#   availability_mode  = approximate_event_date   (NOT true PIT)
+#   metric_authority   = out_of_sample_net_only
+#   claim_boundary     = no_alpha_claim
+#   asof_window        = 2016-06-13 .. 2026-06-11
+#   sampling_frequency = { SP500: daily, coarsest: daily, rebalance: monthly,
+#                          homogeneous: true }   (CR-RDO-004 provenance)
+#
+# Read: buy-and-hold beats SMA-timing net of cost over the 2016–2026 bull run
+# (SMA-timing carries lower volatility). Mechanism evidence on real source
+# data — NOT a strategy verdict, NOT an alpha claim.
+
+# ============================================================
+# (2) Degeneracy fail-closed — flat OOS (true-PIT single-capture)
+# ============================================================
+$ (true-PIT single-capture SP500)  ->  degeneracy guard
+[exit 2] [fail-closed] degenerate real-data OOS: degenerate real-data OOS comparison: flat
+out-of-sample returns (max OOS vol 0.00e+00). Single-capture vintage data is PIT-invisible
+to historical as-ofs; load with approximate_availability or accumulate true-vintage data
+before claiming a computed comparison.
+# artifact: status=insufficient_data  reason=degenerate_flat_oos
+
+# ============================================================
+# (3) CR-RDO-004 fail-closed — sampling-frequency oversampling
+# ============================================================
+$ (monthly + quarterly assets, monthly rebalance)  ->  sampling-frequency guard
+[exit 2] [fail-closed] oversampled real-data OOS: oversampled real-data OOS comparison:
+rebalance cadence (monthly, ~30.4d) is finer than the coarsest selected asset native
+cadence (~92.0d); the loader would forward-fill stale prices into fabricated flat returns.
+Harmonize to the coarsest cadence or drop the low-frequency asset before claiming a
+computed comparison.
+# artifact: status=insufficient_data  reason=oversampled_vs_native_frequency
+#
+# Both fail-closed paths preserve claim_boundary=no_alpha_claim and write an
+# insufficient_data artifact rather than a fabricated result.

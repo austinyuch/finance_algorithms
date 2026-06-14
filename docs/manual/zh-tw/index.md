@@ -16,6 +16,7 @@
 | 擷取快照的資料操作者 | [流程 2 — 每日 vintage 快照](#流程-2--每日-vintage-快照) |
 | 看 dashboard 的審閱者 | [流程 3 — Showcase 儀表板](#流程-3--showcase-儀表板) |
 | 既有 API 使用者 | [流程 4 — 金字塔計算機 API](#流程-4--既有金字塔計算機-api) |
+| 跑真實資料 OOS-net 回測的研究者 | [流程 5 — 真實資料 OOS-net 回測](#流程-5--真實資料-oos-net-回測) |
 
 ## 快速開始 / Starter Assets
 
@@ -146,12 +147,17 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 視覺精緻度。Live `npm run dev` 才會套用 `app/globals.css`。
 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`，CR-FPS-006 regenerated payload 造成 branch-local public-hosting parity 暫為 `configured_not_observed`（`f-public-static-showcase/review.md`）
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；public hosting 已觀測 `proven`（**point-in-time**，於 `dataHash c73d7c88…`，`f-public-static-showcase/review.md`、`docs/public-hosting-probe.json`）
+> - Source Ref: `.agents/specs/f-demo-hardening/review.md`、`.agents/specs/f-public-static-showcase/review.md`、`docs/deployment-manifest.json`
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
 > - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
->   mismatched pixels，threshold `0.001`）；GitHub Actions autonomous
->   `event=schedule` dry-run proof 已有 run `27392471359`。Public-hosting
->   probe 已觀測 HTTP 200 與 deployed manifest contract metadata；export 內嵌 readiness 面板仍保守顯示 `publicHosting=not_proven`，但 `visualRegression=proven` 已由 repo-side browser visual diff 證明；直到 Pages 服務 refreshed `dataHash` 後再更新 parity proof。
+>   mismatched pixels，threshold `0.001`），export readiness 面板現回報
+>   `visualRegression=proven`（CR-FPS-009）。Public-hosting probe 已觀測 HTTP 200、
+>   matched hash + manifest contract、fresh observation（`status=proven`、
+>   `dataHash c73d7c88…`，CR-FPS-010）；freshness 現為 deterministic，過期證據會降級
+>   而非 crash（CR-FPS-011）。Dashboard payload 自身的 `publicHosting` self-claim
+>   依設計**維持 `not_proven`** — static artifact 不能自我宣稱其部署；`proven` 狀態
+>   僅存在於觀測到的 probe/manifest，且為 point-in-time。
 
 ---
 
@@ -177,9 +183,99 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 
 ---
 
+## 流程 5 — 真實資料 OOS-net 回測
+
+**誰／何時：** 研究者在**真實 point-in-time vintage 資料**（非合成）上跑回測，
+以 SP500 市場指數比較一個 timing 候選策略與笨 baseline，依樣本外**淨值** Sharpe
+排名。
+
+```bash
+uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
+```
+
+實際輸出（`assets/real-data-oos-demo-01-run.txt`；完整 artifact 見
+`assets/real-data-oos-demo-02-artifact.json`）：
+
+```
+EXIT=0
+status            = computed
+asset_set         = ["SP500"]
+availability_mode = approximate_event_date   (非 true PIT)
+metric_authority  = out_of_sample_net_only
+asof_window       = 2016-06-13 .. 2026-06-11
+rows（依 OOS-net Sharpe 排名）：
+  BuyAndHold        0.8770   (baseline)
+  SmaTimingStrategy 0.8082
+```
+
+**怎麼讀：** 本切片組合既有 A0 engine + PIT vintage provider，跑在**真實** SP500
+資料上。扣成本後，2016–2026 多頭區間中 buy-and-hold 勝過 SMA-timing（SMA-timing
+波動較低）。這是**真實 source 資料上的 mechanism 證據 — 不是策略勝負判定、也不是
+alpha 宣稱**。CLI 使用 `approximate_event_date` availability（讓單次擷取 vintage 對
+歷史 as-of 可見）；artifact 明確記錄此模式，因為它**非 true PIT**，可能引入 lookahead。
+
+### Fail-closed 誠實守門
+
+CLI 絕不輸出誤導性的 `computed`。兩個 guard 會 fail closed（exit 2，
+`status=insufficient_data`）：
+
+```
+# CR-RDO-004 sampling-frequency oversampling（daily+monthly 混合 universe，
+# monthly rebalance 會把陳舊價格 forward-fill 成捏造的 flat returns）
+[fail-closed] oversampled real-data OOS: rebalance cadence 'monthly' is finer ...
+  → reason=oversampled_vs_native_frequency   EXIT=2
+
+# Degeneracy（true-PIT 單次擷取資料對歷史 as-of 不可見 → flat OOS）
+[fail-closed] degenerate real-data OOS: all strategy OOS net return series are flat ...
+  → reason=degenerate_flat_oos   EXIT=2
+```
+
+預設單一指數 SP500 run 為 homogeneous（`coarsest_cadence=daily`、
+`rebalance=monthly`），兩個 guard 都通過、維持 `computed`。
+
+> - Evidence Source: `report_artifact`（已 commit 的真實 computed run
+>   `.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json`，
+>   checksum `421c7fd2…`）+ `live_command_output`
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
+>   PASSED*（`real-data-oos-backtest/review.md`）；live-demo readiness `not_assessed`
+>   （CLI/library 切片，無 served surface）
+> - Source Ref: `.agents/specs/real-data-oos-backtest/review.md`、
+>   `.../change-requests/cr-rdo-003-market-index-availability.md`、
+>   `.../change-requests/cr-rdo-004-sampling-frequency-guard.md`
+> - Captured：2026-06-14 live 重跑 CLI（真實 vintage 資料）— 計算出的 SP500 run
+>   加上兩條 fail-closed 路徑（degeneracy、CR-RDO-004 sampling-frequency）；
+>   artifact JSON 為 byte-for-byte 的已 commit 真實 run。
+> - `MOCK_DOMINANT_EVIDENCE` — 真實 source 資料但 `approximate_event_date`
+>   availability（非 true PIT）；`no_alpha_claim`，mechanism 而非策略判定。
+
+---
+
 ## 視覺缺口盤點
 
-**自上次檢查以來已解決（2026-06-11 → 2026-06-13）：**
+**自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：**
+
+- **Sampling-frequency 誠實缺口已關閉（CR-RDO-004）。** 真實資料 OOS library 現會
+  估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時
+  **fail closed**（`reason=oversampled_vs_native_frequency`），不再默默把陳舊價格
+  forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設單一指數 SP500 run 不受影響、
+  維持 `computed`（見流程 5）。
+- **Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）。** stale-baseline-hash
+  guard 只在 `baselineHash != currentHash` 時觸發，因此合法的 deterministic re-pin
+  （`baselineHash == currentHash`、`mismatchedPixels == 0`）不再阻擋誠實的 UI 變更；
+  tolerant pixel-diff threshold gate 不變。
+- **Dashboard visual readiness 已 wire-through（CR-FPS-009）。** Export 的 readiness
+  面板現由 repo-side browser visual diff 證據回報 `visualRegression=proven`（先前未接線）。
+- **Public hosting 已重新證明（CR-FPS-010），point-in-time，於 `dataHash c73d7c88…`。**
+  Deployed GitHub Pages `dataHash` 與已 commit manifest 相符（`c73d7c8873fb406c…`）、
+  HTTP 200、hash/contract matched、observation fresh（`docs/deployment-manifest.json`、
+  `docs/public-hosting-probe.json`，觀測於 `2026-06-14T09:39Z`，`status=proven`）。這是
+  **point-in-time** 證據：dashboard payload 自身的 `publicHosting` self-claim 依設計仍為
+  `not_proven`（static artifact 不能自我宣稱其部署）。
+- **Hosting-freshness time-bomb 已移除（CR-FPS-011）。** Freshness 現以注入的 `asof`
+  做 deterministic 分類（無隱藏 wall-clock）；過期的已 commit 證據會**降級**為
+  `configured_not_observed`，而非在 re-prove ~24h 後讓 build/suite crash。
+
+**更早已解決（2026-06-11 → 2026-06-13）：**
 
 - 測試套件目前為 **367 passed**（新增 CR-RDO-004 real-data OOS sampling-frequency oversampling fail-closed guard、PyTorch LSTM proof 移至 optional lane，並新增 current-governance stale-evidence guards）；mypy 現涵蓋 **58** 檔且 clean；mutation spot checks **110/110 configured/killed**，包含 CR-RDO-004 sampling-frequency oversampling guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder and app payload copy drift, retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript、import-linter count drift、governance registry row-count drift、E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **26/26 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
 - `docs/` 下首次 commit 的 manual/review 文件集。
@@ -193,8 +289,9 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Static export 內嵌 readiness 面板仍顯示 `publicHosting=not_proven`；`visualRegression=proven` 已由 repo-side browser visual diff 證明 | Low | `frontend/out/index.html` |
-| Vintage 真實資料回測仍延後（<2 價格資產） | Low | `run_vintage_slice.py` 輸出 |
+| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`（live 部署僅由已 commit probe/manifest point-in-time 證明 `proven`，目前 `c73d7c88…`） | Low | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
+| 真實資料 OOS 使用 `approximate_event_date`（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作 | Low | `real-data-oos-backtest/review.md` |
+| Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |
 
 高階缺口分析見 [`docs/review/index.html`](../../review/index.html)。

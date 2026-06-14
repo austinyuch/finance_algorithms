@@ -52,7 +52,12 @@ plus refreshed gate evidence. Keep readiness claims copied from
 `.agents/specs/**/review.md` (never derived from task counts):
 
 - **User manual** — `docs/manual/{en,zh-tw}/index.{md,html}`. Regeneration steps:
-  [`docs/MANUAL_GENERATION_GUIDE.md`](docs/MANUAL_GENERATION_GUIDE.md).
+  [`docs/MANUAL_GENERATION_GUIDE.md`](docs/MANUAL_GENERATION_GUIDE.md). The
+  bilingual manual is regenerated per that guide with real CLI/API evidence and
+  briefly-started services (CLI demos, `frontend` smoke + headless screenshot,
+  and a transient legacy `uvicorn` curl), and reconciled against the spec
+  governance set (`.agents/specs/{NEXT_STEPS,SPECS,ISSUE_LOG,RTM}.md` +
+  [`docs/FEATURES.md`](docs/FEATURES.md)).
 - **Executive review** — `docs/review/index.html`. Regeneration steps:
   [`docs/REVIEW_GENERATION_GUIDE.md`](docs/REVIEW_GENERATION_GUIDE.md).
 - **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
