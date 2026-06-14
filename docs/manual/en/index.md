@@ -263,6 +263,15 @@ The default single-index SP500 run is homogeneous (`coarsest_cadence=daily`,
 
 ## Visual gap inventory
 
+**Render validation (2026-06-14, headless chromium `1440×2400`):** this manual
+(en/zh) and the executive review render cleanly — sidebar nav, hero, terminal
+code blocks, evidence captions and warning badges (`PASS`,
+`MOCK_DOMINANT_EVIDENCE`) all intact, no broken CSS or missing assets. The only
+visual residual is the review's UX-flow diagram, which renders client-side via
+the Mermaid CDN (an always-visible text pipeline fallback is shown otherwise);
+inlining it as offline SVG is blocked because `mermaid-cli` is not installed
+(Low).
+
 **Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):**
 
 - **Front + back services live-verified (2026-06-14).** The Next.js dashboard

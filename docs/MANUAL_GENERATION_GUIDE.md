@@ -151,3 +151,9 @@ require **no** port allocation and are the default evidence path.
 2. Re-copy readiness verdicts from `review.md` (never from task counts).
 3. Update the four manual files; keep EN and ZH-TW in sync.
 4. Sanity-check relative asset paths resolve.
+5. Visual render-validation: screenshot both HTML files headless and eyeball them —
+   `/snap/bin/chromium --headless --no-sandbox --disable-gpu --window-size=1440,2400
+   --screenshot="$PWD/out/docshots/manual-en.png" "file://$PWD/docs/manual/en/index.html"`
+   (repeat for zh-tw). Snap chromium is confined — write the screenshot **inside the
+   repo** (`out/…`), not `/tmp`. Record the result + any visual residual in the
+   "Visual gap inventory" section.

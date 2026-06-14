@@ -128,7 +128,7 @@
 
   <section>
     <h2 class="sec">UX Flow</h2>
-    <p class="sub">From data capture to a stakeholder-readable summary.</p>
+    <p class="sub">From data capture to a stakeholder-readable summary. Pipeline (text fallback, in case the Mermaid diagram below has not rendered): <b>daily_snapshot.py (PIT capture) → vintage loader (available_date ≤ asof) → A0 vectorized backtest engine → OOS-net leaderboard (vs baselines) → E-lite registry (lineage) → Showcase read API (/api/showcase) → Next.js dashboard (static export)</b>. The diagram renders client-side via Mermaid (CDN) in an online browser.</p>
     <div class="card">
       <pre class="mermaid">
 flowchart LR
@@ -159,6 +159,7 @@ flowchart LR
           <li><b>Public hosting re-proven</b> at <code>dataHash c73d7c88…</code> (live probe <code>status=proven</code>, deployed==expected, HTTP 200; PR #97). The dashboard self-claim stays <code>not_proven</code> by static-artifact contract; <code>proven</code> is a point-in-time observation re-proved per deploy <span class="sev sL">hosting</span></li>
           <li><b>Real-data OOS-net demo live-captured</b> (2026-06-14): SP500 <code>computed</code> comparison plus the CR-RDO-004 sampling-frequency and degeneracy fail-closed paths; manual Flow 5 added under <code>no_alpha_claim</code> <span class="sev sL">docs</span></li>
           <li><b>Front + back services live-verified</b> (2026-06-14): Next.js dashboard smoke <code>PASS</code> (served <code>/</code> + <code>/api/showcase</code> on an ephemeral <code>next start</code>) and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>/api/pyramidArithmetic</code>); transcripts under <code>docs/manual/assets/</code> <span class="sev sL">ops</span></li>
+          <li><b>Docs visually render-validated</b> (2026-06-14, headless chromium <code>1440×2400</code>): manual (en/zh) and this review render cleanly — hero/stat cards, feature cards, evidence captions/badges, and code blocks all intact, no broken CSS or assets. The UX-flow Mermaid CDN dependency is mitigated with an always-visible text pipeline fallback <span class="sev sL">visual</span></li>
           <li><b>Visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>) <span class="sev sL">visual</span></li>
           <li><b>Autonomous schedule proof captured</b> (Actions run <code>27392471359</code>, artifact <code>snapshot-schedule-proof</code>) <span class="sev sL">ops</span></li>
           <li><b>Scoped live snapshot write smoke proven</b> (CR-B12: <code>fred_FEDFUNDS</code> write, then same-day skip) <span class="sev sL">ops</span></li>
@@ -171,6 +172,7 @@ flowchart LR
         <h3>⏳ Still open</h3>
         <ul class="clean">
           <li>No CI-managed visual baseline history beyond the repo baseline <span class="sev sL">Low</span></li>
+          <li>UX-flow diagram renders client-side via the Mermaid CDN (text pipeline fallback shown otherwise); no offline-inlined SVG (<code>mermaid-cli</code> not installed) <span class="sev sL">Low</span></li>
           <li>Stooq source contract remains separate from the proven FRED/Yahoo/NOAA source quorum <span class="sev sL">Low</span></li>
           <li>Static export's public-hosting readiness remains conservative (<code>not_proven</code>) by dashboard contract; visual regression is repo-side proven <span class="sev sL">Low</span></li>
           <li>Live-data backtest deferred until &ge;2 real price assets accumulate <span class="sev sL">Low</span></li>

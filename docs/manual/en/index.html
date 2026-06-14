@@ -187,6 +187,7 @@ rows (ranked OOS-net Sharpe):
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
+    <p><b>Render validation (2026-06-14, headless chromium 1440×2400):</b> this manual (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal code blocks, evidence captions and warning badges (<code>PASS</code>, <code>MOCK_DOMINANT_EVIDENCE</code>) intact, no broken CSS or missing assets. The only visual residual is the review's UX-flow diagram (client-side Mermaid CDN, with an always-visible text pipeline fallback); offline-inlined SVG is blocked because <code>mermaid-cli</code> is not installed (Low).</p>
     <p><b>Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):</b></p>
     <ul>
       <li><b>Front + back services live-verified (2026-06-14):</b> the Next.js dashboard smoke passed against an ephemeral <code>next start</code> (served <code>/</code> and the real <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>), and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>assets/legacy-api-01.txt</code>), so the "started services" evidence is now <code>live_command_output</code> rather than only the committed payload.</li>
