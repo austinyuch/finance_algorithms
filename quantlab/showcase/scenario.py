@@ -15,7 +15,7 @@ from quantlab.tracking import LocalResultStore
 _FALLBACK_EVIDENCE_TESTS = [
     "374 passed",
     "frontend tests 46 passed",
-    "Python mutation 110/110 killed",
+    "Python mutation 111/111 killed",
     "frontend mutation 26/26 killed",
     "F Next.js coverage 90.00%",
     "E registry coverage 99%",
