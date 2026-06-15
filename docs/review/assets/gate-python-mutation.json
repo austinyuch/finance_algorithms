@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 110,
-  "killed": 110,
+  "total": 111,
+  "killed": 111,
   "survived": 0,
   "mutations": [
     {
@@ -442,6 +442,10 @@
     },
     {
       "name": "b-scheduled-observer-manual-pending",
+      "status": "killed"
+    },
+    {
+      "name": "b-backfill-approximate-marking",
       "status": "killed"
     }
   ]

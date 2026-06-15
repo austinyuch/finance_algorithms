@@ -1,0 +1,110 @@
+{
+  "approximate": true,
+  "available_date": "2026-06-15",
+  "captured_at": "2026-06-15T00:00:00+00:00",
+  "claim_boundary": "no_alpha_claim",
+  "fail": 6,
+  "kind": "historical_backfill_manifest",
+  "ok": 0,
+  "since": "1990-01-01",
+  "skip": 18,
+  "sources": [
+    {
+      "source": "yahoo:^GSPC",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:^IXIC",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:SPY",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:AGG",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:TLT",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:GLD",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:DBC",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:BTC-USD",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:2330.TW",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:^TWII",
+      "status": "skip"
+    },
+    {
+      "source": "yahoo:TWD=X",
+      "status": "skip"
+    },
+    {
+      "source": "fred:FEDFUNDS",
+      "status": "skip"
+    },
+    {
+      "source": "fred:CPIAUCSL",
+      "status": "skip"
+    },
+    {
+      "source": "fred:GDPC1",
+      "status": "skip"
+    },
+    {
+      "source": "fred:DGS10",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "fred:DGS2",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "fred:T10Y2Y",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "fred:UNRATE",
+      "status": "skip"
+    },
+    {
+      "source": "fred:SP500",
+      "status": "skip"
+    },
+    {
+      "source": "fred:NASDAQCOM",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "fred:PCOPPUSDM",
+      "status": "skip"
+    },
+    {
+      "source": "fred:DCOILWTICO",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "fred:DEXTAUS",
+      "status": "fail:ReadTimeout"
+    },
+    {
+      "source": "noaa:oni",
+      "status": "skip"
+    }
+  ],
+  "until": "2026-06-15"
+}

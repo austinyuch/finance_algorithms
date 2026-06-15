@@ -90,11 +90,16 @@ def test_cli_min_assets_two_with_one_asset_fails_closed(tmp_path: Path):
 def test_cli_degenerate_flat_oos_fails_closed(tmp_path: Path):
     # True-PIT single-capture vintage is invisible to historical as-ofs -> flat
     # OOS -> the CLI must fail closed (degenerate), not emit a "computed" claim.
+    # CR-B21: the historical backfill writes is_approximate=true deep-history
+    # records into VINTAGE_ROOT; genuine true-PIT excludes them via strict mode
+    # (the backfill must never contaminate a strict-PIT run), leaving only the
+    # single-capture daily snapshots -> still degenerate.
     from quantlab.data.vintage import build_provider_from_vintage
 
     mod = _load()
     out = tmp_path / "art.json"
-    provider = build_provider_from_vintage(mod.VINTAGE_ROOT, fred_price_series={"SP500"})  # true PIT
+    provider = build_provider_from_vintage(
+        mod.VINTAGE_ROOT, fred_price_series={"SP500"}, strict=True)  # true PIT (backfill excluded)
     rc = mod.run_real_data_oos(provider, generated_at="t", out=out)
     assert rc == 2
     artifact = json.loads(out.read_text())

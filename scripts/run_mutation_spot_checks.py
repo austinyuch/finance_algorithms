@@ -649,7 +649,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**110/110 configured/killed**, including CR-RDO-004 real-data OOS sampling-frequency guard, CR-A0 event replay, and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**111/111 configured/killed**, including CR-B21 historical-backfill honesty-boundary guard, CR-RDO-004 real-data OOS sampling-frequency guard, CR-A0 event replay, and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -657,7 +657,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 367 suite evidence",
+        original="current registries use 374 suite evidence",
         mutated="current registries use 275 suite evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -933,6 +933,14 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         mutated='status = "proven"',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_daily_snapshot.py::test_scheduled_run_observer_keeps_manual_dispatch_as_pending"),
+    ),
+    MutationSpec(
+        name="b-backfill-approximate-marking",
+        path="scripts/backfill_history.py",
+        original='"is_approximate": True,   # NOT true PIT — fetched today, macro is revised',
+        mutated='"is_approximate": False,   # NOT true PIT — fetched today, macro is revised',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_backfill_history.py::test_backfill_marks_approximate_and_backfill"),
     ),
 )
 

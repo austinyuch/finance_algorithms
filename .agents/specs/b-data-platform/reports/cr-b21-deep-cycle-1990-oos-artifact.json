@@ -1,0 +1,83 @@
+{
+  "artifact_kind": "real_data_oos_backtest_artifact",
+  "artifact_uri": "file://.agents/specs/b-data-platform/reports/cr-b21-deep-cycle-1990-oos-artifact.json",
+  "checksum": "bdd4bbce9b9fff3d5137cdc7fbbfb049225d09d140cfd10b6155ad0c608a49fc",
+  "claim_boundary": "no_alpha_claim",
+  "generated_at": "2026-06-15T00:00:00+00:00",
+  "metric_authority": "out_of_sample_net_only",
+  "report": {
+    "asof_window": {
+      "end": "2026-06-12",
+      "start": "1990-01-02"
+    },
+    "asset_set": [
+      "^GSPC",
+      "^IXIC"
+    ],
+    "availability_mode": "approximate_event_date",
+    "claim_boundary": "no_alpha_claim",
+    "cost_config": {
+      "commission_bps": 5,
+      "fx_spread_bps": 0,
+      "slippage_bps": 5,
+      "tw_transaction_tax_bps": 0,
+      "us_dividend_withholding_pct": 0
+    },
+    "data_provenance": {
+      "asset_count": 2,
+      "availability_mode": "approximate_event_date",
+      "cotemporal_universe": [
+        "^GSPC",
+        "^IXIC"
+      ],
+      "history_end": "2026-06-12",
+      "history_span_months": 437.2567,
+      "history_start": "1990-01-02",
+      "overlap_end": "2026-06-12",
+      "overlap_months": 437.2567,
+      "overlap_start": "1990-01-02",
+      "sampling_frequency": {
+        "by_symbol": {
+          "^GSPC": "daily",
+          "^IXIC": "daily"
+        },
+        "coarsest_cadence": "daily",
+        "coarsest_native_days": 1.0,
+        "homogeneous": true,
+        "rebalance": "monthly",
+        "rebalance_days": 30.4375
+      },
+      "universe_asof": [
+        "2330.TW",
+        "AGG",
+        "BTC-USD",
+        "DBC",
+        "GLD",
+        "SPY",
+        "TLT",
+        "TWD=X",
+        "^GSPC",
+        "^IXIC",
+        "^TWII"
+      ]
+    },
+    "metric_authority": "out_of_sample_net_only",
+    "rows": [
+      {
+        "is_baseline": true,
+        "oos_net_sharpe": 0.7007069698093508,
+        "run_id": "",
+        "strategy_name": "BuyAndHold"
+      },
+      {
+        "is_baseline": false,
+        "oos_net_sharpe": 0.22641574445034762,
+        "run_id": "",
+        "strategy_name": "SmaTimingStrategy"
+      }
+    ],
+    "status": "computed"
+  },
+  "row_count": 2,
+  "status": "computed"
+}
