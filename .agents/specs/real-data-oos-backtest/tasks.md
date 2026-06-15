@@ -66,6 +66,6 @@ TDD complete; merged via PR #95 (`dev`==`main`).
   `scripts/run_mutation_spot_checks.py` (flip the oversampling `>`); confirm killed.
 - [x] **M5 [registry] GREEN** — `quantlab/TESTS.md` + `.agents/specs/TESTS.md` rows;
   count resync (pytest 355→367, mutation 109→110) across governance surfaces.
-- [x] **M6 [gates + cascade]** — full suite 367, mutation 110/110, mypy clean,
+- [x] **M6 [gates + cascade]** — full suite 374, mutation 111/111, mypy clean,
   lint-imports KEPT, frontend 46, governance guards 25, visual 0-pixel; dashboard
   dataHash → `c73d7c88`; public hosting re-proven (PR #97).
