@@ -1,18 +1,9 @@
-# Frontend live service smoke — LIVE capture (2026-06-14)
-# Command: cd frontend && npm run smoke   (scripts/public-demo-smoke.mjs)
-# Ephemeral `next start` → fetches / and /api/showcase → asserts → shuts down.
+# Frontend showcase dashboard — smoke (live-captured 2026-06-15)
+# Web-UI lane (secondary) — ephemeral 127.0.0.1 start, validates / and /api/showcase; no port allocation
 
-> next start --hostname 127.0.0.1 --port 45227
+> node scripts/public-demo-smoke.mjs
+> next start --hostname 127.0.0.1 --port 38685
 ▲ Next.js 16.2.9
-- Local:   http://127.0.0.1:45227
-✓ Ready in 54ms
-public-demo-smoke: PASS http://127.0.0.1:45227
-smoke_exit=0
-
-# Result: the Next.js dashboard server started and served both the dashboard
-# HTML (/) and the real /api/showcase payload (the committed canonical
-# local_result_store scenario, dataHash c73d7c88…). Evidence Source:
-# live_command_output (real server start + endpoint fetch). Coverage Tier:
-# hybrid. Readiness State: PASS (f-public-demo-readiness/review.md). The
-# dashboard publicHosting self-claim stays not_proven by static-artifact
-# contract; local_demo_only / no_alpha_claim.
+- Local:         http://127.0.0.1:38685
+✓ Ready in 51ms
+public-demo-smoke: PASS http://127.0.0.1:38685

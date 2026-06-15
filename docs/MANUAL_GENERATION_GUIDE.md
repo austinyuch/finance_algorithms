@@ -60,12 +60,30 @@ uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
 #      .agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json)
 ```
 
+Flow 6 — historical backfill & multi-cycle study (CR-B21):
+
+```bash
+uv run python scripts/backfill_history.py --since 1990-01-01   # idempotent; marks approximate
+#   → backend-historical-backfill-01-demo.txt  (manifest 18/24 sources + deep
+#      {^GSPC,^IXIC} 1990→2026 437-month computed run, 0.7007 vs 0.2264)
+#   → backend-historical-backfill-02-drawdowns.txt  (regime drawdown validation:
+#      dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25% — matches the real record)
+```
+
+The backfill is `is_approximate=true` research data (NOT true PIT); **strict mode
+excludes it**, only `approximate_availability=True` exposes it, `no_alpha_claim`.
+Because the backfill widened the co-temporal universe, Flow 5's default run now
+selects **12 co-temporal assets** (2016→2026) instead of the prior SP500-only
+slice; the spec's single-index canonical artifact (`real-data-oos-artifact.json`,
+checksum `421c7fd2…`) is kept as the earlier pinned record.
+
 The real-data OOS evidence is `report_artifact` + `live_command_output`
 (`no_alpha_claim`, mechanism not strategy verdict, `approximate_event_date` ≠ true
 PIT). The committed `real-data-oos-demo-01-run.txt` was **live-captured on
-2026-06-14** (the computed SP500 run plus both real fail-closed paths). When live
-re-exec is unavailable, regenerate by reconstructing the transcript from the
-committed real computed artifact and record a `Fallback Reason` on the asset block.
+2026-06-15** (the computed 12-asset co-temporal run plus both real fail-closed
+paths). When live re-exec is unavailable, regenerate by reconstructing the
+transcript from the committed real computed artifact and record a `Fallback
+Reason` on the asset block.
 
 Authoritative gates (recorded in the manual evidence panel):
 
@@ -102,7 +120,7 @@ allocation. The committed dashboard screenshot in `docs/manual/assets/` is
 `dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
 
 Public hosting is currently observed `proven` **point-in-time** at
-`dataHash c73d7c88…` (`docs/deployment-manifest.json`,
+`dataHash 0f170441…` (`docs/deployment-manifest.json`,
 `docs/public-hosting-probe.json`, observed `2026-06-14T09:39Z`). The dashboard
 payload's own `publicHosting` self-claim stays `not_proven` by design — a static
 artifact cannot self-claim its deployment. Freshness is deterministic
