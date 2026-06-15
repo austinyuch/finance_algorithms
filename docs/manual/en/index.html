@@ -51,6 +51,7 @@
   <a href="#f3">3 · Showcase dashboard</a>
   <a href="#f4">4 · Legacy API</a>
   <a href="#f5">5 · Real-data OOS-net</a>
+  <a href="#f6">6 · Historical backfill</a>
   <h2>Reference</h2>
   <a href="#gaps">Visual gap inventory</a>
   <a href="../zh-tw/index.html">繁體中文版</a>
@@ -138,7 +139,7 @@ npm run smoke                  <span style="color:#7d90b0"># local HTTP smoke (a
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-pass">hosting proven (point-in-time)</span><span class="badge b-mock">local_demo_only</span><br>
       <b>Evidence Source:</b> live_screenshot (chromium-headless) + static_export + canonical_local_result_store · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> f-demo-hardening/review.md, f-public-static-showcase/review.md, docs/public-hosting-probe.json<br>
-      <b>Resolved:</b> browser screenshot captured; visual diff repo-baseline pixel-backed (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); export readiness panel now reports <code>visualRegression=proven</code> (CR-FPS-009). Public-hosting probe observed HTTP 200, matched hash + manifest contract, fresh observation (<code>status=proven</code>, <code>dataHash c73d7c88…</code>, CR-FPS-010); freshness is deterministic and stale evidence downgrades rather than crashing (CR-FPS-011). The dashboard payload's own <code>publicHosting</code> self-claim <b>stays <code>not_proven</code></b> by design — a static artifact cannot self-claim its deployment; <code>proven</code> is point-in-time and lives only in the observed probe/manifest.
+      <b>Resolved:</b> browser screenshot captured; visual diff repo-baseline pixel-backed (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); export readiness panel now reports <code>visualRegression=proven</code> (CR-FPS-009). Public-hosting probe observed HTTP 200, matched hash + manifest contract, fresh observation (<code>status=proven</code>, <code>dataHash 0f170441…</code>, CR-FPS-010); freshness is deterministic and stale evidence downgrades rather than crashing (CR-FPS-011). The dashboard payload's own <code>publicHosting</code> self-claim <b>stays <code>not_proven</code></b> by design — a static artifact cannot self-claim its deployment; <code>proven</code> is point-in-time and lives only in the observed probe/manifest.
     </div>
   </section>
 
@@ -156,19 +157,20 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224</pre>
 
   <section class="card" id="f5">
     <h2>Flow 5 · Real-data OOS-net backtest</h2>
-    <p><b>Who/when:</b> a researcher runs a backtest on <b>real point-in-time vintage data</b> (not synthetic), comparing a timing candidate vs a dumb baseline on the SP500 index, ranked by out-of-sample <em>net</em> Sharpe.</p>
+    <p><b>Who/when:</b> a researcher runs a backtest on <b>real point-in-time vintage data</b> (not synthetic), comparing a candidate vs a dumb baseline, ranked by out-of-sample <em>net</em> Sharpe. Since the CR-B21 deep backfill (<a href="#f6">Flow 6</a>) the default approximate run now selects a <b>12-asset co-temporal universe</b> instead of the prior SP500-only slice.</p>
     <pre>uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json</pre>
     <p>Live output (<code>assets/real-data-oos-demo-01-run.txt</code>; full artifact <a href="../assets/real-data-oos-demo-02-artifact.json">real-data-oos-demo-02-artifact.json</a>):</p>
     <pre>EXIT=0
 status            = computed
-asset_set         = ["SP500"]
+asset_set         = 12 co-temporal assets
+                    <span style="color:#7d90b0">(^GSPC, ^IXIC, SPY, AGG, TLT, GLD, DBC, BTC-USD, 2330.TW, ^TWII, TWD=X, SP500)</span>
 availability_mode = approximate_event_date   <span style="color:#7d90b0">(NOT true PIT)</span>
 metric_authority  = out_of_sample_net_only
-asof_window       = 2016-06-13 .. 2026-06-11
+asof_window       = 2016-06-13 .. 2026-06-12   <span style="color:#7d90b0">(co-temporal window; deep 1990+ available — Flow 6 — pinned by youngest asset BTC-USD)</span>
 rows (ranked OOS-net Sharpe):
-  BuyAndHold        0.8770   <span style="color:#7d90b0">(baseline)</span>
-  SmaTimingStrategy 0.8082</pre>
-    <p><b>How to read it:</b> composes the existing A0 engine + PIT vintage provider over <b>real</b> SP500 data. Buy-and-hold beats SMA-timing net of cost across the 2016–2026 bull run (SMA-timing carries lower volatility). <b>Mechanism evidence on real source data — not a strategy verdict and not an alpha claim.</b> The <code>approximate_event_date</code> mode is recorded explicitly because it is <b>NOT true PIT</b> and may introduce lookahead.</p>
+  BuyAndHold        1.2664   <span style="color:#7d90b0">(baseline)</span>
+  RandomStrategy    1.0860</pre>
+    <p><b>How to read it:</b> composes the existing A0 engine + PIT vintage provider over <b>real</b> multi-asset data. The candidate (a cross-sectional <code>RandomStrategy</code> when ≥2 assets qualify) does not beat buy-and-hold net of cost. <b>Mechanism evidence on real source data — not a strategy verdict and not an alpha claim.</b> The <code>approximate_event_date</code> mode is recorded explicitly because it is <b>NOT true PIT</b> and may introduce lookahead.</p>
     <h3>Fail-closed honesty guards</h3>
     <pre><span style="color:#7d90b0"># CR-RDO-004 sampling-frequency oversampling (mixed daily+monthly universe)</span>
 [fail-closed] oversampled real-data OOS: rebalance cadence 'monthly' is finer ...
@@ -177,24 +179,55 @@ rows (ranked OOS-net Sharpe):
 <span style="color:#7d90b0"># Degeneracy (true-PIT single-capture data invisible to historical as-ofs → flat OOS)</span>
 [fail-closed] degenerate real-data OOS: all strategy OOS net return series are flat ...
   → reason=degenerate_flat_oos   EXIT=2</pre>
-    <p>The default single-index SP500 run is homogeneous (<code>coarsest_cadence=daily</code>, <code>rebalance=monthly</code>), so it passes both guards and stays <code>computed</code>.</p>
+    <p>The default run's 12 co-temporal assets are all daily-native (<code>coarsest_cadence=daily</code>, <code>rebalance=monthly</code>), so it passes both guards and stays <code>computed</code>.</p>
     <div class="evidence">
       <span class="badge b-pass">PASS (Review PASSED)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
-      <b>Evidence Source:</b> report_artifact (committed real computed run, checksum <code>421c7fd2…</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> real-data-oos-backtest/review.md, cr-rdo-003, cr-rdo-004<br>
-      <b>Captured:</b> live CLI re-execution on 2026-06-14 over real vintage data — the computed SP500 run plus both fail-closed paths (degeneracy, CR-RDO-004 sampling-frequency). Artifact JSON (<code>.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json</code>) is the byte-for-byte committed real run. <code>MOCK_DOMINANT_EVIDENCE</code> applies to the data tier only (real but local-only, <code>approximate_event_date</code>, not true PIT). <code>no_alpha_claim</code>; mechanism not strategy verdict.
+      <b>Evidence Source:</b> live_command_output + report_artifact (live 12-asset capture <code>real-data-oos-demo-02-artifact.json</code>; the spec's earlier single-index canonical run is committed at <code>real-data-oos-artifact.json</code>, checksum <code>421c7fd2…</code>) · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> real-data-oos-backtest/review.md, cr-rdo-003, cr-rdo-004, cr-b21<br>
+      <b>Captured:</b> live CLI re-execution on 2026-06-15 over real vintage data — the computed 12-asset co-temporal run (universe widened from SP500-only by the CR-B21 backfill) plus both fail-closed paths (degeneracy, CR-RDO-004 sampling-frequency). <code>MOCK_DOMINANT_EVIDENCE</code> applies to the data tier only (real but local-only, <code>approximate_event_date</code>, not true PIT). <code>no_alpha_claim</code>; mechanism not strategy verdict.
+    </div>
+  </section>
+
+  <section class="card" id="f6">
+    <h2>Flow 6 · Historical backfill &amp; multi-cycle study (CR-B21)</h2>
+    <p><b>Who/when:</b> a researcher wants to study <b>multiple business cycles</b> (the 2000 dot-com crash, 2008 GFC, COVID, 2022) — coverage the few real-time daily snapshots can't provide. CR-B21 backfills deep history (Yahoo <code>period1=1990</code>, full FRED series, NOAA ONI) into <code>data/vintage/raw/backfill-1990-01-01/</code>.</p>
+    <pre>uv run python scripts/backfill_history.py --since 1990-01-01   <span style="color:#7d90b0"># idempotent</span></pre>
+    <div class="alert">⚠️ <b>Honesty boundary (non-negotiable):</b> history fetched today is <b>NOT true point-in-time</b> — every record is <code>is_approximate=true</code> + <code>backfill=true</code> (<code>available_date</code>=capture date; FRED macro is latest-<em>revised</em>). <b>Strict PIT mode excludes the backfill entirely</b>; only <code>approximate_availability=True</code> (research mode) exposes it, under <code>no_alpha_claim</code>. It never makes anything true-PIT and never asserts alpha.</div>
+    <p>Manifest + deep multi-cycle backtest (<code>assets/backend-historical-backfill-01-demo.txt</code>):</p>
+    <pre>_backfill_manifest.json : approximate=true, claim_boundary=no_alpha_claim,
+                          since=1990-01-01, ok+skip=18/24, fail=6
+fail <span style="color:#7d90b0">(transient FRED throttle, idempotently completable)</span>:
+  DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+
+deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
+  BuyAndHold         oos_net_sharpe = 0.7007  <span style="color:#7d90b0">(baseline)</span>
+  SmaTimingStrategy  oos_net_sharpe = 0.2264</pre>
+    <p><b>Data validation</b> (<code>assets/backend-historical-backfill-02-drawdowns.txt</code>) — the backfilled history is not just <em>present</em> but historically <em>correct</em>; peak-to-trough drawdowns match the real record:</p>
+    <table>
+      <tr><th>Regime</th><th>Index</th><th>Max drawdown</th></tr>
+      <tr><td>Dot-com crash</td><td><code>^GSPC</code> / <code>^IXIC</code></td><td>−49.1% / −77.9%</td></tr>
+      <tr><td>Global Financial Crisis</td><td><code>^GSPC</code></td><td>−56.8%</td></tr>
+      <tr><td>COVID crash</td><td><code>^GSPC</code></td><td>−33.9%</td></tr>
+      <tr><td>2022 rate-hike bear</td><td><code>^GSPC</code></td><td>−25.4%</td></tr>
+    </table>
+    <p><code>^GSPC</code> coverage: <b>9,179 daily rows, 1990-01-02 → 2026-06-12</b>.</p>
+    <div class="evidence">
+      <span class="badge b-pass">PASS (Review PASSED · repo-side + live run)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source:</b> report_artifact (<code>_backfill_manifest.json</code>, <code>cr-b21-deep-cycle-1990-oos-artifact.json</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> b-data-platform/change-requests/cr-b21-historical-backfill.md, b-data-platform/review.md<br>
+      <b>Captured:</b> live CLI run on 2026-06-15; 18/24 sources captured, 6 FRED rate/FX series pending an idempotent re-run (FRED IP-throttle). <code>MOCK_DOMINANT_EVIDENCE</code> — real fetched history but <code>is_approximate=true</code> research data (NOT true PIT), strict-excluded; <code>no_alpha_claim</code>.
     </div>
   </section>
 
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
-    <p><b>Render validation (2026-06-14, headless chromium 1440×2400):</b> this manual (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal code blocks, evidence captions and warning badges (<code>PASS</code>, <code>MOCK_DOMINANT_EVIDENCE</code>) intact, no broken CSS or missing assets. The review's UX-flow diagram is now a <b>self-contained inline SVG</b> (renders offline / <code>file://</code>, no CDN or client-side JS, with an accessible text-equivalent caption), so there is no remaining visual residual.</p>
-    <p><b>Gaps resolved since last check (CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-14):</b></p>
+    <p><b>Render validation (2026-06-15, headless chromium 1440×2600):</b> this manual (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal code blocks, evidence captions and warning badges (<code>PASS</code>, <code>MOCK_DOMINANT_EVIDENCE</code>) intact, no broken CSS or missing assets. The review's UX-flow diagram is now a <b>self-contained inline SVG</b> (renders offline / <code>file://</code>, no CDN or client-side JS, with an accessible text-equivalent caption), so there is no remaining visual residual.</p>
+    <p><b>Gaps resolved since last check (CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-15):</b></p>
     <ul>
-      <li><b>Front + back services live-verified (2026-06-14):</b> the Next.js dashboard smoke passed against an ephemeral <code>next start</code> (served <code>/</code> and the real <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>), and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>assets/legacy-api-01.txt</code>), so the "started services" evidence is now <code>live_command_output</code> rather than only the committed payload.</li>
-      <li><b>Sampling-frequency honesty gap closed (CR-RDO-004):</b> real-data OOS now estimates each asset's native cadence and <b>fails closed</b> (<code>reason=oversampled_vs_native_frequency</code>) when the rebalance cadence is finer than the coarsest selected asset, instead of forward-filling stale prices into fabricated flat returns that inflate Sharpe. The default single-index SP500 run is unaffected and stays <code>computed</code> (Flow 5).</li>
+      <li><b>Deep historical backfill landed (CR-B21) — NEW Flow 6:</b> the research vintage now reaches <b>1990</b> (Yahoo deep indices + full FRED + NOAA, <code>is_approximate=true</code>, strict-excluded, 18/24 sources). It enables a real multi-cycle backtest (deep {^GSPC,^IXIC} 1990→2026, 437 months, <code>computed</code>) and validates against the real record (dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25%). Flow 5's default run consequently widened from SP500-only to a 12-asset co-temporal universe. <code>no_alpha_claim</code>; 6 FRED rate/FX series pending an idempotent re-run (FRED throttle).</li>
+      <li><b>Front + back services live-verified (2026-06-15):</b> the Next.js dashboard smoke passed against an ephemeral <code>next start</code> (served <code>/</code> and the real <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>), and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>assets/legacy-api-01.txt</code>), so the "started services" evidence is now <code>live_command_output</code> rather than only the committed payload.</li>
+      <li><b>Sampling-frequency honesty gap closed (CR-RDO-004):</b> real-data OOS now estimates each asset's native cadence and <b>fails closed</b> (<code>reason=oversampled_vs_native_frequency</code>) when the rebalance cadence is finer than the coarsest selected asset, instead of forward-filling stale prices into fabricated flat returns that inflate Sharpe. The default run (now 12 co-temporal daily-native assets) is unaffected and stays <code>computed</code> (Flow 5).</li>
       <li><b>Browser pixel baseline now real and re-pin-tolerant (CR-FBP-001):</b> the stale-baseline-hash guard fires only when <code>baselineHash != currentHash</code>, so a deterministic re-pin (<code>baselineHash == currentHash</code>, <code>mismatchedPixels == 0</code>) no longer blocks honest UI changes; the tolerant pixel-diff threshold gate is unchanged.</li>
       <li><b>Dashboard visual readiness wired through (CR-FPS-009):</b> the export readiness panel now reports <code>visualRegression=proven</code> from repo-side browser visual diff evidence.</li>
-      <li><b>Public hosting re-proven (CR-FPS-010), point-in-time, at <code>dataHash c73d7c88…</code>:</b> deployed Pages <code>dataHash</code> matches the committed manifest, HTTP 200, hash/contract matched, fresh observation (<code>2026-06-14T09:39Z</code>, <code>status=proven</code>). The dashboard payload's <code>publicHosting</code> self-claim stays <code>not_proven</code> by design.</li>
+      <li><b>Public hosting re-proven, point-in-time, at <code>dataHash 0f170441…</code>:</b> after the CR-B21 dashboard refresh landed on <code>main</code>, GitHub Pages redeployed and the deployed <code>dataHash</code> matches the committed manifest, HTTP 200, hash/contract matched, fresh observation (<code>2026-06-15T07:07Z</code>, <code>status=proven</code>). The dashboard payload's <code>publicHosting</code> self-claim stays <code>not_proven</code> by design.</li>
       <li><b>Hosting-freshness time-bomb removed (CR-FPS-011):</b> freshness is classified deterministically against an injected <code>asof</code>; stale committed evidence downgrades to <code>configured_not_observed</code> rather than crashing the build/suite ~24h after a re-prove.</li>
     </ul>
     <p><b>Resolved earlier (2026-06-11 → 2026-06-13):</b> tests now <b>374 passed</b> after adding the CR-RDO-004 real-data OOS sampling-frequency oversampling fail-closed guard, isolating PyTorch LSTM to the optional lane, and adding current-governance stale-evidence guards; mypy clean over 58 files; mutation spot checks 111/111 configured/killed, including the CR-RDO-004 sampling-frequency oversampling guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift, and E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/observed-at UTC/drift-threshold gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection; frontend mutation 26/26 killed including <code>frontend-smoke-html-api-parity-regression</code>, so local smoke covers HTML/API payload parity; first committed <code>docs/</code> manual+review set; <b>live chromium-headless screenshot captured</b> (<code>browser-visual.png</code> <code>proven</code>); <b>dashboard payload now generated from local result-store records</b> via CR-FPS-006; branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash; <b>visual diff repo-baseline pixel-backed</b> (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); <b>scoped live snapshot write smoke proven</b> via CR-B12; <b>broad source-quorum gate added</b> via CR-B18 and <b>live quorum proof captured</b> via CR-B19; <b>Stooq restoration proof fails closed</b> via CR-B20.</p>
@@ -202,7 +235,7 @@ rows (ranked OOS-net Sharpe):
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
       <tr><td>Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof</td><td>Low</td><td>b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md</td></tr>
-      <tr><td>Dashboard payload <code>publicHosting</code> self-claim stays <code>not_proven</code> by contract (live deployment is <code>proven</code> only point-in-time via the committed probe/manifest, currently <code>c73d7c88…</code>)</td><td>Low</td><td>frontend/out/index.html, docs/public-hosting-probe.json</td></tr>
+      <tr><td>Dashboard payload <code>publicHosting</code> self-claim stays <code>not_proven</code> by contract (live deployment is <code>proven</code> only point-in-time via the committed probe/manifest, currently <code>0f170441…</code>)</td><td>Low</td><td>frontend/out/index.html, docs/public-hosting-probe.json</td></tr>
       <tr><td>Real-data OOS uses <code>approximate_event_date</code> (not true PIT); a co-temporal multi-asset default universe with true vintage history is the follow-up</td><td>Low</td><td>real-data-oos-backtest/review.md</td></tr>
       <tr><td>Vintage co-temporal multi-asset readiness still accumulating (single-capture FRED; daily-vintage backtest deferred)</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>
@@ -210,7 +243,7 @@ rows (ranked OOS-net Sharpe):
   </section>
 
   <footer>
-    Generated 2026-06-14 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
+    Generated 2026-06-15 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
   </footer>
 </main>
 </div>

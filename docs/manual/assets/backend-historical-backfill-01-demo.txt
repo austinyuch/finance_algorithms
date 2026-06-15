@@ -1,0 +1,26 @@
+# CR-B21 historical backfill — manifest + deep multi-cycle demo (live-captured 2026-06-15)
+# Backend/CLI lane evidence — report_artifact + live_command_output; no_alpha_claim; approximate (NOT true PIT)
+
+$ cat data/vintage/raw/backfill-1990-01-01/_backfill_manifest.json  # (summary)
+{
+  "kind": "historical_backfill_manifest",
+  "approximate": true,
+  "claim_boundary": "no_alpha_claim",
+  "since": "1990-01-01",
+  "until": "2026-06-15",
+  "ok": 0,
+  "skip": 18,
+  "fail": 6
+}
+failed_sources: ['fred:DGS10', 'fred:DGS2', 'fred:T10Y2Y', 'fred:NASDAQCOM', 'fred:DCOILWTICO', 'fred:DEXTAUS']
+
+$ uv run python - <<'PY'  # deep multi-cycle backtest over the approximate backfill
+# build_provider_from_vintage(approximate_availability=True), deep {^GSPC,^IXIC} 1990->2026
+status           : computed
+availability_mode: approximate_event_date
+claim_boundary   : no_alpha_claim
+asof_window      : 1990-01-02 -> 2026-06-12 (437 months)
+universe         : ['^GSPC', '^IXIC']
+  BuyAndHold         oos_net_sharpe=0.7007  baseline=True
+  SmaTimingStrategy  oos_net_sharpe=0.2264  baseline=False
+checksum         : bdd4bbce9b9fff3d ...

@@ -1,17 +1,28 @@
 {
   "artifact_kind": "real_data_oos_backtest_artifact",
   "artifact_uri": "file:///tmp/rdo-demo.json",
-  "checksum": "421c7fd256b38a9134819c9f3b786f2270aaa3310ed1ecf9089a908de8166767",
+  "checksum": "087c5e21c3ca7a8520b6352317566be944c711c004f45e8269712af839640a32",
   "claim_boundary": "no_alpha_claim",
-  "generated_at": "2026-06-14T00:00:00Z",
+  "generated_at": "2026-06-15T00:00:00+00:00",
   "metric_authority": "out_of_sample_net_only",
   "report": {
     "asof_window": {
-      "end": "2026-06-11",
+      "end": "2026-06-12",
       "start": "2016-06-13"
     },
     "asset_set": [
-      "SP500"
+      "2330.TW",
+      "AGG",
+      "BTC-USD",
+      "DBC",
+      "GLD",
+      "SP500",
+      "SPY",
+      "TLT",
+      "TWD=X",
+      "^GSPC",
+      "^IXIC",
+      "^TWII"
     ],
     "availability_mode": "approximate_event_date",
     "claim_boundary": "no_alpha_claim",
@@ -23,20 +34,42 @@
       "us_dividend_withholding_pct": 0
     },
     "data_provenance": {
-      "asset_count": 3,
+      "asset_count": 12,
       "availability_mode": "approximate_event_date",
       "cotemporal_universe": [
-        "SP500"
+        "2330.TW",
+        "AGG",
+        "BTC-USD",
+        "DBC",
+        "GLD",
+        "SP500",
+        "SPY",
+        "TLT",
+        "TWD=X",
+        "^GSPC",
+        "^IXIC",
+        "^TWII"
       ],
-      "history_end": "2026-06-12",
-      "history_span_months": 119.9507,
-      "history_start": "2016-06-13",
-      "overlap_end": "2026-06-11",
-      "overlap_months": 119.9179,
+      "history_end": "2026-06-14",
+      "history_span_months": 437.3552,
+      "history_start": "1990-01-02",
+      "overlap_end": "2026-06-12",
+      "overlap_months": 119.9507,
       "overlap_start": "2016-06-13",
       "sampling_frequency": {
         "by_symbol": {
-          "SP500": "daily"
+          "2330.TW": "daily",
+          "AGG": "daily",
+          "BTC-USD": "daily",
+          "DBC": "daily",
+          "GLD": "daily",
+          "SP500": "daily",
+          "SPY": "daily",
+          "TLT": "daily",
+          "TWD=X": "daily",
+          "^GSPC": "daily",
+          "^IXIC": "daily",
+          "^TWII": "daily"
         },
         "coarsest_cadence": "daily",
         "coarsest_native_days": 1.0,
@@ -46,7 +79,16 @@
       },
       "universe_asof": [
         "2330.TW",
+        "AGG",
+        "BTC-USD",
+        "DBC",
+        "GLD",
         "SP500",
+        "SPY",
+        "TLT",
+        "TWD=X",
+        "^GSPC",
+        "^IXIC",
         "^TWII"
       ]
     },
@@ -54,15 +96,15 @@
     "rows": [
       {
         "is_baseline": true,
-        "oos_net_sharpe": 0.8769832863084156,
+        "oos_net_sharpe": 1.2663862571122646,
         "run_id": "",
         "strategy_name": "BuyAndHold"
       },
       {
         "is_baseline": false,
-        "oos_net_sharpe": 0.8081709328199352,
+        "oos_net_sharpe": 1.0859581829151819,
         "run_id": "",
-        "strategy_name": "SmaTimingStrategy"
+        "strategy_name": "RandomStrategy"
       }
     ],
     "status": "computed"

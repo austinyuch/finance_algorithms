@@ -1,0 +1,11 @@
+# CR-B21 regime drawdown validation (live-computed 2026-06-15 from the deep backfill)
+# Proves the 1990+ history is historically CORRECT, not merely present. no_alpha_claim.
+
+Regime                     Index    Peak         Trough          MaxDD
+Dot-com crash              ^GSPC    2000-03-24   2002-10-09     -49.1%
+Dot-com crash              ^IXIC    2000-03-10   2002-10-09     -77.9%
+Global Financial Crisis    ^GSPC    2007-10-09   2009-03-09     -56.8%
+COVID crash                ^GSPC    2020-02-19   2020-03-23     -33.9%
+2022 rate-hike bear        ^GSPC    2022-01-03   2022-10-12     -25.4%
+
+^GSPC coverage: 9179 daily rows, 1990-01-02 -> 2026-06-12

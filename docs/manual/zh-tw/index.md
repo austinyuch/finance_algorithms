@@ -17,6 +17,7 @@
 | 看 dashboard 的審閱者 | [流程 3 — Showcase 儀表板](#流程-3--showcase-儀表板) |
 | 既有 API 使用者 | [流程 4 — 金字塔計算機 API](#流程-4--既有金字塔計算機-api) |
 | 跑真實資料 OOS-net 回測的研究者 | [流程 5 — 真實資料 OOS-net 回測](#流程-5--真實資料-oos-net-回測) |
+| 研究多個景氣循環的研究者 | [流程 6 — 歷史回補與多週期研究](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
 
 ## 快速開始 / Starter Assets
 
@@ -147,14 +148,14 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 視覺精緻度。Live `npm run dev` 才會套用 `app/globals.css`。
 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；public hosting 已觀測 `proven`（**point-in-time**，於 `dataHash c73d7c88…`，`f-public-static-showcase/review.md`、`docs/public-hosting-probe.json`）
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；public hosting 已觀測 `proven`（**point-in-time**，於 `dataHash 0f170441…`，`f-public-static-showcase/review.md`、`docs/public-hosting-probe.json`）
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`、`.agents/specs/f-public-static-showcase/review.md`、`docs/deployment-manifest.json`
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
 > - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
 >   mismatched pixels，threshold `0.001`），export readiness 面板現回報
 >   `visualRegression=proven`（CR-FPS-009）。Public-hosting probe 已觀測 HTTP 200、
 >   matched hash + manifest contract、fresh observation（`status=proven`、
->   `dataHash c73d7c88…`，CR-FPS-010）；freshness 現為 deterministic，過期證據會降級
+>   `dataHash 0f170441…`，CR-FPS-010）；freshness 現為 deterministic，過期證據會降級
 >   而非 crash（CR-FPS-011）。Dashboard payload 自身的 `publicHosting` self-claim
 >   依設計**維持 `not_proven`** — static artifact 不能自我宣稱其部署；`proven` 狀態
 >   僅存在於觀測到的 probe/manifest，且為 point-in-time。
@@ -186,8 +187,9 @@ uv run uvicorn api:app --host 127.0.0.1 --port 2224
 ## 流程 5 — 真實資料 OOS-net 回測
 
 **誰／何時：** 研究者在**真實 point-in-time vintage 資料**（非合成）上跑回測，
-以 SP500 市場指數比較一個 timing 候選策略與笨 baseline，依樣本外**淨值** Sharpe
-排名。
+比較一個候選策略與笨 baseline，依樣本外**淨值** Sharpe 排名。自 CR-B21 deep
+backfill（見流程 6）起，預設的 approximate run 現在會選取 **12 資產的 co-temporal
+universe**，取代先前僅 SP500 的切片。
 
 ```bash
 uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
@@ -199,20 +201,23 @@ uv run python scripts/run_real_data_oos_backtest.py --out /tmp/rdo-demo.json
 ```
 EXIT=0
 status            = computed
-asset_set         = ["SP500"]
-availability_mode = approximate_event_date   (非 true PIT)
+asset_set         = 12 co-temporal assets
+                    (^GSPC, ^IXIC, SPY, AGG, TLT, GLD, DBC, BTC-USD, 2330.TW, ^TWII, TWD=X, SP500)
+availability_mode = approximate_event_date   (NOT true PIT)
 metric_authority  = out_of_sample_net_only
-asof_window       = 2016-06-13 .. 2026-06-11
+asof_window       = 2016-06-13 .. 2026-06-12   (co-temporal window；深度 1990+ 歷史
+                    可用 — 見流程 6 — 但共同窗口由最年輕的資產 BTC-USD 釘住)
 rows（依 OOS-net Sharpe 排名）：
-  BuyAndHold        0.8770   (baseline)
-  SmaTimingStrategy 0.8082
+  BuyAndHold        1.2664   (baseline)
+  RandomStrategy    1.0860
 ```
 
-**怎麼讀：** 本切片組合既有 A0 engine + PIT vintage provider，跑在**真實** SP500
-資料上。扣成本後，2016–2026 多頭區間中 buy-and-hold 勝過 SMA-timing（SMA-timing
-波動較低）。這是**真實 source 資料上的 mechanism 證據 — 不是策略勝負判定、也不是
-alpha 宣稱**。CLI 使用 `approximate_event_date` availability（讓單次擷取 vintage 對
-歷史 as-of 可見）；artifact 明確記錄此模式，因為它**非 true PIT**，可能引入 lookahead。
+**怎麼讀：** 本切片組合既有 A0 engine + PIT vintage provider，跑在**真實**多資產
+資料上。候選策略（當 ≥2 個資產符合資格時的 cross-sectional `RandomStrategy`）扣
+成本後並未勝過 buy-and-hold。這是**真實 source 資料上的 mechanism 證據 — 不是策略
+勝負判定、也不是 alpha 宣稱**。CLI 使用 `approximate_event_date` availability（讓
+vintage 對歷史 as-of 可見）；artifact 明確記錄此模式，因為它**非 true PIT**，可能
+引入 lookahead。
 
 ### Fail-closed 誠實守門
 
@@ -230,38 +235,105 @@ CLI 絕不輸出誤導性的 `computed`。兩個 guard 會 fail closed（exit 2�
   → reason=degenerate_flat_oos   EXIT=2
 ```
 
-預設單一指數 SP500 run 為 homogeneous（`coarsest_cadence=daily`、
+預設 run 的 12 個 co-temporal 資產皆為 daily-native（`coarsest_cadence=daily`、
 `rebalance=monthly`），兩個 guard 都通過、維持 `computed`。
 
-> - Evidence Source: `report_artifact`（已 commit 的真實 computed run
+> - Evidence Source: `live_command_output` + `report_artifact`（live 12 資產
+>   擷取 `assets/real-data-oos-demo-02-artifact.json`；spec 較早的 single-index
+>   canonical run 已 commit 於
 >   `.agents/specs/real-data-oos-backtest/reports/real-data-oos-artifact.json`，
->   checksum `421c7fd2…`）+ `live_command_output`
+>   checksum `421c7fd2…`）
 > - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
 >   PASSED*（`real-data-oos-backtest/review.md`）；live-demo readiness `not_assessed`
 >   （CLI/library 切片，無 served surface）
 > - Source Ref: `.agents/specs/real-data-oos-backtest/review.md`、
 >   `.../change-requests/cr-rdo-003-market-index-availability.md`、
->   `.../change-requests/cr-rdo-004-sampling-frequency-guard.md`
-> - Captured：2026-06-14 live 重跑 CLI（真實 vintage 資料）— 計算出的 SP500 run
->   加上兩條 fail-closed 路徑（degeneracy、CR-RDO-004 sampling-frequency）；
->   artifact JSON 為 byte-for-byte 的已 commit 真實 run。
-> - `MOCK_DOMINANT_EVIDENCE` — 真實 source 資料但 `approximate_event_date`
->   availability（非 true PIT）；`no_alpha_claim`，mechanism 而非策略判定。
+>   `.../change-requests/cr-rdo-004-sampling-frequency-guard.md`、
+>   `.../b-data-platform/change-requests/cr-b21-historical-backfill.md`
+> - Captured：2026-06-15 live 重跑 CLI（真實 vintage 資料）— 計算出的 12 資產
+>   co-temporal run（universe 由 CR-B21 backfill 從僅 SP500 擴展）加上兩條
+>   fail-closed 路徑（degeneracy、CR-RDO-004 sampling-frequency）；非 byte-for-byte。
+> - `MOCK_DOMINANT_EVIDENCE` — 真實 CLI 輸出，跑在真實但 local-only 的 vintage
+>   資料上，`availability_mode=approximate_event_date`（非 true PIT）；
+>   `no_alpha_claim`，mechanism 而非策略判定。
+
+---
+
+## Flow 6 — Historical backfill & multi-cycle study (CR-B21)
+
+**誰／何時：** 研究者想要研究**多個景氣循環**（2000 年 dot-com 崩盤、2008 GFC、
+COVID、2022）— 這是少數即時每日快照無法提供的涵蓋範圍。CR-B21 將深度歷史
+（Yahoo `period1=1990`、完整 FRED 系列、NOAA ONI）回補到
+`data/vintage/raw/backfill-1990-01-01/`。
+
+```bash
+uv run python scripts/backfill_history.py --since 1990-01-01   # idempotent
+```
+
+**誠實邊界（不可妥協）：** 今天抓取的歷史**非 true point-in-time** — 每筆記錄皆為
+`is_approximate=true` + `backfill=true`（`available_date`=擷取日期；FRED 總經為
+latest-*revised*）。**Strict PIT 模式完全排除此 backfill**；只有
+`approximate_availability=True`（research 模式）才會曝露它，且置於 `no_alpha_claim`
+下。它從不把任何東西變成 true-PIT，也從不宣稱 alpha。
+
+Manifest + deep 多週期回測（`assets/backend-historical-backfill-01-demo.txt`）：
+
+```
+_backfill_manifest.json : approximate=true, claim_boundary=no_alpha_claim,
+                          since=1990-01-01, ok+skip=18/24, fail=6
+fail (transient FRED throttle, idempotently completable):
+  DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+
+deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
+  BuyAndHold         oos_net_sharpe = 0.7007  (baseline)
+  SmaTimingStrategy  oos_net_sharpe = 0.2264
+```
+
+**資料驗證**（`assets/backend-historical-backfill-02-drawdowns.txt`）— 回補的歷史
+不僅是*存在*，而且歷史上*正確*；peak-to-trough 跌幅與真實紀錄相符：
+
+| Regime | Index | Max drawdown |
+|---|---|---|
+| Dot-com crash | `^GSPC` / `^IXIC` | −49.1% / −77.9% |
+| Global Financial Crisis | `^GSPC` | −56.8% |
+| COVID crash | `^GSPC` | −33.9% |
+| 2022 rate-hike bear | `^GSPC` | −25.4% |
+
+`^GSPC` 涵蓋：**9,179 daily rows，1990-01-02 → 2026-06-12**。
+
+> - Evidence Source: `report_artifact`（`_backfill_manifest.json`、
+>   `cr-b21-deep-cycle-1990-oos-artifact.json`）+ `live_command_output`
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
+>   PASSED（repo-side + live run）*（`b-data-platform/review.md`，CR-B21）
+> - Source Ref: `.agents/specs/b-data-platform/change-requests/cr-b21-historical-backfill.md`、
+>   `.agents/specs/b-data-platform/review.md`
+> - Captured：2026-06-15 live CLI run；18/24 sources 擷取，6 個 FRED rate/FX
+>   系列待 idempotent re-run（FRED IP-throttle）。
+> - `MOCK_DOMINANT_EVIDENCE` — 真實抓取的歷史但 `is_approximate=true` research
+>   資料（非 true PIT），strict-excluded；`no_alpha_claim`。
 
 ---
 
 ## 視覺缺口盤點
 
-**Render 驗證（2026-06-14，headless chromium `1440×2400`）：** 本手冊（en/zh）與
+**Render 驗證（2026-06-15，headless chromium `1440×2600`）：** 本手冊（en/zh）與
 executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence
 caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無破版 CSS 或
 缺失 asset。review 的 UX-flow 圖現已改為 **self-contained inline SVG**（可離線 /
 `file://` 渲染，無 CDN 或 client-side JS，並附 accessible 文字等價 caption），已無
 剩餘視覺殘留。
 
-**自上次檢查以來已解決（CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-14）：**
+**自上次檢查以來已解決（CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-15）：**
 
-- **前後端服務已 live 驗證（2026-06-14）。** Next.js dashboard smoke 對 ephemeral
+- **深度歷史回填已落地（CR-B21）— 新增流程 6。** 研究 vintage 現已回溯至
+  **1990**（Yahoo deep indices + 完整 FRED + NOAA，`is_approximate=true`，
+  strict-excluded，18/24 sources）。這使一個真實的多週期回測成為可能（deep
+  {^GSPC,^IXIC} 1990→2026，437 個月，`computed`），並對照真實紀錄驗證
+  （dot-com −49%/−78%、GFC −57%、COVID −34%、2022 −25%）。流程 5 的預設 run
+  因此從僅 SP500 擴大為 12 資產的 co-temporal universe。`no_alpha_claim`；
+  6 個 FRED rate/FX series 待一次 idempotent re-run。
+
+- **前後端服務已 live 驗證（2026-06-15）。** Next.js dashboard smoke 對 ephemeral
   `next start` 通過（提供 `/` 與真實 `/api/showcase` payload — 見
   `assets/frontend-smoke-01.txt`），legacy FastAPI 金字塔計算機回傳真實等差金字塔
   結果（見 `assets/legacy-api-01.txt`），因此「啟動服務」證據已是 live_command_output，
@@ -270,18 +342,19 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 - **Sampling-frequency 誠實缺口已關閉（CR-RDO-004）。** 真實資料 OOS library 現會
   估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時
   **fail closed**（`reason=oversampled_vs_native_frequency`），不再默默把陳舊價格
-  forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設單一指數 SP500 run 不受影響、
-  維持 `computed`（見流程 5）。
+  forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設 run（現為 12 個 co-temporal
+  daily-native 資產）不受影響、維持 `computed`（見流程 5）。
 - **Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）。** stale-baseline-hash
   guard 只在 `baselineHash != currentHash` 時觸發，因此合法的 deterministic re-pin
   （`baselineHash == currentHash`、`mismatchedPixels == 0`）不再阻擋誠實的 UI 變更；
   tolerant pixel-diff threshold gate 不變。
 - **Dashboard visual readiness 已 wire-through（CR-FPS-009）。** Export 的 readiness
   面板現由 repo-side browser visual diff 證據回報 `visualRegression=proven`（先前未接線）。
-- **Public hosting 已重新證明（CR-FPS-010），point-in-time，於 `dataHash c73d7c88…`。**
-  Deployed GitHub Pages `dataHash` 與已 commit manifest 相符（`c73d7c8873fb406c…`）、
+- **Public hosting 已重新證明，point-in-time，於 `dataHash 0f170441…`。**
+  在 CR-B21 dashboard refresh 落地至 `main` 後，GitHub Pages 重新部署，deployed
+  `dataHash` 與已 commit manifest 相符（`0f1704414d1369c9…`）、
   HTTP 200、hash/contract matched、observation fresh（`docs/deployment-manifest.json`、
-  `docs/public-hosting-probe.json`，觀測於 `2026-06-14T09:39Z`，`status=proven`）。這是
+  `docs/public-hosting-probe.json`，觀測於 `2026-06-15T07:07Z`，`status=proven`）。這是
   **point-in-time** 證據：dashboard payload 自身的 `publicHosting` self-claim 依設計仍為
   `not_proven`（static artifact 不能自我宣稱其部署）。
 - **Hosting-freshness time-bomb 已移除（CR-FPS-011）。** Freshness 現以注入的 `asof`
@@ -302,7 +375,7 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`（live 部署僅由已 commit probe/manifest point-in-time 證明 `proven`，目前 `c73d7c88…`） | Low | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
+| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`（live 部署僅由已 commit probe/manifest point-in-time 證明 `proven`，目前 `0f170441…`） | Low | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
 | 真實資料 OOS 使用 `approximate_event_date`（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作 | Low | `real-data-oos-backtest/review.md` |
 | Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |

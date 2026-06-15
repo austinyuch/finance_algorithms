@@ -1,20 +1,14 @@
-# Legacy pyramid calculator API — LIVE capture (2026-06-14)
+# Legacy pyramid calculator API — LIVE capture (2026-06-15)
 # Command: cd invest_algorithms && uv run uvicorn api:app --host 127.0.0.1 --port 2224
-# (ephemeral start → curl → stop)
+# (ephemeral start → curl → stop). Evidence: live_command_output; full-integration; PASS (legacy behavior preserved).
 
 $ curl http://127.0.0.1:2224/
-{"site_name":"API Algorithms","description":"Algorithms Service",
- "host":"127.0.0.1","port":2224,"reload":false,"workers":1,"log_level":"info"}
+{"site_name":"API Algorithms","description":"Algorithms Service","host":"127.0.0.1","port":2224,"reload":false,"workers":1,"log_level":"info"}
 
 # Routes (openapi.json): / , /api/pyramidArithmetic , /api/pyramidGeometric
 
 $ curl "http://127.0.0.1:2224/api/pyramidArithmetic?fltBudget=100000&fltPriceInit=130&fltPriceFinal=100&intTransactionTimes=5&toCsv=false"
-# 等差金字塔 (arithmetic pyramid) — real response, 各階資料 (per-level rows):
-#   階1  價格 124.0  單位數 37   當次投資金額 4588    累計% 4.59   股價跌幅% 4.62
-#   階2  價格 118.0  單位數 112  當次投資金額 13216   累計% 17.80  股價跌幅% 9.23
-#   階3  價格 112.0  單位數 187  當次投資金額 20944   累計% 38.74  股價跌幅% 13.85
-#   階4  價格 106.0  單位數 261  當次投資金額 27666   累計% 66.40  …
-#
-# Evidence Source: live_command_output (real uvicorn server + curl). Coverage
-# Tier: full-integration (legacy FastAPI is a real served endpoint). Readiness
-# State: PASS (legacy behavior preserved). Sample inputs are demo data.
+# 等差金字塔 (arithmetic pyramid) — real response (first rows):
+{"各階資料": [{"階": 1, "價格": 124.0, "單位數": 37.0, "當次投資金額": 4588.0, "投入百分比": 4.59, "累計投入百分比": 4.59, "累計投資金額": 4588.0, "股價跌幅(%)": 4.62}, {"階": 2, "價格": 118.0, "單位數": 112.0, "當次投資金額": 13216.0, "投入百分比": 13.21, "累計投入百分比": 17.8, "累計投資金額": 17804.0, "股價跌幅(%)": 9.23}, {"階": 3, "價格": 112.0, "單位數": 187.0, "當次投資金額": 20944.0, "投入百分比": 20.94, "累計投入百分比": 38.74, "累計投資金額": 38748.0, "股價跌幅(%)": 13.85}, {"階": 4, "價格": 106.0, "單位數": 261.0, "當次投資金額": 27666.0, "投入百分比": 27.66, "累計投入百分比": 66.4, "累計投資金額": 66414.0, "股價跌幅(%)": 18.46}, {"階": 5, "價格": 100.0, "單位數": 336.0, "當次投資金額": 33600.0, "投入百分比": 33.6, "累計投入百分比": 100.0, "累計投資金額": 100014.0, "股價跌幅(%)": 23.08}], "起始價格": 130.0, "最終價格": 100.0, "股價跌幅(%)": 23.08, "總投入金額": 100014
+
+# Sample inputs are demo data; the served calculation is the real legacy algo_pyramid.
