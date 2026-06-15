@@ -89,8 +89,8 @@ need no port allocation and are the default evidence path.
 
 - Vintage snapshots are immutable. If a daily file exists, skip it instead of overwriting it.
 - `available_date` represents when the project captured or could have known a value.
-- If historical data is reconstructed without a true vintage source, mark it approximate and keep strict/lenient behavior explicit.
-- Snapshot fetching should degrade per source: one failed external source should not corrupt other captures.
+- If historical data is reconstructed without a true vintage source, mark it approximate and keep strict/lenient behavior explicit. The CR-B21 deep historical backfill (`scripts/backfill_history.py` → `data/vintage/raw/backfill-1990-01-01/`, 1990+) is exactly this case: every record is `is_approximate=true` + `backfill=true`, **strict PIT mode excludes it**, and only `approximate_availability=True` (research mode) exposes it under `no_alpha_claim`.
+- Snapshot fetching should degrade per source: one failed external source should not corrupt other captures (the CR-B21 backfill follows the same per-source degradation + idempotent-skip contract).
 
 ## Testing Expectations
 

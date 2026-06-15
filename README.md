@@ -90,6 +90,16 @@ uv run python scripts/run_vintage_slice.py
 uv run python scripts/run_real_data_oos_backtest.py   # SP500 index OOS-net comparison
 ```
 
+A deep historical backfill (CR-B21) extends the research vintage back to **1990**,
+so `approximate_availability=True` runs can span multiple business cycles
+(dot-com, GFC, COVID, 2022). It is explicitly `is_approximate=true` research data
+(NOT true point-in-time) and is **excluded by strict PIT mode**; `no_alpha_claim`
+throughout:
+
+```bash
+uv run python scripts/backfill_history.py --since 1990-01-01   # idempotent; marks approximate
+```
+
 Capture today's append-only point-in-time snapshot:
 
 ```bash
