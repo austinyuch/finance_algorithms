@@ -29,10 +29,12 @@ ISSUE_LOG,RTM}.md`, every `.agents/specs/**/review.md`, and `git log`.
 
 ## 4. Evidence capture & services started
 
-Project is Backend/CLI-dominant Hybrid. Captured/refreshed live (2026-06-13):
+Project is Backend/CLI-dominant Hybrid. Captured/refreshed live (2026-06-15,
+post-CR-B21):
 
 ```bash
 uv run python scripts/capture_pytest_gate.py  # 374 passed → docs/review/assets/gate-pytest.txt
+uv run python scripts/run_mutation_spot_checks.py --report-json docs/review/assets/gate-python-mutation.json  # 111/111 killed
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean 61 files → gate-mypy.txt
 uv run lint-imports                  # KEPT, 78 files / 201 deps → gate-lint-imports.txt
 (cd frontend && npm test)            # 46 passed     → gate-frontend-test.txt
@@ -49,6 +51,14 @@ Pages parity is pending). The review embeds the
 screenshot as `live_screenshot` and discloses the remaining ops residual:
 autonomous `event=schedule` dry-run proof exists as run `27392471359`, and CR-B12 proves scoped live-write mechanics. A long-running port-bound server still needs a
 `local-infra-registry-governance` allocation; the headless smoke does not.
+
+The latest resolved-since-last-check gap is **CR-B21** (deep 1990+ historical
+backfill): the Gap Analysis surfaces it as resolved — `is_approximate=true`
+research vintage, strict-excluded, a multi-cycle backtest (deep `{^GSPC,^IXIC}`
+1990→2026) and regime-drawdown validation (dot-com/GFC/COVID/2022 matching the
+real record), under `no_alpha_claim`. The CR-B21 dashboard refresh moved the
+deployed-and-re-proven `dataHash` to `0f170441…` (`status=proven`,
+`2026-06-15T07:07Z`).
 
 ## 5. Gap analysis policy
 
