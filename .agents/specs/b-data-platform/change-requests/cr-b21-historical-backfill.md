@@ -101,8 +101,11 @@ real-data OOS run produces a multi-regime computed comparison (still
 - **Mutation:** `b-backfill-approximate-marking` (mutates `is_approximate: True→False`)
   **KILLED** by `test_backfill_marks_approximate_and_backfill`; full suite **111/111**.
 - **Governance:** pytest **367→374**, mutation **110/110→111/111**, dashboard
-  `dataHash 0f170441…` regenerated, all 25 governance guards green; hosting honestly
-  `configured_not_observed` until `main` redeploys.
+  `dataHash 0f170441…` regenerated, all 25 governance guards green. After CR-B21
+  landed on `main` (`693f780`), GitHub Pages redeployed and the live probe matched —
+  committed probe/review-copy/manifest `hostingEvidence` re-pinned to `proven`
+  (deployed==expected `0f170441…`, HTTP 200); the dashboard self-claim stays
+  `not_proven` by design.
 
 ## Boundary
 
