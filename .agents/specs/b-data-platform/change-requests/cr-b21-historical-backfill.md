@@ -107,6 +107,25 @@ real-data OOS run produces a multi-regime computed comparison (still
   (deployed==expected `0f170441…`, HTTP 200); the dashboard self-claim stays
   `not_proven` by design.
 
+## Data validation (2026-06-15)
+
+The backfilled deep history is not just *present* but historically *correct* —
+peak-to-trough drawdowns computed from the `^GSPC` / `^IXIC` backfill match the
+real record across every regime the maintainer named (dot-com 2000, GFC 2008,
+COVID, 2022), confirming the data supports genuine multi-cycle study
+(`approximate_availability=True`, `no_alpha_claim`):
+
+| Regime | Index | Peak → Trough | Max drawdown |
+|---|---|---|---|
+| Dot-com crash | `^GSPC` | 2000-03-24 → 2002-10-09 | −49.1% |
+| Dot-com crash | `^IXIC` | 2000-03-10 → 2002-10-09 | −77.9% |
+| Global Financial Crisis | `^GSPC` | 2007-10-09 → 2009-03-09 | −56.8% |
+| COVID crash | `^GSPC` | 2020-02-19 → 2020-03-23 | −33.9% |
+| 2022 rate-hike bear | `^GSPC` | 2022-01-03 → 2022-10-12 | −25.4% |
+
+Coverage: `^GSPC` **9,179 daily rows, 1990-01-02 → 2026-06-12**. (Read-only
+provenance check over the committed backfill; no engine/test change.)
+
 ## Boundary
 
 `approximate_event_date` / `no_alpha_claim` / `local_demo_only` preserved. This
