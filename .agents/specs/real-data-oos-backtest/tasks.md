@@ -67,5 +67,6 @@ TDD complete; merged via PR #95 (`dev`==`main`).
 - [x] **M5 [registry] GREEN** — `quantlab/TESTS.md` + `.agents/specs/TESTS.md` rows;
   count resync (pytest 355→367, mutation 109→110) across governance surfaces.
 - [x] **M6 [gates + cascade]** — full suite 374, mutation 111/111, mypy clean,
+  <!-- as-of M6 close; current workspace evidence is 402/115 after later CRs (CR-RDO-005 + CR-DME-001) -->
   lint-imports KEPT, frontend 46, governance guards 25, visual 0-pixel; dashboard
   dataHash → `c73d7c88`; public hosting re-proven (PR #97).
