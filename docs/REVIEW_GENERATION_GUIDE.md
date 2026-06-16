@@ -33,7 +33,7 @@ Project is Backend/CLI-dominant Hybrid. Captured/refreshed live (2026-06-15,
 post-CR-B21):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py  # 374 passed → docs/review/assets/gate-pytest.txt
+uv run python scripts/capture_pytest_gate.py  # 402 passed → docs/review/assets/gate-pytest.txt
 uv run python scripts/run_mutation_spot_checks.py --report-json docs/review/assets/gate-python-mutation.json  # 111/111 killed
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean 61 files → gate-mypy.txt
 uv run lint-imports                  # KEPT, 78 files / 201 deps → gate-lint-imports.txt

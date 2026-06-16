@@ -29,7 +29,7 @@ experimentation capability*, **not** alpha. Every model slice declares
 
 ## Latest authoritative gate evidence (2026-06-13)
 
-- `uv run pytest -q` → **374 passed** (default env)
+- `uv run pytest -q` → **402 passed** (default env)
 - `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports` → clean, **61 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (78 files, 201 deps)
 - `frontend` `npm test` → **46 passed**; `npm audit --omit=dev` → **0 vulnerabilities**
