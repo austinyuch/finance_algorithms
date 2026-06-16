@@ -73,15 +73,20 @@ as designed (370 prior default-env baseline + 28 new). All 28 new tests green.
   (the committed 111 JSON predated the breakage). Each repaired mutation flips the
   legitimately-`proven`/`matched` value to the broken one the hosting-proof guard
   catches; all 5 verified KILLED, plus the 4 CR-RDO-005 mutations.
-- **`external-blocked` (UAT capture env + deploy):** the **no-skip** pytest gate
-  transcript bump (374 → **402**, torch lane runs in the UAT env so there is no
-  skip) and the coupled dashboard `dataHash` regeneration + browser-visual VRT
-  re-pin must be produced in the **torch-enabled UAT/runtime env** + the deploy
-  refresh. The default dev env excludes torch (a-torch-default-dependency-isolation),
-  so it can only produce a `… passed, <torch-lane skipped>` transcript, which the
-  governance stale-marker guard forbids. Committed pytest/dashboard evidence is
-  therefore left at the green `374` baseline; that refresh is gated on the UAT env.
-  Regenerate with:
+- **Pytest evidence refresh (DONE):** the canonical **no-skip** pytest gate was
+  captured by transiently installing torch into the venv (`uv pip install torch`,
+  not committed to pyproject/uv.lock) so the PyTorch LSTM lane runs → `gate-pytest.txt`
+  **402 passed** (no skip). The review-gate count surfaces (TESTS.md, both generation
+  guides, `docs/review/index.html`, manuals, registry) are synced to 402; torch was
+  then removed (`uv sync`) to restore the honest torch-free default env (which runs
+  398 passed + the optional lane skipped). The committed transcript is the canonical
+  torch-enabled count, exactly as the prior `374` was captured.
+- **`deploy-gated` (remaining):** only the committed dashboard payload
+  (`docs/**/showcase.json`, `dataHash 0f170441…`) + its manifest/probe + the
+  browser-visual VRT re-pin still lag at 374/111. Regenerating the payload flips
+  committed hosting `proven`→`configured_not_observed` until Pages serves the new
+  `dataHash` (mirrors CR-RDO-004), so this re-pin is intrinsically part of the deploy
+  flow and is left for it. Regenerate with:
   `uv run python scripts/capture_pytest_gate.py` and
   `uv run python scripts/run_mutation_spot_checks.py --report-json docs/review/assets/gate-python-mutation.json`
   in the torch-enabled env, then sync the count surfaces + regenerate the dashboard payload.
