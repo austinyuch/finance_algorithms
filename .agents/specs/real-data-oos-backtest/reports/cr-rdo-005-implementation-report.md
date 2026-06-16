@@ -63,16 +63,25 @@ as designed (370 prior default-env baseline + 28 new). All 28 new tests green.
 
 - **`completed-local` (repo-side):** all code, tests, mutations, refactor, real
   artifact, mypy, import-linter — done and green in the default env.
-- **`external-blocked` (UAT capture env):** the *canonical* governance evidence
-  refresh — the **no-skip** pytest gate transcript bump (374 → **402**, torch
-  lane runs in the UAT env so there is no skip), the mutation count bump
-  (111 → **115**, JSON regen), the coupled dashboard `dataHash` regeneration, and
-  the browser-visual VRT re-pin — must be produced in the **torch-enabled UAT/runtime
-  env**. The default dev env excludes torch (a-torch-default-dependency-isolation),
+- **Mutation evidence refresh (DONE, torch-free):** the full Python mutation suite
+  now regenerates end-to-end at **115/115** (`gate-python-mutation.json` + the 6
+  mutation-sync surfaces synced). This first required **repairing 5 pre-existing
+  stale hosting-mutation anchors** — `public-hosting-{manifest,probe}-{status,hash}-overclaim`
+  and the review-probe copy were pinned to `configured_not_observed`/`mismatched`
+  from *before* the CR-B21 deploy re-pinned the committed manifest/probe to
+  `proven`/`matched`, which had silently blocked any end-to-end mutation re-run
+  (the committed 111 JSON predated the breakage). Each repaired mutation flips the
+  legitimately-`proven`/`matched` value to the broken one the hosting-proof guard
+  catches; all 5 verified KILLED, plus the 4 CR-RDO-005 mutations.
+- **`external-blocked` (UAT capture env + deploy):** the **no-skip** pytest gate
+  transcript bump (374 → **402**, torch lane runs in the UAT env so there is no
+  skip) and the coupled dashboard `dataHash` regeneration + browser-visual VRT
+  re-pin must be produced in the **torch-enabled UAT/runtime env** + the deploy
+  refresh. The default dev env excludes torch (a-torch-default-dependency-isolation),
   so it can only produce a `… passed, <torch-lane skipped>` transcript, which the
-  governance stale-marker guard forbids. Committed evidence is therefore left at
-  the green `374`/`111` baseline; this CR's count/dashboard refresh is the
-  next step, gated on the UAT capture env. Regenerate with:
+  governance stale-marker guard forbids. Committed pytest/dashboard evidence is
+  therefore left at the green `374` baseline; that refresh is gated on the UAT env.
+  Regenerate with:
   `uv run python scripts/capture_pytest_gate.py` and
   `uv run python scripts/run_mutation_spot_checks.py --report-json docs/review/assets/gate-python-mutation.json`
   in the torch-enabled env, then sync the count surfaces + regenerate the dashboard payload.
