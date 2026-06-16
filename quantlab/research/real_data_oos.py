@@ -409,7 +409,11 @@ def build_insufficient_data_report(
 
 
 def _canonical_json(value: Mapping[str, Any]) -> str:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    # CR-RDO-005 refactor: delegate to the shared helper (byte-identical output)
+    # so the single-window and multi-cycle artifacts share one checksum definition.
+    from quantlab.research.oos_artifact import canonical_json
+
+    return canonical_json(value)
 
 
 def build_real_data_oos_artifact(

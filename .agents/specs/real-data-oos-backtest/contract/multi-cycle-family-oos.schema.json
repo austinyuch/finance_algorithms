@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "multi-cycle-family-oos.schema.json",
+  "title": "Multi-cycle family OOS-net artifact (CR-RDO-005)",
+  "description": "SSOT for the multi-cycle, multi-asset, multi-family real-data OOS-net leaderboard artifact. Additive overlay on real-data-oos-backtest; no_alpha_claim mechanism evidence only.",
+  "type": "object",
+  "required": [
+    "artifact_kind",
+    "status",
+    "claim_boundary",
+    "metric_authority",
+    "artifact_uri",
+    "generated_at",
+    "row_count",
+    "checksum",
+    "report"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "artifact_kind": {"const": "multi_cycle_family_oos_artifact"},
+    "status": {"enum": ["computed", "insufficient_data"]},
+    "claim_boundary": {"const": "no_alpha_claim"},
+    "metric_authority": {"const": "out_of_sample_net_only"},
+    "artifact_uri": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "row_count": {"type": "integer", "minimum": 0},
+    "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "report": {
+      "type": "object",
+      "required": ["status", "claim_boundary", "metric_authority", "rows", "data_provenance"],
+      "properties": {
+        "status": {"enum": ["computed", "insufficient_data"]},
+        "claim_boundary": {"const": "no_alpha_claim"},
+        "metric_authority": {"const": "out_of_sample_net_only"},
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["model_family", "strategy_name", "oos_net_sharpe", "is_baseline", "run_id"],
+            "properties": {
+              "model_family": {"type": "string"},
+              "strategy_name": {"type": "string"},
+              "oos_net_sharpe": {"type": "number"},
+              "is_baseline": {"type": "boolean"},
+              "run_id": {"type": "string"}
+            }
+          }
+        },
+        "families": {"type": "array", "items": {"type": "string"}},
+        "baseline_run_ids": {"type": "array", "items": {"type": "string"}},
+        "asset_set": {"type": "array", "items": {"type": "string"}},
+        "asof_window": {
+          "type": "object",
+          "properties": {"start": {"type": ["string", "null"]}, "end": {"type": ["string", "null"]}}
+        },
+        "availability_mode": {"enum": ["approximate_event_date", "true_pit"]},
+        "reason": {"type": "string"},
+        "cost_config": {"type": "object"},
+        "data_provenance": {
+          "type": "object",
+          "properties": {
+            "universe": {"type": "array", "items": {"type": "string"}},
+            "asset_count": {"type": "integer"},
+            "history_span_months": {"type": "number"},
+            "overlap_start": {"type": ["string", "null"]},
+            "overlap_end": {"type": ["string", "null"]},
+            "overlap_months": {"type": "number"},
+            "availability_mode": {"type": "string"},
+            "sampling_frequency": {
+              "type": "object",
+              "properties": {
+                "by_symbol": {"type": "object"},
+                "coarsest_cadence": {"type": "string"},
+                "coarsest_native_days": {"type": "number"},
+                "rebalance": {"type": "string"},
+                "rebalance_days": {"type": "number"},
+                "homogeneous": {"type": "boolean"}
+              }
+            },
+            "cycles_covered": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "date"],
+                "properties": {"name": {"type": "string"}, "date": {"type": "string"}}
+              }
+            },
+            "family_status": {"type": "object"}
+          }
+        }
+      }
+    }
+  }
+}

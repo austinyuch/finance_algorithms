@@ -1,0 +1,167 @@
+{
+  "artifact_kind": "multi_cycle_family_oos_artifact",
+  "artifact_uri": "file:///home/ac/projects/finance_algorithms/.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json",
+  "checksum": "4802b8cd8ca6f6a3c04261910ce42018055d46cbc6197dcb9babd90a0dd30840",
+  "claim_boundary": "no_alpha_claim",
+  "generated_at": "2026-06-16T00:00:00Z",
+  "metric_authority": "out_of_sample_net_only",
+  "report": {
+    "asof_window": {
+      "end": "2026-06-12",
+      "start": "2000-01-04"
+    },
+    "asset_set": [
+      "2330.TW",
+      "SPY",
+      "^GSPC",
+      "^IXIC",
+      "^TWII"
+    ],
+    "availability_mode": "approximate_event_date",
+    "baseline_run_ids": [
+      ""
+    ],
+    "claim_boundary": "no_alpha_claim",
+    "cost_config": {
+      "commission_bps": 5,
+      "fx_spread_bps": 0,
+      "slippage_bps": 5,
+      "tw_transaction_tax_bps": 0,
+      "us_dividend_withholding_pct": 0
+    },
+    "data_provenance": {
+      "asset_count": 12,
+      "availability_mode": "approximate_event_date",
+      "cycles_covered": [
+        {
+          "date": "2000-03-10",
+          "name": "dot_com"
+        },
+        {
+          "date": "2008-09-15",
+          "name": "gfc"
+        },
+        {
+          "date": "2020-03-23",
+          "name": "covid"
+        },
+        {
+          "date": "2022-06-16",
+          "name": "rate_shock_2022"
+        }
+      ],
+      "family_status": {
+        "baseline": {
+          "framework": "none",
+          "name": "BuyAndHold",
+          "symbols": [
+            "2330.TW",
+            "SPY",
+            "^GSPC",
+            "^IXIC",
+            "^TWII"
+          ]
+        },
+        "regime": {
+          "framework": "none",
+          "last_regime": "risk_on",
+          "last_regime_confidence": 0.6,
+          "name": "RegimeAllocationStrategy"
+        },
+        "return_risk": {
+          "claim_boundary": "no_alpha_claim",
+          "forecast_status": "ok",
+          "framework": "none",
+          "name": "ForecastAllocationStrategy",
+          "vol_cap": 0.3,
+          "weights": {
+            "2330.TW": 0.0,
+            "SPY": 0.0,
+            "^GSPC": 0.0,
+            "^IXIC": 2.055647319032516e-16,
+            "^TWII": 0.9999999999999998
+          }
+        },
+        "robust": {
+          "claim_boundary": "no_alpha_claim",
+          "framework": "none",
+          "name": "RobustOptimizationStrategy",
+          "robust_status": "ok",
+          "vol_cap": 0.3,
+          "weights": {
+            "2330.TW": 0.0,
+            "SPY": 0.0,
+            "^GSPC": 0.0,
+            "^IXIC": 0.0,
+            "^TWII": 1.0
+          }
+        }
+      },
+      "history_span_months": 437.3552,
+      "overlap_end": "2026-06-12",
+      "overlap_months": 317.2402,
+      "overlap_start": "2000-01-04",
+      "sampling_frequency": {
+        "by_symbol": {
+          "2330.TW": "daily",
+          "SPY": "daily",
+          "^GSPC": "daily",
+          "^IXIC": "daily",
+          "^TWII": "daily"
+        },
+        "coarsest_cadence": "daily",
+        "coarsest_native_days": 1.0,
+        "homogeneous": true,
+        "rebalance": "monthly",
+        "rebalance_days": 30.4375
+      },
+      "universe": [
+        "2330.TW",
+        "SPY",
+        "^GSPC",
+        "^IXIC",
+        "^TWII"
+      ]
+    },
+    "families": [
+      "baseline",
+      "regime",
+      "return_risk",
+      "robust"
+    ],
+    "metric_authority": "out_of_sample_net_only",
+    "rows": [
+      {
+        "is_baseline": false,
+        "model_family": "regime",
+        "oos_net_sharpe": 0.6810609668422913,
+        "run_id": "",
+        "strategy_name": "RegimeAllocationStrategy"
+      },
+      {
+        "is_baseline": true,
+        "model_family": "baseline",
+        "oos_net_sharpe": 0.6569257955476081,
+        "run_id": "",
+        "strategy_name": "BuyAndHold"
+      },
+      {
+        "is_baseline": false,
+        "model_family": "return_risk",
+        "oos_net_sharpe": 0.3539660203009219,
+        "run_id": "",
+        "strategy_name": "ForecastAllocationStrategy"
+      },
+      {
+        "is_baseline": false,
+        "model_family": "robust",
+        "oos_net_sharpe": 0.3208420352673178,
+        "run_id": "",
+        "strategy_name": "RobustOptimizationStrategy"
+      }
+    ],
+    "status": "computed"
+  },
+  "row_count": 4,
+  "status": "computed"
+}
