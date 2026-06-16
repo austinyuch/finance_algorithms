@@ -1,7 +1,7 @@
 {
   "artifact_kind": "multi_cycle_family_oos_artifact",
   "artifact_uri": "file:///home/ac/projects/finance_algorithms/.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json",
-  "checksum": "4802b8cd8ca6f6a3c04261910ce42018055d46cbc6197dcb9babd90a0dd30840",
+  "checksum": "daee35b876d4a1e2d37cb381c822658cdb43d1cdebd98aa8220430921f102189",
   "claim_boundary": "no_alpha_claim",
   "generated_at": "2026-06-16T00:00:00Z",
   "metric_authority": "out_of_sample_net_only",
@@ -134,7 +134,7 @@
       {
         "is_baseline": false,
         "model_family": "regime",
-        "oos_net_sharpe": 0.6810609668422913,
+        "oos_net_sharpe": 0.6693819300862267,
         "run_id": "",
         "strategy_name": "RegimeAllocationStrategy"
       },

@@ -32,7 +32,7 @@ produced a **computed** leaderboard:
 
   | model_family | strategy | oos_net_sharpe | baseline |
   |---|---|---|---|
-  | regime | RegimeAllocationStrategy | 0.6811 | no |
+  | regime | RegimeAllocationStrategy | 0.6694 | no |
   | baseline | BuyAndHold | 0.6569 | yes |
   | return_risk | ForecastAllocationStrategy | 0.3540 | no |
   | robust | RobustOptimizationStrategy | 0.3208 | no |
@@ -97,9 +97,12 @@ as designed (370 prior default-env baseline + 28 new). All 28 new tests green.
    `quantlab/models/evaluation.py::_claim_boundary` hard-raises unless
    `strategy_metadata.claim_boundary == "no_alpha_claim"`, but `BuyAndHold.metadata`
    omits the key. CR-RDO-005 sidesteps this by rejecting only *explicit* overclaims.
-2. **Regime family degraded over the deep backfill** — `T10Y2Y` (yield-curve
-   feature) is one of the 6 CR-B21-throttled FRED series, so the regime family
-   runs price-trend-only. Ties to the CR-B21 FRED residual (Cluster 2).
+2. **Regime family un-degraded (CR-B21 residual closed)** — `T10Y2Y` (yield-curve
+   feature) was one of the 6 CR-B21-throttled FRED series; it has since been
+   backfilled (idempotent re-run, manifest `fail=0`), so the regime family now
+   runs **full-feature** (price-trend + yield-curve). The committed multi-cycle
+   artifact was regenerated: regime OOS-net Sharpe `0.6811→0.6694`, still edges
+   BuyAndHold (0.6569), ranking order unchanged; integration test still green.
 3. **Published default-env pytest count drift** — surfaces publish `374 passed`
    (a torch-enabled, no-skip capture), but the default (torch-excluded) env yields
    370 + the optional lane skipped. Pre-existing; reconciled by the UAT-capture refresh above.
