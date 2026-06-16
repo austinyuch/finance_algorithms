@@ -20,8 +20,10 @@
   single-window proxy comparison is extended to a multi-cycle, multi-family
   leaderboard — still mechanism evidence, not a strategy verdict).**]
 - **[Open Change Requests:** none upstream block this; CR-B21 left a residual (6
-  throttled FRED rate/FX series, incl. `T10Y2Y`) that constrains the regime
-  family to a **price-trend-only degraded mode** — see FMEA RISK-RDO5-04.**]
+  throttled FRED rate/FX series, incl. `T10Y2Y`) that constrained the regime
+  family to a price-trend-only degraded mode — **now RESOLVED**: the residual was
+  backfilled (idempotent re-run, manifest `fail=0`), so the regime family runs
+  full-feature (artifact regenerated, regime Sharpe `0.6811→0.6694`). See FMEA RISK-RDO5-04.**]
 
 ## Problem
 
@@ -223,7 +225,7 @@ committed `real-data-oos-artifact.json` checksum must be **unchanged**.
 | RISK-RDO5-01 | Approximate backfill read as true PIT | Lookahead-inflated comparison reads as validated | `approximate_availability=True` sets `available_date=event_date` | strict-mode exclusion exists | High | Med | Med | **Prevent**: hard-pin `availability_mode="approximate_event_date"` in artifact + assert strict load excludes it (REQ-RDO5-005.1) | T4, T-chaos |
 | RISK-RDO5-02 | Families ranked on different windows/universes | Incomparable Sharpe presented as a leaderboard | per-family independent universe resolution | n/a (new) | High | Med | Hard | **Prevent**: resolve universe/window **once**, reuse for all (REQ-RDO5-001.1); **Detect**: unit asserts identical `asof_window` across rows | T2, T-unit |
 | RISK-RDO5-03 | Oversampled/degenerate slips to `computed` | Fabricated-flat Sharpe overclaim | deep universe may include coarse assets | reuse CR-RDO-003/004 guards | High | Med | Med | **Detect**: reuse `is_oversampled` + degeneracy guard, fail closed (REQ-RDO5-003); mutation guard | T3, T-mut |
-| RISK-RDO5-04 | Regime degraded (T10Y2Y missing) hidden | Reader thinks regime ran full-feature | CR-B21 throttled 6 FRED series | n/a (new) | Med | High | Med | **Contain**: record `family_status` verbatim (REQ-RDO5-002.2); document as known issue → ISSUE_LOG residual tied to CR-B21 | T2, ISSUE_LOG |
+| RISK-RDO5-04 | Regime degraded (T10Y2Y missing) hidden | Reader thinks regime ran full-feature | CR-B21 throttled 6 FRED series | family_status records degraded honestly | Med | High | Med | **Contain**: record `family_status` verbatim (REQ-RDO5-002.2). **RESOLVED**: CR-B21 FRED residual backfilled (`T10Y2Y` available), regime now full-feature; artifact regenerated | T2, ISSUE_LOG (closed) |
 | RISK-RDO5-05 | Evidence-count drift breaks governance/dashboard | Red suite / stale dataHash / VRT mismatch | new tests move pytest+mutation totals; embedded in `_FALLBACK_EVIDENCE_TESTS` | governance guards enforce sync | Med | High | Low | **Detect+Contain**: closeout resync all ~12 surfaces + regen dashboard payload + re-pin browser-visual (0-pixel, CR-FBP-001) | T-closeout |
 | RISK-RDO5-06 | Multi-asset breadth silently traded for window | Reader thinks many assets over many cycles | more assets ⇒ shorter shared window | co-temporal resolver picks largest qualifying set | Med | Med | Med | **Contain**: record exact `universe` + `overlap_months` + `cycles_covered`; note breadth/depth tradeoff in review | T2, review |
 
@@ -266,8 +268,10 @@ No engine/loader/cost/metric/ranking semantics change; no live data fetch (reads
 immutable CR-B21 vintage); no alpha claim; project stays `local_demo_only` /
 `no_alpha_claim`. The comparison is **mechanism + comparability evidence on
 approximate-availability deep history**, explicitly **not** a strategy verdict
-and **not** true-PIT. The regime family runs price-trend-only until the CR-B21
-FRED rate/FX residual (incl. `T10Y2Y`) is backfilled.
+and **not** true-PIT. The regime family ran price-trend-only until the CR-B21 FRED rate/FX residual
+(incl. `T10Y2Y`) was backfilled — **now complete** (manifest `fail=0`), so the
+regime family runs full-feature (the committed artifact was regenerated: regime
+Sharpe `0.6811→0.6694`, ranking unchanged).
 
 ## Review verdict
 

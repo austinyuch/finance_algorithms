@@ -1,11 +1,11 @@
 {
   "approximate": true,
-  "available_date": "2026-06-15",
-  "captured_at": "2026-06-15T00:00:00+00:00",
+  "available_date": "2026-06-16",
+  "captured_at": "2026-06-16T22:40:33.692281+00:00",
   "claim_boundary": "no_alpha_claim",
-  "fail": 6,
+  "fail": 0,
   "kind": "historical_backfill_manifest",
-  "ok": 0,
+  "ok": 6,
   "since": "1990-01-01",
   "skip": 18,
   "sources": [
@@ -67,15 +67,15 @@
     },
     {
       "source": "fred:DGS10",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "fred:DGS2",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "fred:T10Y2Y",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "fred:UNRATE",
@@ -87,7 +87,7 @@
     },
     {
       "source": "fred:NASDAQCOM",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "fred:PCOPPUSDM",
@@ -95,16 +95,16 @@
     },
     {
       "source": "fred:DCOILWTICO",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "fred:DEXTAUS",
-      "status": "fail:ReadTimeout"
+      "status": "ok"
     },
     {
       "source": "noaa:oni",
       "status": "skip"
     }
   ],
-  "until": "2026-06-15"
+  "until": "2026-06-16"
 }
