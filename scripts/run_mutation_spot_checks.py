@@ -942,6 +942,38 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/test_backfill_history.py::test_backfill_marks_approximate_and_backfill"),
     ),
+    MutationSpec(
+        name="multi-cycle-oos-ranking-order",
+        path="quantlab/research/multi_cycle_oos.py",
+        original='rows.sort(key=lambda r: r["oos_net_sharpe"], reverse=True)',
+        mutated='rows.sort(key=lambda r: r["oos_net_sharpe"], reverse=False)',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_multi_cycle_oos.py::test_rows_sorted_descending_with_baseline_visible"),
+    ),
+    MutationSpec(
+        name="multi-cycle-oos-overclaim-gate",
+        path="quantlab/research/multi_cycle_oos.py",
+        original="if claim is not None and claim != _CLAIM:",
+        mutated="if claim is not None and claim == _CLAIM:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_multi_cycle_oos.py::test_explicit_overclaim_record_fails_closed"),
+    ),
+    MutationSpec(
+        name="multi-cycle-oos-degeneracy-gate",
+        path="quantlab/research/multi_cycle_oos.py",
+        original="if max_oos_vol < _DEGENERATE_VOL_EPS:",
+        mutated="if max_oos_vol > _DEGENERATE_VOL_EPS:",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_multi_cycle_oos.py::test_degenerate_flat_oos_fails_closed"),
+    ),
+    MutationSpec(
+        name="multi-cycle-oos-approximate-mode-marker",
+        path="quantlab/research/multi_cycle_oos.py",
+        original='availability_mode: str = "approximate_event_date",',
+        mutated='availability_mode: str = "true_pit",',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_multi_cycle_oos.py::test_provenance_records_universe_window_and_family_status"),
+    ),
 )
 
 
