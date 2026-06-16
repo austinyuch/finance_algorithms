@@ -32,14 +32,17 @@ def _oos_net_sharpe(record: Mapping[str, Any]) -> float:
 def _claim_boundary(record: Mapping[str, Any]) -> str:
     metadata = record.get("strategy_metadata") or {}
     claim = metadata.get("claim_boundary")
-    if claim != "no_alpha_claim":
-        raise ValueError("model evaluation only accepts explicit no_alpha_claim records")
-    return str(claim)
+    # CR-DME-001: a claim-silent dumb baseline (e.g. BuyAndHold, whose metadata
+    # omits claim_boundary) makes no alpha claim and is accepted — it is the row
+    # that must always stay visible in an OOS-net leaderboard. Only an EXPLICIT
+    # non-no_alpha_claim boundary is an overclaim and fails closed.
+    if claim is not None and claim != "no_alpha_claim":
+        raise ValueError("model evaluation rejects explicit non-no_alpha_claim records")
+    return "no_alpha_claim"
 
 
 def score_model_family(record: Mapping[str, Any], *, model_family: str) -> ModelFamilyScore:
-    if _claim_boundary(record) != "no_alpha_claim":
-        raise ValueError("model evaluation only accepts no_alpha_claim records")
+    _claim_boundary(record)  # raises on an explicit overclaim; claim-silent baseline OK
     family = model_family.strip()
     if not family:
         raise ValueError("model_family is required")
