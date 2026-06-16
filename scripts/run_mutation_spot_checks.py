@@ -289,8 +289,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="d-model-evaluation-alpha-gate",
         path="quantlab/models/evaluation.py",
-        original='if _claim_boundary(record) != "no_alpha_claim":',
-        mutated='if _claim_boundary(record) == "no_alpha_claim":',
+        original='if claim is not None and claim != "no_alpha_claim":',
+        mutated='if claim is not None and claim == "no_alpha_claim":',
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_d_6_model_family_evaluation.py::test_model_family_evaluation_rejects_alpha_claim_and_missing_baseline"),
     ),

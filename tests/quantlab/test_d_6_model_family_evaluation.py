@@ -5,7 +5,11 @@ import pytest
 from hypothesis import given, strategies as st
 
 
-def _record(run_id: str, strategy: str, sharpe: float, *, baseline: bool = False):
+def _record(run_id: str, strategy: str, sharpe: float, *, baseline: bool = False,
+            claim_silent: bool = False):
+    # claim_silent mirrors the canonical dumb baseline (BuyAndHold) whose metadata
+    # omits claim_boundary entirely — it makes no alpha claim (CR-DME-001).
+    metadata = {} if claim_silent else {"claim_boundary": "no_alpha_claim"}
     return {
         "run_id": run_id,
         "strategy_name": strategy,
@@ -14,18 +18,20 @@ def _record(run_id: str, strategy: str, sharpe: float, *, baseline: bool = False
             {"segment": "in_sample", "basis": "net", "sharpe": 99.0},
             {"segment": "out_of_sample", "basis": "net", "sharpe": sharpe},
         ],
-        "strategy_metadata": {"claim_boundary": "no_alpha_claim"},
+        "strategy_metadata": metadata,
     }
 
 
 def test_model_family_evaluation_ranks_only_oos_net_and_keeps_baseline():
     from quantlab.models import build_model_family_evaluation
 
+    # CR-DME-001: the visible baseline is a claim-silent dumb baseline (BuyAndHold,
+    # no claim_boundary key) — it must be accepted and ranked, not rejected.
     report = build_model_family_evaluation({
         "regime": [_record("regime-run", "RegimeAllocationStrategy", 0.9)],
         "return-risk": [_record("forecast-run", "ForecastAllocationStrategy", 1.2)],
         "robust": [_record("robust-run", "RobustOptimizationStrategy", 0.8)],
-        "baseline": [_record("baseline-run", "StaticWeights", 0.7, baseline=True)],
+        "baseline": [_record("baseline-run", "BuyAndHold", 0.7, baseline=True, claim_silent=True)],
     })
 
     assert report["claim_boundary"] == "no_alpha_claim"
@@ -37,20 +43,20 @@ def test_model_family_evaluation_ranks_only_oos_net_and_keeps_baseline():
         "baseline-run",
     ]
     assert report["baseline_run_ids"] == ["baseline-run"]
+    # the claim-silent baseline is scored with the default no_alpha_claim boundary
+    assert all(row["claim_boundary"] == "no_alpha_claim" for row in report["rows"])
 
 
 def test_model_family_evaluation_rejects_alpha_claim_and_missing_baseline():
     from quantlab.models import build_model_family_evaluation
 
+    # CR-DME-001: an EXPLICIT non-no_alpha_claim overclaim is still rejected (a
+    # claim-silent baseline is now accepted — covered by the ranks test above).
     bad = _record("bad", "BadStrategy", 1.0)
     bad["strategy_metadata"] = {"claim_boundary": "alpha_claim"}
-    missing = _record("missing", "MissingClaimStrategy", 1.0)
-    missing["strategy_metadata"] = {}
 
     with pytest.raises(ValueError, match="no_alpha_claim"):
         build_model_family_evaluation({"bad": [bad]})
-    with pytest.raises(ValueError, match="no_alpha_claim"):
-        build_model_family_evaluation({"bad": [missing]})
     with pytest.raises(ValueError, match="baseline"):
         build_model_family_evaluation({"regime": [_record("run", "RegimeAllocationStrategy", 1.0)]})
 
