@@ -73,10 +73,33 @@ closeout — see below).
   (F hosting-freshness boundary flake at `age_hours≈24.0`), logged as `ISSUE-FPS-FRESH-001`. It is
   independent of H-2 (no hosting code touched) and passes in isolation / in the 430-passed torch run.
 
-## Closeout Pending (deploy-coupled — not yet done)
+## Closeout Pending (one atomic, deploy-coupled, multi-toolchain bundle — not yet done)
 
-- Governance count resync: pytest no-skip **424→430**, Python mutation **118→120**. This regenerates
-  the dashboard payload (→ new `dataHash`) and flips committed hosting to `configured_not_observed`
-  until Pages serves it — intrinsically deploy-coupled, and it rides the **same deploy** as the
-  Tier-1 CR-B21 hosting re-prove. Hand `TESTS.md` rollup to `test-registry-manager`; `SPECS.md` row
-  to `spec-registry-manager`; then integrate `spec/h-deep-learning-real-training` → dev → main.
+The branch is intentionally left **internally consistent and governance-guard-green at the
+H-1-inherited counts** (pytest no-skip 424, mutation 118, lint 87 files/237 deps). The count
+resync was deliberately **not** applied piecemeal, because it is atomic and deploy-coupled:
+
+- **Mutation count stays 118** (published default gate). The 2 new H-2 mutations
+  (`h2-torch-real-training`, `h2-torch-reference-parity-seed`) are **torch-UAT-only** — unkillable
+  in the default torch-excluded env, exactly like the torch pytest lane — so they are validated in
+  the UAT (both KILLED, see capture) and documented, **not** added to the published 118 gate. The
+  governance guard `len(gate-python-mutation.json) == TESTS.md count` keeps both at 118.
+- **Pytest no-skip 424→430** is the canonical (torch-enabled) count. Bumping it requires, atomically:
+  (1) a torch-enabled `scripts/capture_pytest_gate.py` → `gate-pytest.txt` (real 430 — observed in
+  the UAT full run); (2) rebuild the dashboard payload (it reads `gate-pytest.txt`) → new content →
+  new `dataHash`; (3) `npm install` + `npm run export:public-demo:docs` to regenerate
+  `deployment-manifest.json`, `public-hosting-probe.json` (→ `configured_not_observed`/`mismatched`),
+  `docs/index.html`, `docs/manual/assets/dashboard-static-export.html`; (4) re-pin the chromium
+  browser-visual baseline; (5) update the prose surfaces the guards bind to `430 passed`
+  (`MANUAL_GENERATION_GUIDE`, `REVIEW_GENERATION_GUIDE`, `docs/review/index.html`).
+- **Lint 87/237→88/242** (a real consequence of adding `torch_trainer.py` to the import graph):
+  regenerate `gate-lint-imports.txt` + the 4 prose surfaces (`manual_guide`, `review_guide`,
+  `features`, `review_html`). Non-deploy-coupled but bundled here so all counts move together.
+- **Registry registration:** `SPECS.md` H-2 row (epic H — implemented-epic count unchanged at 10)
+  via `spec-registry-manager`; folder + workspace `TESTS.md` via `test-registry-manager`;
+  `NEXT_STEPS.md` / `RTM.md` refresh; `ISSUE_LOG.md` H-2 audit row.
+
+This regen flips committed hosting to `configured_not_observed` until Pages serves the new
+`dataHash`, so it **rides the same deploy** as the Tier-1 CR-B21 hosting re-prove. Sequence:
+do the resync bundle on this branch → integrate `spec/h-deep-learning-real-training` → dev → main →
+Pages redeploys → `scripts/refresh_public_hosting_proof.py --live` re-proves both at the new hash.
