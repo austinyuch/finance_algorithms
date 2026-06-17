@@ -280,9 +280,10 @@ Manifest + deep 多週期回測（`assets/backend-historical-backfill-01-demo.tx
 
 ```
 _backfill_manifest.json : approximate=true, claim_boundary=no_alpha_claim,
-                          since=1990-01-01, ok+skip=18/24, fail=6
-fail (transient FRED throttle, idempotently completable):
-  DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+                          since=1990-01-01, ok+skip=24/24, fail=0
+residual completed (idempotent re-run, 2026-06-16) — 已補齊 6 條 FRED rate/FX
+系列：DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+  → T10Y2Y 已可用，regime family 現以 full-feature 執行
 
 deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
   BuyAndHold         oos_net_sharpe = 0.7007  (baseline)
@@ -307,8 +308,9 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
 >   PASSED（repo-side + live run）*（`b-data-platform/review.md`，CR-B21）
 > - Source Ref: `.agents/specs/b-data-platform/change-requests/cr-b21-historical-backfill.md`、
 >   `.agents/specs/b-data-platform/review.md`
-> - Captured：2026-06-15 live CLI run；18/24 sources 擷取，6 個 FRED rate/FX
->   系列待 idempotent re-run（FRED IP-throttle）。
+> - Captured：2026-06-15 live CLI run，residual 由 idempotent re-run 於 2026-06-16
+>   補齊；全部 24/24 sources 擷取，fail=0（先前 FRED 限流的 6 條 rate/FX 系列含
+>   `T10Y2Y` 現已齊備 → regime family full-feature）。
 > - `MOCK_DOMINANT_EVIDENCE` — 真實抓取的歷史但 `is_approximate=true` research
 >   資料（非 true PIT），strict-excluded；`no_alpha_claim`。
 
@@ -327,11 +329,12 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 
 - **深度歷史回填已落地（CR-B21）— 新增流程 6。** 研究 vintage 現已回溯至
   **1990**（Yahoo deep indices + 完整 FRED + NOAA，`is_approximate=true`，
-  strict-excluded，18/24 sources）。這使一個真實的多週期回測成為可能（deep
+  strict-excluded，24/24 sources，fail=0）。這使一個真實的多週期回測成為可能（deep
   {^GSPC,^IXIC} 1990→2026，437 個月，`computed`），並對照真實紀錄驗證
   （dot-com −49%/−78%、GFC −57%、COVID −34%、2022 −25%）。流程 5 的預設 run
   因此從僅 SP500 擴大為 12 資產的 co-temporal universe。`no_alpha_claim`；
-  6 個 FRED rate/FX series 待一次 idempotent re-run。
+  先前限流的 6 條 FRED rate/FX 系列（含 `T10Y2Y`）已由 idempotent re-run 補齊
+  → regime family 現為 full-feature。
 
 - **前後端服務已 live 驗證（2026-06-15）。** Next.js dashboard smoke 對 ephemeral
   `next start` 通過（提供 `/` 與真實 `/api/showcase` payload — 見

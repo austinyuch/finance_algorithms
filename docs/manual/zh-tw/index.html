@@ -190,9 +190,10 @@ rows（依 OOS-net Sharpe 排名）：
     <div class="alert">⚠️ <b>誠實邊界（不可妥協）：</b>今天抓取的歷史<b>非 true point-in-time</b> — 每筆記錄皆為 <code>is_approximate=true</code> + <code>backfill=true</code>（<code>available_date</code>=擷取日期；FRED 總經為 latest-<em>revised</em>）。<b>Strict PIT 模式完全排除此 backfill</b>；只有 <code>approximate_availability=True</code>（research 模式）才會曝露它，且置於 <code>no_alpha_claim</code> 下。它從不把任何東西變成 true-PIT，也從不宣稱 alpha。</div>
     <p>Manifest + deep 多週期回測（<code>assets/backend-historical-backfill-01-demo.txt</code>）：</p>
     <pre>_backfill_manifest.json : approximate=true, claim_boundary=no_alpha_claim,
-                          since=1990-01-01, ok+skip=18/24, fail=6
-fail <span style="color:#7d90b0">(transient FRED throttle, idempotently completable)</span>:
-  DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+                          since=1990-01-01, ok+skip=24/24, fail=0
+residual completed <span style="color:#7d90b0">(idempotent re-run, 2026-06-16)</span> — 已補齊 6 條 FRED rate/FX
+系列：DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+  → T10Y2Y 已可用，regime family 現以 full-feature 執行
 
 deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
   BuyAndHold         oos_net_sharpe = 0.7007  <span style="color:#7d90b0">(baseline)</span>
@@ -209,7 +210,7 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
     <div class="evidence">
       <span class="badge b-pass">PASS (Review PASSED · repo-side + live run)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source：</b>report_artifact（<code>_backfill_manifest.json</code>、<code>cr-b21-deep-cycle-1990-oos-artifact.json</code>）+ live_command_output · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>b-data-platform/change-requests/cr-b21-historical-backfill.md、b-data-platform/review.md<br>
-      <b>Captured：</b>2026-06-15 live CLI run；18/24 sources 擷取，6 個 FRED rate/FX 系列待 idempotent re-run（FRED IP-throttle）。<code>MOCK_DOMINANT_EVIDENCE</code> — 真實抓取的歷史但 <code>is_approximate=true</code> research 資料（非 true PIT），strict-excluded；<code>no_alpha_claim</code>。
+      <b>Captured：</b>2026-06-15 live CLI run，residual 由 idempotent re-run 於 2026-06-16 補齊；全部 24/24 sources 擷取，fail=0（先前 FRED 限流的 6 條 rate/FX 系列含 <code>T10Y2Y</code> 現已齊備 → regime family full-feature）。<code>MOCK_DOMINANT_EVIDENCE</code> — 真實抓取的歷史但 <code>is_approximate=true</code> research 資料（非 true PIT），strict-excluded；<code>no_alpha_claim</code>。
     </div>
   </section>
 
@@ -218,7 +219,7 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
     <p><b>Render 驗證（2026-06-15，headless chromium 1440×2600）：</b>本手冊（en/zh）與 executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence caption 與 warning badge（<code>PASS</code>、<code>MOCK_DOMINANT_EVIDENCE</code>）皆完整，無破版 CSS 或缺失 asset。review 的 UX-flow 圖現已改為 <b>self-contained inline SVG</b>（可離線 / <code>file://</code> 渲染，無 CDN 或 client-side JS，並附 accessible 文字等價 caption），已無剩餘視覺殘留。</p>
     <p><b>自上次檢查以來已解決（CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-15）：</b></p>
     <ul>
-      <li><b>深度歷史回填已落地（CR-B21）— 新增流程 6：</b>研究 vintage 現已回溯至 <b>1990</b>（Yahoo deep indices + 完整 FRED + NOAA，<code>is_approximate=true</code>，strict-excluded，18/24 sources）。這使一個真實的多週期回測成為可能（deep {^GSPC,^IXIC} 1990→2026，437 個月，<code>computed</code>），並對照真實紀錄驗證（dot-com −49%/−78%、GFC −57%、COVID −34%、2022 −25%）。流程 5 的預設 run 因此從僅 SP500 擴大為 12 資產的 co-temporal universe。<code>no_alpha_claim</code>；6 個 FRED rate/FX series 待一次 idempotent re-run。</li>
+      <li><b>深度歷史回填已落地（CR-B21）— 新增流程 6：</b>研究 vintage 現已回溯至 <b>1990</b>（Yahoo deep indices + 完整 FRED + NOAA，<code>is_approximate=true</code>，strict-excluded，24/24 sources，fail=0）。這使一個真實的多週期回測成為可能（deep {^GSPC,^IXIC} 1990→2026，437 個月，<code>computed</code>），並對照真實紀錄驗證（dot-com −49%/−78%、GFC −57%、COVID −34%、2022 −25%）。流程 5 的預設 run 因此從僅 SP500 擴大為 12 資產的 co-temporal universe。<code>no_alpha_claim</code>；先前限流的 6 條 FRED rate/FX 系列（含 <code>T10Y2Y</code>）已由 idempotent re-run 補齊 → regime family 現為 full-feature。</li>
       <li><b>前後端服務已 live 驗證（2026-06-15）：</b>Next.js dashboard smoke 對 ephemeral <code>next start</code> 通過（提供 <code>/</code> 與真實 <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>），legacy FastAPI 金字塔計算機回傳真實等差金字塔結果（<code>assets/legacy-api-01.txt</code>），「啟動服務」證據已是 <code>live_command_output</code>，不再僅依賴已 commit 的 payload。</li>
       <li><b>Sampling-frequency 誠實缺口已關閉（CR-RDO-004）：</b>真實資料 OOS 現會估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時 <b>fail closed</b>（<code>reason=oversampled_vs_native_frequency</code>），不再把陳舊價格 forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設 run（現為 12 個 co-temporal daily-native 資產）不受影響、維持 <code>computed</code>（流程 5）。</li>
       <li><b>Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）：</b>stale-baseline-hash guard 只在 <code>baselineHash != currentHash</code> 時觸發，因此 deterministic re-pin（<code>baselineHash == currentHash</code>、<code>mismatchedPixels == 0</code>）不再阻擋誠實 UI 變更；tolerant pixel-diff threshold gate 不變。</li>

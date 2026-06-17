@@ -64,8 +64,9 @@ Flow 6 — historical backfill & multi-cycle study (CR-B21):
 
 ```bash
 uv run python scripts/backfill_history.py --since 1990-01-01   # idempotent; marks approximate
-#   → backend-historical-backfill-01-demo.txt  (manifest 18/24 sources + deep
-#      {^GSPC,^IXIC} 1990→2026 437-month computed run, 0.7007 vs 0.2264)
+#   → backend-historical-backfill-01-demo.txt  (manifest 24/24 sources, fail=0
+#      after the idempotent residual re-run + deep {^GSPC,^IXIC} 1990→2026
+#      437-month computed run, 0.7007 vs 0.2264)
 #   → backend-historical-backfill-02-drawdowns.txt  (regime drawdown validation:
 #      dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25% — matches the real record)
 ```

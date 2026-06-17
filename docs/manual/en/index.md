@@ -294,9 +294,10 @@ Manifest + deep multi-cycle backtest (`assets/backend-historical-backfill-01-dem
 
 ```
 _backfill_manifest.json : approximate=true, claim_boundary=no_alpha_claim,
-                          since=1990-01-01, ok+skip=18/24, fail=6
-fail (transient FRED throttle, idempotently completable):
-  DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+                          since=1990-01-01, ok+skip=24/24, fail=0
+residual completed (idempotent re-run, 2026-06-16) — the 6 FRED rate/FX
+series captured: DGS10, DGS2, T10Y2Y, NASDAQCOM, DCOILWTICO, DEXTAUS
+  → T10Y2Y available, so the regime family now runs full-feature
 
 deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
   BuyAndHold         oos_net_sharpe = 0.7007  (baseline)
@@ -322,8 +323,9 @@ drawdowns match the real record:
 >   PASSED (repo-side + live run)* (`b-data-platform/review.md`, CR-B21)
 > - Source Ref: `.agents/specs/b-data-platform/change-requests/cr-b21-historical-backfill.md`,
 >   `.agents/specs/b-data-platform/review.md`
-> - Captured: live CLI run on 2026-06-15; 18/24 sources captured, 6 FRED rate/FX
->   series pending an idempotent re-run (FRED IP-throttle).
+> - Captured: live CLI run on 2026-06-15, residual completed by idempotent re-run
+>   2026-06-16; all 24/24 sources captured, fail=0 (the 6 previously FRED-throttled
+>   rate/FX series, incl. `T10Y2Y`, are now present → regime family full-feature).
 > - `MOCK_DOMINANT_EVIDENCE` — real fetched history but `is_approximate=true`
 >   research data (NOT true PIT), strict-excluded; `no_alpha_claim`.
 
@@ -343,11 +345,12 @@ caption), so there is no remaining visual residual.
 
 - **Deep historical backfill landed (CR-B21) — NEW Flow 6.** The research vintage
   now reaches **1990** (Yahoo deep indices + full FRED + NOAA, `is_approximate=true`,
-  strict-excluded, 18/24 sources). It enables a real multi-cycle backtest (deep
+  strict-excluded, 24/24 sources, fail=0). It enables a real multi-cycle backtest (deep
   {^GSPC,^IXIC} 1990→2026, 437 months, `computed`) and validates against the real
   record (dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25%). Flow 5's default run
   consequently widened from SP500-only to a 12-asset co-temporal universe.
-  `no_alpha_claim`; 6 FRED rate/FX series pending an idempotent re-run.
+  `no_alpha_claim`; the residual 6 FRED rate/FX series (incl. `T10Y2Y`) were
+  captured by an idempotent re-run → regime family now full-feature.
 
 - **Front + back services live-verified (2026-06-15).** The Next.js dashboard
   smoke passed against an ephemeral `next start` (served `/` and the real
