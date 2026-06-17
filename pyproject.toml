@@ -54,6 +54,13 @@ type = "forbidden"
 source_modules = ["quantlab.engine", "quantlab.data"]
 forbidden_modules = ["torch", "tensorflow", "jax", "flax"]
 
+[[tool.importlinter.contracts]]
+# Epic H 縱深防禦:回測核心不得越界進入 DL backend 邊界(框架延遲載入處)。
+name = "Backtest core (engine/data) does not reach the DL backend boundary"
+type = "forbidden"
+source_modules = ["quantlab.engine", "quantlab.data"]
+forbidden_modules = ["quantlab.models.dl", "quantlab.models.dl_forecaster"]
+
 [tool.mutmut]
 # 對方法論核心(成本/指標/walk-forward/PIT 取數)做 mutation testing
 paths_to_mutate = [

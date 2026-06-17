@@ -1,9 +1,21 @@
 {
   "status": "passed",
-  "total": 115,
-  "killed": 115,
+  "total": 118,
+  "killed": 118,
   "survived": 0,
   "mutations": [
+    {
+      "name": "h-deep-report-oos-net-ranking",
+      "status": "killed"
+    },
+    {
+      "name": "h-deep-report-no-alpha-claim",
+      "status": "killed"
+    },
+    {
+      "name": "h-backend-honest-fallback",
+      "status": "killed"
+    },
     {
       "name": "engine-regime-selector",
       "status": "killed"

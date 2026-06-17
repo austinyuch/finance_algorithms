@@ -1,4 +1,11 @@
 """Framework-light model signals for QuantLab experiments."""
+from quantlab.models.dl_forecaster import (
+    DeepForecast,
+    DeepForecastAllocationStrategy,
+    DeepForecastModel,
+    NumpyMLPForecaster,
+    run_deep_forecast_benchmark,
+)
 from quantlab.models.regime import (
     FirstRegimeClassifier,
     RegimeAllocationStrategy,
@@ -28,6 +35,11 @@ from quantlab.models.evaluation import (
 )
 
 __all__ = [
+    "DeepForecast",
+    "DeepForecastAllocationStrategy",
+    "DeepForecastModel",
+    "NumpyMLPForecaster",
+    "run_deep_forecast_benchmark",
     "ForecastAllocationStrategy",
     "FirstRegimeClassifier",
     "RegimeAllocationStrategy",

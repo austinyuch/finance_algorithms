@@ -13,9 +13,10 @@
 Contracts
 ---------
 
-Analyzed 78 files, 201 dependencies.
+Analyzed 87 files, 237 dependencies.
 ------------------------------------
 
 Backtest core (engine/data) is framework-agnostic KEPT
+Backtest core (engine/data) does not reach the DL backend boundary KEPT
 
-Contracts: 1 kept, 0 broken.
+Contracts: 2 kept, 0 broken.
