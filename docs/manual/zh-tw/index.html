@@ -52,6 +52,7 @@
   <a href="#f4">4 · 既有 API</a>
   <a href="#f5">5 · 真實資料 OOS-net</a>
   <a href="#f6">6 · 歷史回補</a>
+  <a href="#f7">7 · 深度學習</a>
   <h2>參考</h2>
   <a href="#gaps">視覺缺口盤點</a>
   <a href="../en/index.html">English version</a>
@@ -211,6 +212,25 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
       <span class="badge b-pass">PASS (Review PASSED · repo-side + live run)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source：</b>report_artifact（<code>_backfill_manifest.json</code>、<code>cr-b21-deep-cycle-1990-oos-artifact.json</code>）+ live_command_output · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>b-data-platform/change-requests/cr-b21-historical-backfill.md、b-data-platform/review.md<br>
       <b>Captured：</b>2026-06-15 live CLI run，residual 由 idempotent re-run 於 2026-06-16 補齊；全部 24/24 sources 擷取，fail=0（先前 FRED 限流的 6 條 rate/FX 系列含 <code>T10Y2Y</code> 現已齊備 → regime family full-feature）。<code>MOCK_DOMINANT_EVIDENCE</code> — 真實抓取的歷史但 <code>is_approximate=true</code> research 資料（非 true PIT），strict-excluded；<code>no_alpha_claim</code>。
+    </div>
+  </section>
+
+  <section class="card" id="f7">
+    <h2>流程 7 · 深度學習實驗（Epic H，真實 PyTorch）</h2>
+    <p><b>誰／何時：</b>研究者端到端透過回測引擎訓練一個深度模型，並以樣本外淨值指標與笨 baseline 比較 —「設定參數 → 執行 → 看結果」的機制。</p>
+    <pre>uv run python scripts/run_dl_experiment.py --backend pytorch \
+  --symbols '^GSPC' '^IXIC' --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+  --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg</pre>
+    <pre>status=computed  backend=pytorch  experiment_id=1e893d7d…
+learning curve : 0.9997 → 0.9975  (40 epochs，單調下降 → 模型確實有訓練)
+
+OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
+  StaticWeights (buy &amp; hold)        oos_net_sharpe = +0.1292   maxDD = −65.4%   [baseline]
+  DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = −71.0%   [model]</pre>
+    <p><b>如何解讀：</b>裝了 PyTorch 後，<code>pytorch</code> backend 以 torch autograd（float64）真實訓練 MLP，位於 lazy backend 邊界之後 — engine/data 核心永不匯入框架。訓練後的模型在 OOS-net Sharpe 上誠實<b>輸給</b> buy-and-hold：這正是重點 —<code>no_alpha_claim</code>、機制證據，非策略判定。沒有 torch 時，同一呼叫降級為 deterministic 的 <code>reference</code> backend（永不 raise）。深度歷史為 CR-B21 近似 backfill（非 true PIT；strict 模式排除）。</p>
+    <div class="evidence">
+      <span class="badge b-pass">PASS（Review PASSED · repo-side + torch UAT）</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source：</b>report_artifact（<code>out/dl-demo/exp-torch-gspc-ixic.json</code>，checksum <code>b73b21e9…</code>）＋ live_command_output · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>h-deep-learning-real-training/review.md · 真實 torch 訓練於 <code>is_approximate=true</code> research 資料；選用 torch lane；<code>no_alpha_claim</code>。
     </div>
   </section>
 

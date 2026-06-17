@@ -52,6 +52,7 @@
   <a href="#f4">4 · Legacy API</a>
   <a href="#f5">5 · Real-data OOS-net</a>
   <a href="#f6">6 · Historical backfill</a>
+  <a href="#f7">7 · Deep-learning</a>
   <h2>Reference</h2>
   <a href="#gaps">Visual gap inventory</a>
   <a href="../zh-tw/index.html">繁體中文版</a>
@@ -215,6 +216,25 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
       <span class="badge b-pass">PASS (Review PASSED · repo-side + live run)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
       <b>Evidence Source:</b> report_artifact (<code>_backfill_manifest.json</code>, <code>cr-b21-deep-cycle-1990-oos-artifact.json</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> b-data-platform/change-requests/cr-b21-historical-backfill.md, b-data-platform/review.md<br>
       <b>Captured:</b> live CLI run on 2026-06-15, residual completed by idempotent re-run 2026-06-16; all 24/24 sources captured, fail=0 (the 6 previously FRED-throttled rate/FX series, incl. <code>T10Y2Y</code>, are now present → regime family full-feature). <code>MOCK_DOMINANT_EVIDENCE</code> — real fetched history but <code>is_approximate=true</code> research data (NOT true PIT), strict-excluded; <code>no_alpha_claim</code>.
+    </div>
+  </section>
+
+  <section class="card" id="f7">
+    <h2>Flow 7 · Deep-learning experiment (Epic H, real PyTorch)</h2>
+    <p><b>Who/when:</b> a researcher trains a deep model end-to-end through the backtest engine and compares it to a dumb baseline on OOS-net metrics — the "set parameters → run → see results" mechanism.</p>
+    <pre>uv run python scripts/run_dl_experiment.py --backend pytorch \
+  --symbols '^GSPC' '^IXIC' --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+  --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg</pre>
+    <pre>status=computed  backend=pytorch  experiment_id=1e893d7d…
+learning curve : 0.9997 → 0.9975  (40 epochs, monotone decreasing → model trained)
+
+OOS-net leaderboard (ranked OOS-net only; baseline visible):
+  StaticWeights (buy &amp; hold)        oos_net_sharpe = +0.1292   maxDD = −65.4%   [baseline]
+  DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = −71.0%   [model]</pre>
+    <p><b>How to read it:</b> with PyTorch installed, the <code>pytorch</code> backend trains the MLP for real (torch autograd, float64) behind a lazy backend boundary — the engine/data core never imports a framework. The trained model honestly <b>under-performs</b> buy-and-hold on OOS-net Sharpe: that is the point — <code>no_alpha_claim</code>, mechanism evidence, not a strategy verdict. Without torch the same call degrades to the deterministic <code>reference</code> backend (never raises). Deep history is the CR-B21 approximate backfill (NOT true PIT; strict mode excludes it).</p>
+    <div class="evidence">
+      <span class="badge b-pass">PASS (Review PASSED · repo-side + torch UAT)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source:</b> report_artifact (<code>out/dl-demo/exp-torch-gspc-ixic.json</code>, checksum <code>b73b21e9…</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> h-deep-learning-real-training/review.md · real torch training over <code>is_approximate=true</code> research data; optional torch lane; <code>no_alpha_claim</code>.
     </div>
   </section>
 

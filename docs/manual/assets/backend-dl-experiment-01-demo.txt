@@ -1,0 +1,21 @@
+# Epic H deep-learning experiment — real PyTorch (live-captured 2026-06-18)
+# Backend/CLI lane evidence — report_artifact + live_command_output; no_alpha_claim; approximate (NOT true PIT)
+
+$ uv run python scripts/run_dl_experiment.py --backend pytorch \
+    --symbols '^GSPC' '^IXIC' --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+    --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg
+{"status": "computed", "experiment_id": "1e893d7d8b37eb30...", "artifact_path": "out/dl-demo/exp-torch-gspc-ixic.json"}
+
+backend          : pytorch   (real torch autograd; lazy import behind quantlab/models/dl/)
+universe         : ['^GSPC', '^IXIC']  (CR-B21 deep vintage 1990->2026, approximate, strict-excluded)
+params           : hidden=8 lookback=6 epochs=40 seed=0
+learning curve   : 0.9997 -> 0.9975  (40 epochs, monotone decreasing -> model trained)
+
+OOS-net leaderboard (ranked OOS-net Sharpe only; baseline visible):
+  StaticWeights (buy & hold)        oos_net_sharpe = +0.1292   maxDD = -65.4%   [baseline]
+  DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = -71.0%   [model]
+
+verdict          : the trained model UNDER-PERFORMS buy-and-hold on OOS-net. no_alpha_claim.
+                   (mechanism evidence that the harness trains for real, NOT a strategy verdict)
+checksum         : b73b21e9c4e81331 ...
+fallback         : without torch installed, the same call degrades to backend=reference (never raises)

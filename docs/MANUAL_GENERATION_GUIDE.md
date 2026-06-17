@@ -71,6 +71,20 @@ uv run python scripts/backfill_history.py --since 1990-01-01   # idempotent; mar
 #      dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25% — matches the real record)
 ```
 
+Flow 7 — deep-learning experiment (Epic H, real PyTorch):
+
+```bash
+uv run python scripts/run_dl_experiment.py --backend pytorch --symbols '^GSPC' '^IXIC' \
+  --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+  --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg
+#   → backend-dl-experiment-01-demo.txt  (status=computed, backend=pytorch; OOS-net
+#      DeepForecast +0.0919 UNDER StaticWeights baseline +0.1292 — no_alpha_claim)
+```
+
+The `pytorch` backend needs the optional torch lane installed; without it the same
+call degrades to the deterministic `reference` backend (never raises). Deep history
+is the CR-B21 approximate backfill (NOT true PIT; strict mode excludes it).
+
 The backfill is `is_approximate=true` research data (NOT true PIT); **strict mode
 excludes it**, only `approximate_availability=True` exposes it, `no_alpha_claim`.
 Because the backfill widened the co-temporal universe, Flow 5's default run now

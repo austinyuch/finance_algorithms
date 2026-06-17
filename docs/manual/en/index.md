@@ -19,6 +19,7 @@
 | A legacy API user | [Flow 4 — Pyramid calculator API](#flow-4--legacy-pyramid-calculator-api) |
 | A researcher running a real-data OOS-net backtest | [Flow 5 — Real-data OOS-net backtest](#flow-5--real-data-oos-net-backtest) |
 | A researcher studying multiple business cycles | [Flow 6 — Historical backfill & multi-cycle study](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
+| A researcher training a deep model (real PyTorch) | [Flow 7 — Deep-learning experiment](#flow-7--deep-learning-experiment-epic-h-real-pytorch) |
 
 ## Getting started / starter assets
 
@@ -328,6 +329,48 @@ drawdowns match the real record:
 >   rate/FX series, incl. `T10Y2Y`, are now present → regime family full-feature).
 > - `MOCK_DOMINANT_EVIDENCE` — real fetched history but `is_approximate=true`
 >   research data (NOT true PIT), strict-excluded; `no_alpha_claim`.
+
+---
+
+## Flow 7 — Deep-learning experiment (Epic H, real PyTorch)
+
+**Who/when:** A researcher wants to train a deep model end-to-end through the
+backtest engine and compare it to a dumb baseline on out-of-sample net metrics —
+the "set parameters → run → see results" mechanism.
+
+```bash
+uv run python scripts/run_dl_experiment.py --backend pytorch \
+  --symbols '^GSPC' '^IXIC' --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+  --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg
+```
+
+Live output (`assets/backend-dl-experiment-01-demo.txt`):
+
+```
+status=computed  backend=pytorch  experiment_id=1e893d7d…
+learning curve : 0.9997 → 0.9975  (40 epochs, monotone decreasing → model trained)
+
+OOS-net leaderboard (ranked OOS-net only; baseline visible):
+  StaticWeights (buy & hold)        oos_net_sharpe = +0.1292   maxDD = −65.4%   [baseline]
+  DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = −71.0%   [model]
+```
+
+**How to read it:** with PyTorch installed, the `pytorch` backend trains the MLP
+for real (torch autograd, float64) behind a lazy backend boundary — the
+engine/data core never imports a framework. The trained model honestly
+**under-performs** buy-and-hold on OOS-net Sharpe: that is the point —
+`no_alpha_claim`, mechanism evidence, not a strategy verdict. Without torch the
+same call degrades to the deterministic `reference` backend (never raises). The
+deep history is the CR-B21 approximate backfill (NOT true PIT; strict mode
+excludes it; research mode only). A self-contained performance-report SVG is
+written alongside the artifact.
+
+> - Evidence Source: `report_artifact` (`out/dl-demo/exp-torch-gspc-ixic.json`,
+>   checksum `b73b21e9…`) + `live_command_output`
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
+>   PASSED (repo-side + torch UAT)* (`h-deep-learning-real-training/review.md`)
+> - `MOCK_DOMINANT_EVIDENCE` — real torch training over `is_approximate=true`
+>   research data (NOT true PIT); optional torch lane; `no_alpha_claim`.
 
 ---
 

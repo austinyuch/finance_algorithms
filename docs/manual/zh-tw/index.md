@@ -316,6 +316,43 @@ deep {^GSPC, ^IXIC} 1990-01-02 → 2026-06-12 (437 months), status=computed:
 
 ---
 
+## 流程 7 — 深度學習實驗（Epic H，真實 PyTorch）
+
+**誰／何時：** 研究者想端到端透過回測引擎訓練一個深度模型，並以樣本外淨值指標
+與笨 baseline 比較 —「設定參數 → 執行 → 看結果」的機制。
+
+```bash
+uv run python scripts/run_dl_experiment.py --backend pytorch \
+  --symbols '^GSPC' '^IXIC' --hidden-units 8 --lookback 6 --epochs 40 --seed 0 \
+  --out out/dl-demo/exp-torch-gspc-ixic.json --viz out/dl-demo/exp-torch-gspc-ixic.svg
+```
+
+實際輸出（`assets/backend-dl-experiment-01-demo.txt`）：
+
+```
+status=computed  backend=pytorch  experiment_id=1e893d7d…
+learning curve : 0.9997 → 0.9975  (40 epochs，單調下降 → 模型確實有訓練)
+
+OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
+  StaticWeights (buy & hold)        oos_net_sharpe = +0.1292   maxDD = −65.4%   [baseline]
+  DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = −71.0%   [model]
+```
+
+**如何解讀：** 裝了 PyTorch 後，`pytorch` backend 以 torch autograd（float64）真實訓練
+MLP，位於 lazy backend 邊界之後 — engine/data 核心永不匯入框架。訓練後的模型在
+OOS-net Sharpe 上誠實**輸給** buy-and-hold：這正是重點 —`no_alpha_claim`、機制證據，
+非策略判定。沒有 torch 時，同一呼叫降級為 deterministic 的 `reference` backend（永不
+raise）。深度歷史為 CR-B21 近似 backfill（非 true PIT；strict 模式排除）。
+
+> - Evidence Source：`report_artifact`（`out/dl-demo/exp-torch-gspc-ixic.json`，
+>   checksum `b73b21e9…`）＋ `live_command_output`
+> - Coverage Tier：`hybrid` · Readiness State：`PASS` —《Implemented · Review
+>   PASSED（repo-side + torch UAT）》（`h-deep-learning-real-training/review.md`）
+> - `MOCK_DOMINANT_EVIDENCE` — 真實 torch 訓練於 `is_approximate=true` research
+>   資料（非 true PIT）；選用 torch lane；`no_alpha_claim`。
+
+---
+
 ## 視覺缺口盤點
 
 **Render 驗證（2026-06-15，headless chromium `1440×2600`）：** 本手冊（en/zh）與
