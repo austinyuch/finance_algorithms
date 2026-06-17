@@ -78,6 +78,26 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_h_dl_forecaster.py::test_backend_resolve_absent_framework_falls_back_to_reference"),
     ),
+    # H-2 real-training mutations — killable only in the torch-enabled UAT lane
+    # (the targeted tests `pytest.importorskip("torch")`). Validate with:
+    #   uv run python scripts/run_mutation_spot_checks.py --only h2-torch-real-training h2-torch-reference-parity-seed
+    # in a torch-enabled venv. They are NOT part of the default (torch-excluded) mutation gate.
+    MutationSpec(
+        name="h2-torch-real-training",
+        path="quantlab/models/dl/torch_trainer.py",
+        original="                p -= lr * p.grad",
+        mutated="                p -= 0.0 * p.grad",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_h2_torch_training.py::test_pytorch_matches_reference_within_documented_tolerance"),
+    ),
+    MutationSpec(
+        name="h2-torch-reference-parity-seed",
+        path="quantlab/models/dl/torch_trainer.py",
+        original="    rng = np.random.default_rng(seed)",
+        mutated="    rng = np.random.default_rng(seed + 1)",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_h2_torch_training.py::test_pytorch_matches_reference_within_documented_tolerance"),
+    ),
     MutationSpec(
         name="engine-regime-selector",
         path="quantlab/engine/vectorized.py",

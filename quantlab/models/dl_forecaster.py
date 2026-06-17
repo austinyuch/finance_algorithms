@@ -119,6 +119,18 @@ class NumpyMLPForecaster:
         return np.asarray(xs, dtype="float64"), np.asarray(ys, dtype="float64")
 
     def _train(self, xs: np.ndarray, ys: np.ndarray) -> dict[str, np.ndarray]:
+        if self.backend == "pytorch":
+            # Real PyTorch training (slice H-2). The lazy import keeps the
+            # framework-isolation boundary intact; reachable only when the registry
+            # resolved torch as installed, so the default env never enters this branch.
+            from quantlab.models.dl.torch_trainer import train_mlp_torch
+
+            weights, trace = train_mlp_torch(
+                xs, ys, lookback=self._lookback, hidden=self._hidden,
+                epochs=self._epochs, seed=self._seed, lr=self._lr,
+            )
+            self.training_trace = trace
+            return weights
         rng = np.random.default_rng(self._seed)
         w1 = rng.standard_normal((self._lookback, self._hidden)) * 0.1
         b1 = np.zeros((1, self._hidden))
