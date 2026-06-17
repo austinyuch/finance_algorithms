@@ -78,6 +78,7 @@ need no port allocation and are the default evidence path.
 
 - `quantlab.engine` and `quantlab.data` must not import `torch`, `tensorflow`, `jax`, or `flax`.
 - Keep ML framework code behind strategy adapters or environment-specific modules.
+- Epic H (deep-learning research lab) keeps frameworks behind `quantlab/models/dl/backends.py` (`FrameworkAdapterRegistry`): torch/jax/tf are resolved lazily and degrade honestly to the framework-free `reference` backend when absent. A second import-linter contract forbids `engine`/`data` from importing the DL backend boundary. `quantlab/models/dl_forecaster.py` (reference MLP), `quantlab/research/model_performance_report.py` + `model_report_viz.py` (stats/viz), and `scripts/run_dl_experiment.py` (parameterized experiment CLI → `ExperimentRegistry` lineage) are all `no_alpha_claim`.
 - Keep `quantlab/contracts/interfaces.py` structurally aligned with `.agents/specs/a0-backtest-foundation/contract/interfaces.py`.
 - For schema changes, update the spec contract first, regenerate generated models if needed, and run tests plus mypy.
 - Backtest results should report out-of-sample net metrics when used for leaderboard comparisons.
