@@ -149,6 +149,7 @@
       <div class="card"><h3 class="en">🔭 MLOps E-lite (E)</h3><h3 class="zh">🔭 MLOps E-lite (E)</h3><p class="en">Experiment registry, config catalog, checksum snapshot, dashboard bridge.</p><p class="zh">實驗登錄、config catalog、checksum 快照、儀表板橋接。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · e-mlops-tier3-lite/review.md · registry-only</div></div>
       <div class="card"><h3 class="en">📊 Showcase dashboard (F)</h3><h3 class="zh">📊 Showcase 儀表板 (F)</h3><p class="en">Read API + Next.js app: leaderboard, regime, rebalance, experiments, evidence. Browser visual proven; public-hosting hash parity is still pending for the refreshed artifact.</p><p class="zh">Read API ＋ Next.js app：leaderboard、regime、再平衡、實驗、證據。瀏覽器視覺已證明；refreshed artifact 的 public-hosting hash parity 仍待證明。</p><div><span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-mock">local_demo_only</span></div><div class="ev">live_screenshot + static_export · hybrid · f-demo-hardening + ops-visual-drift-artifacts/review.md</div></div>
       <div class="card"><h3 class="en">🧪 Alt-data slices (G)</h3><h3 class="zh">🧪 Alt-data 切片 (G)</h3><p class="en">Source-contract-first local CSV loader, two optional default-disabled slices.</p><p class="zh">Source-contract 優先的本地 CSV loader，兩個 optional、預設停用的切片。</p><div><span class="badge b-pass">PASS</span></div><div class="ev">report_artifact · hybrid · g-alt-data-first-slice/review.md</div></div>
+      <div class="card"><h3 class="en">🤖 Deep-learning lab (H) — real PyTorch</h3><h3 class="zh">🤖 深度學習 lab (H) — 真實 PyTorch</h3><p class="en">Framework-free reference MLP forecaster (H-1) + a <b>real PyTorch training</b> path (H-2) behind a lazy backend boundary that degrades honestly to <code>reference</code> when torch is absent. Parameterized experiment CLI → OOS-net report + self-contained viz + registry lineage.</p><p class="zh">框架無關的 reference MLP forecaster (H-1) ＋ 一條<b>真實 PyTorch 訓練</b>路徑 (H-2)，位於 lazy backend 邊界之後，torch 缺席時誠實降級為 <code>reference</code>。參數化實驗 CLI → OOS-net 報告 ＋ self-contained 視覺化 ＋ registry lineage。</p><div><span class="badge b-pass">PASS (repo-side + torch UAT)</span><span class="badge b-mock">no_alpha_claim</span></div><div class="ev">report_artifact + live_command_output · hybrid · h-deep-learning-research-lab + h-deep-learning-real-training/review.md</div></div>
       <div class="card"><h3 class="en">🏛️ Legacy pyramid API</h3><h3 class="zh">🏛️ 既有金字塔計算機 API</h3><p class="en">Arithmetic + geometric order sizing FastAPI — immutable baseline, preserved.</p><p class="zh">等差 ＋ 等比下單量的 FastAPI — 不可變基線，原樣保留。</p><div><span class="badge b-base">stable legacy</span></div><div class="ev">report_artifact · tests/test_algo_pyramid.py</div></div>
     </div>
 
@@ -157,6 +158,53 @@
     <p class="en" style="font-size:13px;color:#6b7689;margin:0 0 6px">Real chromium-headless screenshot — <code>frontend/out/browser-visual.png</code> (<code>proven</code>, desktop-1440×900). The static export ships semantic HTML without the app stylesheet, so it renders unstyled by design.</p>
     <p class="zh" style="font-size:13px;color:#6b7689;margin:0 0 6px">真實 chromium-headless 截圖 — <code>frontend/out/browser-visual.png</code>（<code>proven</code>、desktop-1440×900）。靜態 artifact 僅輸出語意化 HTML、未內嵌 app 樣式表，故刻意無樣式渲染。</p>
     <img class="preview" style="height:auto;display:block" src="assets/dashboard-browser-visual.png" alt="Chromium-headless screenshot of the QuantLab dashboard">
+  </section>
+
+  <section>
+    <h2 class="sec"><span class="en">🤖 Deep-Learning Demo (Epic H)</span><span class="zh">🤖 深度學習 Demo (Epic H)</span></h2>
+    <p class="sub en">A real PyTorch model, trained end-to-end through the backtest engine — and honest enough to admit it does not beat buy-and-hold.</p>
+    <p class="sub zh">一個真實的 PyTorch 模型，端到端透過回測引擎訓練 — 並且誠實到承認它沒有打敗 buy-and-hold。</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3 class="en">What the demo proves</h3>
+        <h3 class="zh">這個 demo 證明什麼</h3>
+        <ul class="en">
+          <li><b>The harness trains for real.</b> With PyTorch installed, the <code>pytorch</code> backend computes the MLP forward/backward via torch autograd (float64), reached through a lazy backend dispatch — the engine/data core never imports a framework (import-linter enforced).</li>
+          <li><b>Parity, not a second model.</b> Seed-initialised identically to the framework-free reference, the torch forecasts agree with it within a documented <code>1e-3</code> tolerance, and the run is deterministic.</li>
+          <li><b>Honest degradation.</b> Without torch (the default lock), the same call falls back to the deterministic <code>reference</code> backend — never raises — so the default build stays green.</li>
+          <li><b>No alpha.</b> Over a deep multi-cycle window the trained model <b>under-performs</b> the dumb baseline on OOS-net Sharpe. That is the point: methodology honesty over hype.</li>
+        </ul>
+        <ul class="zh">
+          <li><b>這套 harness 真的會訓練。</b>裝了 PyTorch 後，<code>pytorch</code> backend 以 torch autograd（float64）計算 MLP 前向/反向，經由 lazy backend dispatch 觸發 — engine/data 核心永不匯入框架（import-linter 強制）。</li>
+          <li><b>是 parity，不是第二個模型。</b>與框架無關的 reference 用相同 seed 初始化，torch 預測與其在 <code>1e-3</code> 容差內一致，且結果 deterministic。</li>
+          <li><b>誠實降級。</b>沒有 torch（預設 lock）時，同一呼叫回退到 deterministic 的 <code>reference</code> backend — 永不 raise — 預設 build 維持綠燈。</li>
+          <li><b>沒有 alpha。</b>在深度多週期區間，訓練後的模型在 OOS-net Sharpe 上<b>輸給</b>笨 baseline。這正是重點：方法論誠實度勝於炒作。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="en">Flagship experiment — OOS-net leaderboard</h3>
+        <h3 class="zh">旗艦實驗 — OOS-net 排行榜</h3>
+        <p class="en" style="font-size:13px;color:#6b7689;margin:.2em 0">Seed/demo data: CR-B21 deep vintage <code>{^GSPC, ^IXIC}</code> 1990→2026 (approximate, NOT true PIT, strict-excluded). Params: <code>backend=pytorch, hidden=8, lookback=6, epochs=40, seed=0</code>. <code>experiment_id 1e893d7d…</code>.</p>
+        <p class="zh" style="font-size:13px;color:#6b7689;margin:.2em 0">Seed/demo 資料：CR-B21 深度 vintage <code>{^GSPC, ^IXIC}</code> 1990→2026（近似、非 true PIT、strict 排除）。參數：<code>backend=pytorch, hidden=8, lookback=6, epochs=40, seed=0</code>。<code>experiment_id 1e893d7d…</code>。</p>
+        <table>
+          <tr><th>Strategy</th><th>OOS-net Sharpe</th><th>Max DD</th><th>Role</th></tr>
+          <tr><td>StaticWeights (buy &amp; hold)</td><td><b>+0.1292</b></td><td>−65.4%</td><td>baseline</td></tr>
+          <tr><td>DeepForecast (PyTorch MLP)</td><td>+0.0919</td><td>−71.0%</td><td>model</td></tr>
+        </table>
+        <p class="en" style="font-size:13px;margin:.4em 0">Learning curve (per-epoch MSE): <code>0.9997 → 0.9975</code>, monotone decreasing over 40 epochs — the model genuinely trained. Both backends produce this same shape within tolerance.</p>
+        <p class="zh" style="font-size:13px;margin:.4em 0">學習曲線（每 epoch MSE）：<code>0.9997 → 0.9975</code>，40 epoch 單調下降 — 模型確實有訓練。兩個 backend 在容差內產生相同形狀。</p>
+        <div><span class="badge b-pass">computed</span><span class="badge b-pass">backend=pytorch</span><span class="badge b-mock">no_alpha_claim</span></div>
+        <div class="ev">report_artifact (<code>out/dl-demo/exp-torch-gspc-ixic.json</code>, checksum <code>b73b21e9…</code>) + live_command_output · h-deep-learning-real-training/review.md</div>
+      </div>
+    </div>
+
+    <p class="en" style="font-size:13px;color:#6b7689;margin:18px 0 6px">Self-contained statistical performance report (return distribution, rolling Sharpe, drawdown, learning curve) — rendered offline, no CDN. Generated by <code>scripts/run_dl_experiment.py</code> from the canonical experiment artifact.</p>
+    <p class="zh" style="font-size:13px;color:#6b7689;margin:18px 0 6px">Self-contained 統計效能報告（報酬分布、rolling Sharpe、drawdown、學習曲線）— 離線渲染、無 CDN。由 <code>scripts/run_dl_experiment.py</code> 從 canonical 實驗 artifact 生成。</p>
+    <img class="preview" style="height:auto;display:block;background:#fff" src="assets/dl-experiment-torch.svg" alt="Deep-learning performance report: distribution, rolling Sharpe, drawdown and learning-curve panels for the PyTorch MLP vs the StaticWeights baseline">
+
+    <div class="alert en" style="margin-top:18px">⚠️ <b>Honesty boundary:</b> the deep history is the CR-B21 <code>is_approximate=true</code> backfill (NOT true point-in-time; strict PIT mode excludes it) and the experiment runs in research (<code>approximate_availability=True</code>) mode. PyTorch is an <b>optional lane</b> kept out of the default lock; the real-training run is captured in a torch-enabled UAT (full suite 430 passed, lane 4 passed, 2 mutations KILLED). Everything is <code>no_alpha_claim</code> — mechanism evidence, not a strategy verdict.</div>
+    <div class="alert zh" style="margin-top:18px">⚠️ <b>誠實邊界：</b>深度歷史為 CR-B21 的 <code>is_approximate=true</code> backfill（非 true point-in-time；strict PIT 模式排除），實驗以 research（<code>approximate_availability=True</code>）模式執行。PyTorch 為<b>選用 lane</b>，不納入預設 lock；真實訓練在 torch-enabled UAT 中擷取（full suite 430 passed、lane 4 passed、2 mutations KILLED）。一切皆 <code>no_alpha_claim</code> — 機制證據，非策略判定。</div>
   </section>
 
   <section>
@@ -210,10 +258,12 @@
     <p class="sub zh">自上次檢查以來已解決 vs 仍未解決 — 沒有 false green。</p>
     <div class="gap">
       <div>
-        <h3 class="ok en">✅ Resolved (2026-06-11 → 2026-06-15)</h3>
-        <h3 class="ok zh">✅ 已解決 (2026-06-11 → 2026-06-15)</h3>
+        <h3 class="ok en">✅ Resolved (2026-06-11 → 2026-06-18)</h3>
+        <h3 class="ok zh">✅ 已解決 (2026-06-11 → 2026-06-18)</h3>
         <ul class="clean en">
           <li><b>Deep historical backfill landed (CR-B21):</b> the research vintage now reaches <b>1990</b> (Yahoo deep indices + full FRED + NOAA; <code>is_approximate=true</code>, strict-excluded, 24/24 sources, fail=0). It enables a real multi-cycle backtest (deep {^GSPC,^IXIC} 1990&rarr;2026, 437 months, <code>computed</code>) and the data validates against the real record &mdash; dot-com &minus;49%/&minus;78%, GFC &minus;57%, COVID &minus;34%, 2022 &minus;25%. <code>no_alpha_claim</code>; the residual 6 FRED rate/FX series (incl. <code>T10Y2Y</code>) were captured by an idempotent re-run &rarr; regime family now full-feature <span class="sev sL">data</span></li>
+          <li><b>Epic H deep-learning real training landed (H-2):</b> the <code>pytorch</code> backend now <b>actually trains</b> the reference MLP via torch autograd (lazy, float64, seed-init parity ≤<code>1e-3</code>, deterministic) through an additive backend dispatch; optional default-skipped torch lane with honest <code>reference</code> fallback; framework-isolation (import-linter "DL backend boundary") KEPT. Torch UAT: full suite <b>430 passed</b>, lane 4 passed, 2 mutations KILLED. The model honestly <b>under-performs</b> buy-and-hold on OOS-net (<code>no_alpha_claim</code>) <span class="sev sL">model</span></li>
+          <li><b>Dashboard re-pinned for the H-2 count resync</b>: payload regenerated (<code>dataHash 4237842a…</code>), static visual baseline re-pinned (htmlHash <code>74e23199…</code>), browser-visual re-pinned (<code>16eff6f5…</code>, 0-pixel, deterministic). Committed hosting honestly reverts to <code>configured_not_observed</code> until GitHub Pages serves the new hash (last live-proven <code>0f170441…</code>) <span class="sev sL">visual</span></li>
           <li>Python suite now <b>430 passed</b>; mypy clean over 69 files; mutation spot checks <b>118/118 configured</b>, including the CR-RDO-004 real-data OOS sampling-frequency oversampling guard, root Torch dependency, demo result-store close gates, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift, stakeholder and app payload copy drift, retired F fixture marker drift, superseded F CR fixture-boundary drift, public probe expected-hash drift, review pytest/frontend-count/coverage/audit transcript, import-linter count/formalization drift, governance registry row-count drift, E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection <span class="sev sL">gate</span></li>
           <li>Frontend <b>46 tests pass</b>, coverage 90.00%, <b>0</b> dependency vulnerabilities, and frontend mutation 26/26 killed including <code>frontend-smoke-html-api-parity-regression</code> <span class="sev sL">gate</span></li>
           <li><b>Live chromium-headless screenshot</b> captured (<code>browser-visual.png</code> <code>proven</code>) <span class="sev sL">visual</span></li>
@@ -231,6 +281,8 @@
         </ul>
         <ul class="clean zh">
           <li><b>深度歷史回填已落地（CR-B21）：</b>研究用 vintage 現可回溯至 <b>1990</b>（Yahoo 深度指數 ＋ 完整 FRED ＋ NOAA；<code>is_approximate=true</code>、strict 模式排除、24/24 sources、fail=0）。可進行真實多週期回測（深度 {^GSPC,^IXIC} 1990&rarr;2026、437 個月、<code>computed</code>），且資料對照真實紀錄驗證 &mdash; 網路泡沫 &minus;49%/&minus;78%、GFC &minus;57%、COVID &minus;34%、2022 &minus;25%。<code>no_alpha_claim</code>；先前限流的 6 條 FRED rate/FX 系列（含 <code>T10Y2Y</code>）已由 idempotent 重跑補齊 &rarr; regime family 現為 full-feature <span class="sev sL">data</span></li>
+          <li><b>Epic H 深度學習真實訓練落地（H-2）：</b><code>pytorch</code> backend 現在<b>真的會訓練</b> reference MLP（torch autograd、lazy、float64、seed-init parity ≤<code>1e-3</code>、deterministic），經由 additive backend dispatch；選用且預設跳過的 torch lane，torch 缺席時誠實回退 <code>reference</code>；framework-isolation（import-linter「DL backend boundary」）KEPT。Torch UAT：full suite <b>430 passed</b>、lane 4 passed、2 mutations KILLED。模型在 OOS-net 上誠實<b>輸給</b> buy-and-hold（<code>no_alpha_claim</code>） <span class="sev sL">model</span></li>
+          <li><b>儀表板因 H-2 count resync 重新 pin</b>：payload 重新生成（<code>dataHash 4237842a…</code>）、static visual baseline 重新 pin（htmlHash <code>74e23199…</code>）、browser-visual 重新 pin（<code>16eff6f5…</code>、0-pixel、deterministic）。committed hosting 誠實回退為 <code>configured_not_observed</code>，直到 GitHub Pages 提供新 hash（最後 live-proven <code>0f170441…</code>） <span class="sev sL">visual</span></li>
           <li>Python 測試套件現為 <b>430 passed</b>；mypy 在 61 檔上 clean；mutation spot checks <b>118/118 configured</b>，包含 CR-RDO-004 真實資料 OOS sampling-frequency oversampling guard、root Torch dependency、demo result-store close gates、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default 與 skill-body guards、governance refresh review stale-evidence regression、CR-FPS-001/CR-FPS-002/CR-FPS-003/CR-FPS-007/CR-FPS-008/CR-FPS-009 public-hosting manifest/probe/review-probe/hash/contract/taxonomy drift、stakeholder 與 app payload copy drift、retired F fixture marker drift、superseded F CR fixture-boundary drift、public probe expected-hash drift、review pytest/frontend-count/coverage/audit transcript、import-linter count/formalization drift、governance registry row-count drift、E production proof/identity-scheme/manifest/experiment-binding/retraining-artifact URI/artifact-scheme/observed-at UTC/drift-threshold gates、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護 <span class="sev sL">gate</span></li>
           <li>前端 <b>46 tests pass</b>，coverage 90.00%，<b>0</b> 個 dependency 漏洞，前端 mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code> <span class="sev sL">gate</span></li>
           <li><b>已擷取 live chromium-headless 截圖</b>（<code>browser-visual.png</code> <code>proven</code>） <span class="sev sL">visual</span></li>

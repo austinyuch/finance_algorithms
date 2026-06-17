@@ -106,3 +106,16 @@ language toggle:
    (`out/…`), not `/tmp`. Verify cards/captions/badges and CSS. The UX-flow diagram
    is a self-contained inline SVG (no Mermaid CDN / client-side JS), so it renders
    in the static screenshot too; keep its accessible text-equivalent caption.
+
+## Epic H deep-learning demo section
+
+`docs/review/index.html` carries a dedicated **🤖 Deep-Learning Demo (Epic H)**
+section showcasing the real-PyTorch training slice (H-2). Its evidence is the
+canonical experiment artifact `out/dl-demo/exp-torch-gspc-ixic.json`
+(`status=computed`, `backend=pytorch`, OOS-net DeepForecast under the
+StaticWeights baseline — `no_alpha_claim`) plus the self-contained performance
+report SVG copied to `docs/review/assets/dl-experiment-torch.svg`. Regenerate via
+`scripts/run_dl_experiment.py --backend pytorch` (needs the optional torch lane).
+Honesty cap: deep history is the CR-B21 approximate backfill (NOT true PIT);
+public hosting stays `configured_not_observed` until Pages serves the new
+`dataHash` after a `main` deploy.
