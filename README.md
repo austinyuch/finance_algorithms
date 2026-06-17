@@ -90,6 +90,13 @@ uv run python scripts/run_vintage_slice.py
 uv run python scripts/run_real_data_oos_backtest.py   # SP500 index OOS-net comparison
 ```
 
+Epic **H** adds a deep-learning research lab: a framework-free deterministic reference
+MLP forecaster with a multi-framework backend registry (slice H-1) and a real **PyTorch**
+training path (slice H-2, `scripts/run_dl_experiment.py --backend pytorch`) that degrades
+honestly to the `reference` backend when torch is absent. Frameworks stay behind
+`quantlab/models/dl/` (import-linter enforced); torch is an optional lane kept out of the
+default lock; everything is `no_alpha_claim`.
+
 A deep historical backfill (CR-B21) extends the research vintage back to **1990**,
 so `approximate_availability=True` runs can span multiple business cycles
 (dot-com, GFC, COVID, 2022). It is explicitly `is_approximate=true` research data

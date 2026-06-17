@@ -73,11 +73,15 @@ closeout — see below).
   (F hosting-freshness boundary flake at `age_hours≈24.0`), logged as `ISSUE-FPS-FRESH-001`. It is
   independent of H-2 (no hosting code touched) and passes in isolation / in the 430-passed torch run.
 
-## Closeout Pending (one atomic, deploy-coupled, multi-toolchain bundle — not yet done)
+## Closeout DONE (one atomic, deploy-coupled bundle — applied 2026-06-18)
 
-The branch is intentionally left **internally consistent and governance-guard-green at the
-H-1-inherited counts** (pytest no-skip 424, mutation 118, lint 87 files/237 deps). The count
-resync was deliberately **not** applied piecemeal, because it is atomic and deploy-coupled:
+The count resync was applied as a single coherent bundle (torch + npm + chromium), leaving
+only the actual `main` Pages deploy to the user. All 25 governance guards green. Final state:
+pytest no-skip **430** (torch capture), mutation **118** published (the 2 H-2 mutations
+torch-UAT-only, both KILLED), lint **88 files / 242 deps**; dashboard `dataHash 4237842a…`,
+static htmlHash `74e23199…`, browser-visual `16eff6f5…` (0-pixel re-pin); committed hosting
+`configured_not_observed`/`mismatched` (last live-proven `0f170441…`) until Pages serves the
+new hash. The mechanics that were applied (for the record):
 
 - **Mutation count stays 118** (published default gate). The 2 new H-2 mutations
   (`h2-torch-real-training`, `h2-torch-reference-parity-seed`) are **torch-UAT-only** — unkillable
