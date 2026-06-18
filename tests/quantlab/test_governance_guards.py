@@ -181,6 +181,10 @@ def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
     f_showcase_count = _registry_row_pass_count(registry, "test_f_1_showcase_api")
     assert f"Python F {f_showcase_count} passed" in workspace_rollup
     assert "Python F 11 passed" not in workspace_rollup
+    assert "no global Python line-coverage readiness threshold" in registry
+    assert "focused line-coverage rows below are the current authority" in registry
+    assert "--cov=quantlab --cov=scripts" in registry
+    assert "must not be used as a readiness\nthreshold" in workspace_rollup
 
 
 def test_local_first_ci_policy_is_repo_guided_and_skill_backed():

@@ -21,6 +21,11 @@ cd frontend && npm run smoke
 cd frontend && npm run mutation -- --only frontend-static-export-showcase-sync
 ```
 
+Python line coverage authority is intentionally focused, not global: row-level
+commands in `quantlab/TESTS.md` are the current source of truth, and the
+diagnostic full-suite inventory command there must not be used as a readiness
+threshold until it completes reliably and an explicit threshold is approved.
+
 ## Current Evidence Snapshot
 
 Default-root Python gate refreshed 2026-06-18: `uv run pytest -q` -> **422 passed, 2 skipped**. H-2 torch-enabled UAT remains **430 passed** and is optional-lane evidence, not the default-root count.
