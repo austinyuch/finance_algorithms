@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 import pytest
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import HealthCheck, assume, given, settings, strategies as st
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "daily_snapshot.py"
 STOOQ_PROOF_PATH = Path(__file__).resolve().parents[1] / "scripts" / "stooq_contract_proof.py"
@@ -971,18 +971,10 @@ def test_stooq_contract_proof_cli_rejects_empty_symbol_scope(tmp_path: Path):
     assert proof["decision"]["default_enabled"] == "false"
 
 
-@given(
-    ok=st.integers(min_value=0, max_value=10),
-    skip=st.integers(min_value=0, max_value=10),
-    fail=st.integers(min_value=0, max_value=10),
-    dry=st.integers(min_value=0, max_value=10),
-)
-def test_pbt_snapshot_ops_gate_counts_must_match_job_outcomes(ok, skip, fail, dry):
-    from scripts.snapshot_ops_gate import validate_snapshot_report
-
+def _snapshot_report_for_counts(ok: int, skip: int, fail: int, dry: int) -> dict[str, object]:
     total = ok + skip + fail + dry
     jobs = [{"source_id": f"src:{i}", "status": "ok"} for i in range(total)]
-    report = {
+    return {
         "available_date": "2026-06-11",
         "dry_run": False,
         "counts": {"ok": ok, "skip": skip, "fail": fail, "dry": dry},
@@ -993,12 +985,32 @@ def test_pbt_snapshot_ops_gate_counts_must_match_job_outcomes(ok, skip, fail, dr
         },
     }
 
-    if total == 0:
-        with pytest.raises(ValueError, match="job outcomes"):
-            validate_snapshot_report({**report, "jobs": []}, allow_failures=True)
-    elif ok + skip + dry == 0:
-        with pytest.raises(ValueError, match="no successful"):
-            validate_snapshot_report(report, allow_failures=True)
-    else:
-        summary = validate_snapshot_report(report, allow_failures=True)
-        assert summary["counts"] == report["counts"]
+
+def test_snapshot_ops_gate_rejects_missing_job_outcomes():
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    with pytest.raises(ValueError, match="job outcomes"):
+        validate_snapshot_report(_snapshot_report_for_counts(0, 0, 0, 0), allow_failures=True)
+
+
+@given(fail=st.integers(min_value=1, max_value=10))
+def test_pbt_snapshot_ops_gate_rejects_reports_with_no_successful_work(fail):
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    with pytest.raises(ValueError, match="no successful"):
+        validate_snapshot_report(_snapshot_report_for_counts(0, 0, fail, 0), allow_failures=True)
+
+
+@given(
+    ok=st.integers(min_value=0, max_value=10),
+    skip=st.integers(min_value=0, max_value=10),
+    fail=st.integers(min_value=0, max_value=10),
+    dry=st.integers(min_value=0, max_value=10),
+)
+def test_pbt_snapshot_ops_gate_accepts_matching_counts_with_some_work(ok, skip, fail, dry):
+    from scripts.snapshot_ops_gate import validate_snapshot_report
+
+    assume(ok + skip + dry > 0)
+    report = _snapshot_report_for_counts(ok, skip, fail, dry)
+    summary = validate_snapshot_report(report, allow_failures=True)
+    assert summary["counts"] == report["counts"]

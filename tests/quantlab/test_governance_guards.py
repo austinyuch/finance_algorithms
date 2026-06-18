@@ -163,6 +163,7 @@ def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
     """Governance-heavy row counts must track the current test inventory."""
     registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
     governed_rows = {
+        "test_daily_snapshot": ROOT / "tests/test_daily_snapshot.py",
         "test_e_1_experiment_registry": ROOT / "tests/quantlab/test_e_1_experiment_registry.py",
         "test_e_production_evidence": ROOT / "tests/quantlab/test_e_production_evidence.py",
         "test_governance_guards": ROOT / "tests/quantlab/test_governance_guards.py",
