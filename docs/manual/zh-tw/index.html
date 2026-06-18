@@ -53,6 +53,7 @@
   <a href="#f5">5 · 真實資料 OOS-net</a>
   <a href="#f6">6 · 歷史回補</a>
   <a href="#f7">7 · 深度學習</a>
+  <a href="#f8">8 · 互動研究</a>
   <h2>參考</h2>
   <a href="#gaps">視覺缺口盤點</a>
   <a href="../en/index.html">English version</a>
@@ -234,11 +235,42 @@ OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
     </div>
   </section>
 
+  <section class="card" id="f8">
+    <h2>流程 8 · 互動研究 UI（Epic H，切片 H-3）</h2>
+    <p><b>誰／何時：</b>審閱者想從 showcase 儀表板<em>探索</em> Epic H 深度學習切片 — 調整參數、讀取 model-vs-baseline 排行榜與圖表 — 而不啟動 live 訓練工作。H-3 是對既有 H artifacts 的 deterministic <b>static replay</b>（尚無 live backend rerun）。</p>
+    <pre>cd frontend
+npm run export:public-demo     <span style="color:#7d90b0"># 重新匯出 dashboard（含 interactiveResearch 區塊）</span>
+npm run e2e:interactive        <span style="color:#7d90b0"># 真實 Chromium/Next.js：改 seed → computed → fail_closed → VRT</span></pre>
+    <p>儀表板的 <b>Interactive Research</b> 面板曝露 H 實驗參數與 deterministic 結果：</p>
+    <pre>parameters : backend=reference  hiddenUnits=4  lookback=6  epochs=20  seed=0
+             rebalance=monthly  symbols=[GROWTH, STEADY]
+ranges     : hiddenUnits 2..64 · lookback 3..24 · epochs 5..200 · seed 0..999
+             rebalance {monthly, quarterly} · backend {reference, pytorch, jax, tensorflow}
+mode       : static_replay        status : computed
+metric_authority : out_of_sample_net_only        claim_boundary : no_alpha_claim
+
+OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
+  DeepForecastAllocationStrategy   oos_net_sharpe = 0.91   maxDD = −16%   [model]
+  StaticWeights                    oos_net_sharpe = 0.63   maxDD = −19%   [baseline]
+
+data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
+               approximateAvailability=true  strictPitExcluded=true
+               warning=research_mode_approximate_availability</pre>
+    <p><b>怎麼讀：</b>面板僅以樣本外<em>淨值</em> Sharpe 排名，且永遠保留笨 <code>StaticWeights</code> baseline 可見。每一列都帶有 equity-curve、drawdown、return-distribution，以及（model 列）learning-curve 序列。資料 lineage 是 CR-B21 <code>is_approximate=true</code> backfill，因此面板顯示 <code>research_mode_approximate_availability</code> 警告 — 它是 research replay，<b>非</b> true PIT、<b>非</b> alpha 宣稱。</p>
+    <div class="alert">⚠️ <b>Fail-closed：</b>要求超出公布 range 的參數集合，或 report checksum 不再相符的 payload，會把面板翻成 <code>status=fail_closed</code>，而非渲染陳舊或捏造的結果。<code>npm run e2e:interactive</code> 瀏覽器流程正是驅動這條路徑（<code>computed</code> → 改 seed → <code>fail_closed</code>），並將 fail-closed 截圖與已 commit 的 VRT baseline <code>frontend/visual-baselines/interactive-research-failclosed.png</code> 比對，0 個 mismatched pixels。</div>
+    <div class="evidence">
+      <span class="badge b-pass">PASS（Review PASSED · repo-side/local static-replay）</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source：</b>report_artifact（已 commit 的 <code>interactiveResearch</code> static-replay 區塊，位於 <code>frontend/lib/showcase-payload.json</code> / <code>docs/showcase.json</code>）＋ live_command_output（<code>npm run e2e:interactive</code> 真實 Chromium fail-closed VRT） · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>h-interactive-research-ui/review.md<br>
+      <b>Captured：</b>依 <code>h-interactive-research-ui/review.md</code>（2026-06-18）— 前端 52 tests pass、coverage 84.12%、<code>npm run e2e:interactive</code> 通過（真實 Chromium <code>computed</code>→<code>fail_closed</code>、0-pixel VRT）、browser visual diff <code>1077 / 1,296,000</code> 低於 threshold <code>0.001</code>，H-3 mutations <code>frontend-h3-interactive-claim-boundary</code> / <code>frontend-h3-approximate-warning-gate</code> / <code>frontend-h3-e2e-failclosed-status-gate</code> 皆 killed。Public Pages parity 為 deploy-gated（在 Pages 服務 expected <code>dataHash c33da57d…</code> 前維持 <code>configured_not_observed</code>）。<code>no_alpha_claim</code>；對既有 H artifacts 的 <code>static_replay</code> — 無 live backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3。
+    </div>
+  </section>
+
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
     <p><b>Render 驗證（2026-06-15，headless chromium 1440×2600）：</b>本手冊（en/zh）與 executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence caption 與 warning badge（<code>PASS</code>、<code>MOCK_DOMINANT_EVIDENCE</code>）皆完整，無破版 CSS 或缺失 asset。review 的 UX-flow 圖現已改為 <b>self-contained inline SVG</b>（可離線 / <code>file://</code> 渲染，無 CDN 或 client-side JS，並附 accessible 文字等價 caption），已無剩餘視覺殘留。</p>
     <p><b>自上次檢查以來已解決（CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-15）：</b></p>
     <ul>
+      <li><b>互動研究 UI 已落地（Epic H 切片 H-3）— 新增流程 8：</b>showcase 儀表板現帶有一個對既有 H artifacts 的互動參數面板 — deterministic <code>static_replay</code> 的 model-vs-baseline 排行榜，含 equity/drawdown/return-distribution/learning-curve 圖表、僅 OOS-net 排名且 baseline 可見、<code>research_mode_approximate_availability</code> 警告，以及對不支援參數或陳舊 checksum 的 <b>fail-closed</b> 行為。由 <code>tests/quantlab/test_h3_interactive_showcase.py</code>、<code>frontend/tests/interactive-research.test.ts</code> 與真實 Chromium <code>npm run e2e:interactive</code> fail-closed VRT（0-pixel）證明。<code>no_alpha_claim</code>；無 live backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3。</li>
       <li><b>深度歷史回填已落地（CR-B21）— 新增流程 6：</b>研究 vintage 現已回溯至 <b>1990</b>（Yahoo deep indices + 完整 FRED + NOAA，<code>is_approximate=true</code>，strict-excluded，24/24 sources，fail=0）。這使一個真實的多週期回測成為可能（deep {^GSPC,^IXIC} 1990→2026，437 個月，<code>computed</code>），並對照真實紀錄驗證（dot-com −49%/−78%、GFC −57%、COVID −34%、2022 −25%）。流程 5 的預設 run 因此從僅 SP500 擴大為 12 資產的 co-temporal universe。<code>no_alpha_claim</code>；先前限流的 6 條 FRED rate/FX 系列（含 <code>T10Y2Y</code>）已由 idempotent re-run 補齊 → regime family 現為 full-feature。</li>
       <li><b>前後端服務已 live 驗證（2026-06-15）：</b>Next.js dashboard smoke 對 ephemeral <code>next start</code> 通過（提供 <code>/</code> 與真實 <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>），legacy FastAPI 金字塔計算機回傳真實等差金字塔結果（<code>assets/legacy-api-01.txt</code>），「啟動服務」證據已是 <code>live_command_output</code>，不再僅依賴已 commit 的 payload。</li>
       <li><b>Sampling-frequency 誠實缺口已關閉（CR-RDO-004）：</b>真實資料 OOS 現會估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時 <b>fail closed</b>（<code>reason=oversampled_vs_native_frequency</code>），不再把陳舊價格 forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設 run（現為 12 個 co-temporal daily-native 資產）不受影響、維持 <code>computed</code>（流程 5）。</li>
@@ -260,7 +292,7 @@ OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
   </section>
 
   <footer>
-    生成於 2026-06-15 · 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
+    生成於 2026-06-15 · H-3 互動研究流程新增於 2026-06-18 · 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
   </footer>
 </main>
 </div>

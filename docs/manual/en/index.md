@@ -20,6 +20,7 @@
 | A researcher running a real-data OOS-net backtest | [Flow 5 — Real-data OOS-net backtest](#flow-5--real-data-oos-net-backtest) |
 | A researcher studying multiple business cycles | [Flow 6 — Historical backfill & multi-cycle study](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
 | A researcher training a deep model (real PyTorch) | [Flow 7 — Deep-learning experiment](#flow-7--deep-learning-experiment-epic-h-real-pytorch) |
+| A reviewer exploring Epic H from the dashboard | [Flow 8 — Interactive research UI](#flow-8--interactive-research-ui-epic-h-slice-h-3) |
 
 ## Getting started / starter assets
 
@@ -374,6 +375,77 @@ written alongside the artifact.
 
 ---
 
+## Flow 8 — Interactive research UI (Epic H, slice H-3)
+
+**Who/when:** A reviewer wants to **explore** the Epic H deep-learning slice from
+the showcase dashboard — adjust parameters and read a model-vs-baseline
+leaderboard with charts — without launching a live training job. H-3 is a
+deterministic **static replay** over the existing H artifacts (no live backend
+rerun yet).
+
+```bash
+cd frontend
+npm run export:public-demo     # regenerates the dashboard incl. the interactiveResearch block
+npm run e2e:interactive        # real Chromium/Next.js: change seed → computed → fail_closed → VRT
+```
+
+The dashboard's **Interactive Research** panel exposes the H experiment
+parameters and a deterministic result:
+
+```
+parameters : backend=reference  hiddenUnits=4  lookback=6  epochs=20  seed=0
+             rebalance=monthly  symbols=[GROWTH, STEADY]
+ranges     : hiddenUnits 2..64 · lookback 3..24 · epochs 5..200 · seed 0..999
+             rebalance {monthly, quarterly} · backend {reference, pytorch, jax, tensorflow}
+mode       : static_replay        status : computed
+metric_authority : out_of_sample_net_only        claim_boundary : no_alpha_claim
+
+OOS-net leaderboard (ranked OOS-net only; baseline visible):
+  DeepForecastAllocationStrategy   oos_net_sharpe = 0.91   maxDD = -16%   [model]
+  StaticWeights                    oos_net_sharpe = 0.63   maxDD = -19%   [baseline]
+
+data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
+               approximateAvailability=true  strictPitExcluded=true
+               warning=research_mode_approximate_availability
+```
+
+**How to read it:** the panel ranks strategies by out-of-sample **net** Sharpe
+only and always keeps the dumb `StaticWeights` baseline visible. Each row carries
+equity-curve, drawdown, return-distribution, and (for the model) learning-curve
+series. The data lineage is the CR-B21 `is_approximate=true` backfill, so the
+panel shows the `research_mode_approximate_availability` warning — it is research
+replay, **not** true PIT and **not** an alpha claim.
+
+### Fail-closed behavior
+
+Requesting a parameter set outside the published ranges, or a payload whose
+report checksum no longer matches, flips the panel to `status=fail_closed`
+instead of rendering a stale or fabricated result. The `npm run e2e:interactive`
+browser flow drives exactly this (`computed` → seed change → `fail_closed`) and
+diffs the fail-closed screenshot against the committed VRT baseline
+`frontend/visual-baselines/interactive-research-failclosed.png` with 0 mismatched
+pixels.
+
+> - Evidence Source: `report_artifact` (committed `interactiveResearch`
+>   static-replay block in `frontend/lib/showcase-payload.json` / `docs/showcase.json`)
+>   + `live_command_output` (`npm run e2e:interactive` real-Chromium fail-closed VRT)
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Implemented · Review
+>   PASSED (repo-side/local static-replay)* (`h-interactive-research-ui/review.md`)
+> - Source Ref: `.agents/specs/h-interactive-research-ui/review.md`,
+>   `.agents/specs/h-interactive-research-ui/requirements.md`
+> - Captured: per `h-interactive-research-ui/review.md` (2026-06-18) — frontend 52
+>   tests pass, coverage 84.12%, `npm run e2e:interactive` passed (real Chromium
+>   `computed`→`fail_closed`, 0-pixel VRT), browser visual diff `1077 / 1,296,000`
+>   under threshold `0.001`, H-3 mutations `frontend-h3-interactive-claim-boundary`
+>   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
+>   killed. Public Pages parity is deploy-gated (`configured_not_observed` until
+>   Pages serves expected `dataHash c33da57d…`).
+> - `MOCK_DOMINANT_EVIDENCE` — `static_replay` over existing H artifacts (no live
+>   backend rerun, JAX/TF real training, GPU/native models, or production Tier3);
+>   `no_alpha_claim`.
+
+---
+
 ## Visual gap inventory
 
 **Render validation (2026-06-15, headless chromium `1440×2600`):** this manual
@@ -385,6 +457,17 @@ review's UX-flow diagram is now a **self-contained inline SVG** (renders offline
 caption), so there is no remaining visual residual.
 
 **Gaps resolved since last check (CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-15):**
+
+- **Interactive research UI landed (Epic H slice H-3) — NEW Flow 8.** The showcase
+  dashboard now carries an interactive parameter panel over the existing H
+  artifacts — a deterministic `static_replay` model-vs-baseline leaderboard with
+  equity/drawdown/return-distribution/learning-curve charts, OOS-net-only ranking
+  with a visible baseline, the `research_mode_approximate_availability` warning,
+  and **fail-closed** behavior on unsupported parameters or stale checksums.
+  Proven by `tests/quantlab/test_h3_interactive_showcase.py`,
+  `frontend/tests/interactive-research.test.ts`, and a real-Chromium
+  `npm run e2e:interactive` fail-closed VRT (0-pixel). `no_alpha_claim`; no live
+  backend rerun, JAX/TF real training, GPU/native models, or production Tier3.
 
 - **Deep historical backfill landed (CR-B21) — NEW Flow 6.** The research vintage
   now reaches **1990** (Yahoo deep indices + full FRED + NOAA, `is_approximate=true`,

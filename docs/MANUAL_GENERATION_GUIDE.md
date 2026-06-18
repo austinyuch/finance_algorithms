@@ -164,6 +164,31 @@ dashboard's data remains a deterministic local scenario
 (`canonical_local_result_store`, `no_alpha_claim`, `local_demo_only`), not a live
 backend service; the visual diff gate is repo-baseline pixel-backed.
 
+### Interactive research panel (Epic H slice H-3 — manual Flow 8)
+
+The showcase dashboard carries an **Interactive Research** panel
+(`frontend/components/InteractiveResearchPanel.tsx`, driven by
+`frontend/lib/interactive-research.ts`) over the existing Epic H artifacts. Its
+payload is the deterministic `static_replay` `interactiveResearch` block emitted by
+`quantlab/showcase/scenario.py::_interactive_research_section` and committed in
+`frontend/lib/showcase-payload.json` / `docs/showcase.json`. The manual's Flow 8
+documents the parameter workflow, OOS-net-only model-vs-baseline leaderboard, the
+`research_mode_approximate_availability` lineage warning, and the **fail-closed**
+behavior. Capture/refresh evidence with:
+
+```bash
+cd frontend && npm run e2e:interactive   # real Chromium/Next.js: computed → seed change → fail_closed → VRT
+```
+
+`npm run e2e:interactive` is the H-3 evidence path: a real browser flow that
+flips the panel `computed` → `fail_closed` and diffs the fail-closed screenshot
+against the committed VRT baseline
+`frontend/visual-baselines/interactive-research-failclosed.png` (0 mismatched
+pixels). Readiness is copied from `.agents/specs/h-interactive-research-ui/review.md`
+(PASSED, repo-side/local static-replay; public Pages parity deploy-gated). Boundary:
+`static_replay` only — no live backend rerun, JAX/TF real training, GPU/native
+models, or production Tier3; `no_alpha_claim`.
+
 ## 5. Runtime governance note
 
 Any live, port-bound service (`next start`, `uvicorn`) must first obtain a
