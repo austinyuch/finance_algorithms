@@ -141,10 +141,15 @@ export function dashboardSections(dashboard: ShowcaseDashboard): string[] {
     "allocation-regime",
     "rebalance",
     "experiments",
+    "interactive-research",
     "evidence",
   ];
-  if (dashboard.leaderboard.length === 0 || dashboard.experiments.length === 0) {
-    throw new Error("public demo requires leaderboard and experiment sections");
+  if (
+    dashboard.leaderboard.length === 0 ||
+    dashboard.experiments.length === 0 ||
+    dashboard.interactiveResearch.rows.length === 0
+  ) {
+    throw new Error("public demo requires leaderboard, experiment, and interactive research sections");
   }
   return sections;
 }

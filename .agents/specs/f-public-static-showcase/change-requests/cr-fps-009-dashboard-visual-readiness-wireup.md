@@ -55,7 +55,7 @@ reported `browser-visual.png` and `browser-visual-diff.json` as passed.
 - GREEN: `uv run pytest -q tests/quantlab/test_f_1_showcase_api.py::test_canonical_showcase_artifact_reads_current_evidence_artifacts tests/quantlab/test_f_1_showcase_api.py::test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence` -> 2 passed.
 - GREEN: `cd frontend && npm test -- --run tests/dashboard.test.tsx` -> 8 passed.
 - MUTATION: `cd frontend && npm run mutation` -> 26/26 killed, including `frontend-public-demo-probe-absolute-output-path`, `frontend-public-demo-export-absolute-output-dir`, `frontend-public-demo-export-stale-evidence-gate`, `frontend-public-demo-probe-manifest-colocation`, `frontend-public-demo-probe-incomplete-manifest-failclosed`, `frontend-static-export-showcase-sync`, `frontend-coverage-artifact-drift`, `frontend-visual-regression-underclaim`, `frontend-smoke-port-hardcode-regression`, and `frontend-smoke-html-api-parity-regression`.
-- INTEGRATION/SMOKE: `cd frontend && npm run build && npm run visual && npm run visual:browser && npm run smoke` -> passed; browser visual diff remained `0 / 1,296,000` under threshold `0.001`, and smoke uses a dynamically selected local port with occupied-`3044` chaos coverage.
+- INTEGRATION/SMOKE: `cd frontend && npm run build && npm run visual && npm run visual:browser && npm run smoke` -> passed; current browser visual diff is `1077 / 1,296,000` under threshold `0.001`, and smoke uses a dynamically selected local port with occupied-`3044` chaos coverage.
 - GOVERNANCE: stakeholder payload assets and docs now keep `publicHosting=not_proven` while reporting `visualRegression=proven`.
 
 ## Boundary

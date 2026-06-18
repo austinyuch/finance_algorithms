@@ -21,20 +21,20 @@
 ## Verification Coverage
 
 - `uv run pytest -q tests/quantlab/test_governance_guards.py` -> 25 passed.
-- `uv run pytest -q` -> 288 passed.
-- `uv run python scripts/run_mutation_spot_checks.py` -> 100/100 configured/killed.
-- `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` -> success over 58 source files.
-- `uv run lint-imports` -> KEPT over 75 files / 189 dependencies.
-- `cd frontend && npm test -- --run` -> 46 passed.
+- `uv run pytest -q` -> 435 passed, 2 skipped.
+- `uv run python scripts/run_mutation_spot_checks.py` -> 118/118 configured/killed.
+- `uv run mypy quantlab/ --ignore-missing-imports` -> success over the scoped QuantLab source set.
+- `uv run lint-imports` -> KEPT.
+- `cd frontend && npm test -- --run` -> 52 passed.
 - `cd frontend && npm run build && npm run smoke && npm run visual && npm run visual:browser` -> PASS.
-- Browser visual diff -> `0 / 1,296,000` mismatched pixels, threshold `0.001`.
+- Browser visual diff -> `1077 / 1,296,000` mismatched pixels, threshold `0.001`.
 
 ## Acceptance Status
 
 | Requirement | Status | Evidence |
 |---|---|---|
 | REQ-GOV-EVID-001 | PASS | `NEXT_STEPS.md` records current dependency, cron, F public/static, E Tier3, and local-first CI boundaries without stale completed-work prompts. |
-| REQ-GOV-EVID-002 | PASS | Current registries and stakeholder docs use 288 Python tests, 44 frontend tests, 100/100 Python mutation, 26/26 frontend mutation, clean audit, current import-linter counts, current browser visual diff, and a machine-readable local CI matrix for repo-runnable workflow gates. |
+| REQ-GOV-EVID-002 | PASS | Current registries and stakeholder docs use 435 Python tests, 52 frontend tests, 118/118 Python mutation, 29/29 frontend mutation, clean audit, current import-linter status, current browser visual diff, browser fail-closed e2e/VRT, and a machine-readable local CI matrix for repo-runnable workflow gates. |
 | REQ-GOV-EVID-003 | PASS | `tests/quantlab/test_governance_guards.py` guards current evidence surfaces, local-first CI policy, public-hosting proof boundaries, visual evidence sync, and stale F fixture/public/audit wording. |
 
 ## FMEA Coverage

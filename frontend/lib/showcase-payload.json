@@ -14,11 +14,11 @@
   "evidence": {
     "readiness": "local_runtime_only",
     "tests": [
-      "434 passed",
-      "frontend tests 46 passed",
+      "435 passed",
+      "frontend tests 52 passed",
       "Python mutation 118/118 killed",
-      "frontend mutation 26/26 killed",
-      "F Next.js coverage 90.00%",
+      "frontend mutation 29/29 killed",
+      "F Next.js coverage 84.12%",
       "frontend audit 0 vulnerabilities",
       "browser visual diff passed",
       "public hosting configured_not_observed (hash mismatched)"
@@ -43,6 +43,220 @@
       ]
     }
   ],
+  "interactiveResearch": {
+    "artifact": {
+      "artifactPath": ".agents/specs/h-interactive-research-ui/reports/h3-static-replay-artifact.json",
+      "experimentId": "h3-static-c7347264fe57719b",
+      "reportChecksum": "c7347264fe57719bc8c4887c3434168787ffe0532a2fe19208c0095ffb5ecde4",
+      "vizPath": ".agents/specs/h-interactive-research-ui/reports/h3-static-replay.svg"
+    },
+    "claimBoundary": "no_alpha_claim",
+    "dataLineage": {
+      "approximateAvailability": true,
+      "dataWindow": {
+        "end": "2022-12-31",
+        "start": "2018-01-31"
+      },
+      "source": "cr_b21_approximate_backfill",
+      "strictPitExcluded": true,
+      "warning": "research_mode_approximate_availability"
+    },
+    "metricAuthority": "out_of_sample_net_only",
+    "mode": "static_replay",
+    "parameterRanges": {
+      "backend": [
+        "reference",
+        "pytorch",
+        "jax",
+        "tensorflow"
+      ],
+      "epochs": {
+        "max": 200,
+        "min": 5,
+        "step": 5
+      },
+      "hiddenUnits": {
+        "max": 64,
+        "min": 2,
+        "step": 1
+      },
+      "lookback": {
+        "max": 24,
+        "min": 3,
+        "step": 1
+      },
+      "rebalance": [
+        "monthly",
+        "quarterly"
+      ],
+      "seed": {
+        "max": 999,
+        "min": 0,
+        "step": 1
+      }
+    },
+    "parameters": {
+      "backend": "reference",
+      "epochs": 20,
+      "hiddenUnits": 4,
+      "lookback": 6,
+      "rebalance": "monthly",
+      "seed": 0,
+      "symbols": [
+        "GROWTH",
+        "STEADY"
+      ]
+    },
+    "resolvedBackend": {
+      "fallbackReason": null,
+      "requested": "reference",
+      "resolved": "reference"
+    },
+    "rows": [
+      {
+        "drawdown": [
+          {
+            "label": "2018-01",
+            "value": 0.0
+          },
+          {
+            "label": "2019-01",
+            "value": -0.03
+          },
+          {
+            "label": "2020-01",
+            "value": -0.12
+          },
+          {
+            "label": "2021-01",
+            "value": -0.05
+          },
+          {
+            "label": "2022-01",
+            "value": -0.08
+          }
+        ],
+        "equityCurve": [
+          {
+            "label": "2018-01",
+            "value": 1.0
+          },
+          {
+            "label": "2019-01",
+            "value": 1.08
+          },
+          {
+            "label": "2020-01",
+            "value": 1.15
+          },
+          {
+            "label": "2021-01",
+            "value": 1.21
+          },
+          {
+            "label": "2022-01",
+            "value": 1.31
+          }
+        ],
+        "isBaseline": false,
+        "learningCurve": [
+          {
+            "label": "1",
+            "value": 0.032
+          },
+          {
+            "label": "5",
+            "value": 0.022
+          },
+          {
+            "label": "10",
+            "value": 0.018
+          },
+          {
+            "label": "20",
+            "value": 0.014
+          }
+        ],
+        "maxDrawdown": -0.16,
+        "oosNetCagr": 0.118,
+        "oosNetSharpe": 0.91,
+        "returnDistribution": [
+          -0.04,
+          -0.01,
+          0.02,
+          0.04,
+          0.07
+        ],
+        "strategyName": "DeepForecastAllocationStrategy"
+      },
+      {
+        "drawdown": [
+          {
+            "label": "2018-01",
+            "value": 0.0
+          },
+          {
+            "label": "2019-01",
+            "value": -0.04
+          },
+          {
+            "label": "2020-01",
+            "value": -0.15
+          },
+          {
+            "label": "2021-01",
+            "value": -0.07
+          },
+          {
+            "label": "2022-01",
+            "value": -0.1
+          }
+        ],
+        "equityCurve": [
+          {
+            "label": "2018-01",
+            "value": 1.0
+          },
+          {
+            "label": "2019-01",
+            "value": 1.04
+          },
+          {
+            "label": "2020-01",
+            "value": 1.09
+          },
+          {
+            "label": "2021-01",
+            "value": 1.13
+          },
+          {
+            "label": "2022-01",
+            "value": 1.19
+          }
+        ],
+        "isBaseline": true,
+        "learningCurve": [],
+        "maxDrawdown": -0.19,
+        "oosNetCagr": 0.082,
+        "oosNetSharpe": 0.63,
+        "returnDistribution": [
+          -0.05,
+          -0.02,
+          0.01,
+          0.03,
+          0.05
+        ],
+        "strategyName": "StaticWeights"
+      }
+    ],
+    "status": "computed",
+    "warnings": [
+      "no_alpha_claim",
+      "out_of_sample_net_only",
+      "research_mode_approximate_availability",
+      "static_replay"
+    ]
+  },
   "leaderboard": [
     {
       "claimBoundary": "no_alpha_claim",

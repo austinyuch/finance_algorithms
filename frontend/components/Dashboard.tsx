@@ -1,4 +1,5 @@
 import type { ShowcaseDashboard } from "../lib/showcase-contract";
+import { InteractiveResearchPanel } from "./InteractiveResearchPanel";
 
 function formatWeight(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
@@ -128,6 +129,8 @@ export function Dashboard({ data }: { data: ShowcaseDashboard }) {
           </table>
         </section>
       )}
+
+      <InteractiveResearchPanel data={data.interactiveResearch} />
 
       <section className="panel evidence-panel" data-section="evidence">
         <div className="panel-heading">

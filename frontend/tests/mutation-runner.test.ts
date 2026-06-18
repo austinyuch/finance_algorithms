@@ -9,7 +9,7 @@ import {
 describe("frontend mutation runner CLI selection", () => {
   it("selects all configured mutations by default", () => {
     expect(selectMutations()).toHaveLength(mutations.length);
-    expect(mutations).toHaveLength(26);
+    expect(mutations).toHaveLength(29);
     expect(mutations.map((mutation) => mutation.name)).toContain(
       "frontend-public-demo-probe-manifest-colocation",
     );
@@ -27,6 +27,15 @@ describe("frontend mutation runner CLI selection", () => {
     );
     expect(mutations.map((mutation) => mutation.name)).toContain(
       "frontend-smoke-html-api-parity-regression",
+    );
+    expect(mutations.map((mutation) => mutation.name)).toContain(
+      "frontend-h3-interactive-claim-boundary",
+    );
+    expect(mutations.map((mutation) => mutation.name)).toContain(
+      "frontend-h3-approximate-warning-gate",
+    );
+    expect(mutations.map((mutation) => mutation.name)).toContain(
+      "frontend-h3-e2e-failclosed-status-gate",
     );
   });
 

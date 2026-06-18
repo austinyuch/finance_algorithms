@@ -33,11 +33,11 @@ Project is Backend/CLI-dominant Hybrid. Captured/refreshed live (2026-06-15,
 post-CR-B21):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py  # 434 passed → docs/review/assets/gate-pytest.txt
+uv run python scripts/capture_pytest_gate.py  # 435 passed → docs/review/assets/gate-pytest.txt
 uv run python scripts/run_mutation_spot_checks.py --report-json docs/review/assets/gate-python-mutation.json  # 118/118 killed
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean 69 files → gate-mypy.txt
 uv run lint-imports                  # KEPT, 88 files / 242 deps → gate-lint-imports.txt
-(cd frontend && npm test)            # 46 passed     → gate-frontend-test.txt
+(cd frontend && npm test)            # 52 passed     → gate-frontend-test.txt
 (cd frontend && npm audit --omit=dev)# 0 vulns       → gate-frontend-audit.txt
 ```
 
@@ -119,3 +119,23 @@ report SVG copied to `docs/review/assets/dl-experiment-torch.svg`. Regenerate vi
 Honesty cap: deep history is the CR-B21 approximate backfill (NOT true PIT);
 public hosting stays `configured_not_observed` until Pages serves the new
 `dataHash` after a `main` deploy.
+
+### Epic H slice H-3 — interactive research UI
+
+The review also carries an **Interactive research UI (H-3)** core-feature card and a
+matching *resolved-since-last-check* gap entry. Readiness is copied from
+`.agents/specs/h-interactive-research-ui/review.md` (**PASSED**, repo-side/local
+static-replay; public Pages parity deploy-gated). Evidence is the committed
+`interactiveResearch` `static_replay` block (emitted by
+`quantlab/showcase/scenario.py`, surfaced via
+`frontend/components/InteractiveResearchPanel.tsx`) plus the real-Chromium
+`npm run e2e:interactive` fail-closed VRT (`computed` → seed change →
+`fail_closed`, 0-pixel diff against
+`frontend/visual-baselines/interactive-research-failclosed.png`) and the H-3
+frontend mutations (`frontend-h3-interactive-claim-boundary`,
+`frontend-h3-approximate-warning-gate`,
+`frontend-h3-e2e-failclosed-status-gate`). Honesty cap: `static_replay` over
+existing H artifacts only — OOS-net-only ranking with a visible baseline,
+`no_alpha_claim`, no live backend rerun, JAX/TF real training, GPU/native models,
+or production Tier3; public hosting stays `configured_not_observed` for expected
+`dataHash c33da57d…` until Pages serves the refreshed artifact.

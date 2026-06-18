@@ -44,14 +44,14 @@ export const mutations = [
   {
     name: "frontend-dashboard-stale-gate-evidence",
     path: "lib/showcase-payload.json",
-    original: '"frontend mutation 26/26 killed"',
+    original: '"frontend mutation 29/29 killed"',
     mutated: '"mutation 9/9 killed"',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
   },
   {
     name: "frontend-coverage-artifact-drift",
     path: "../docs/review/assets/gate-frontend-coverage.txt",
-    original: "F Next.js line coverage 89.85%",
+    original: "F Next.js line coverage 84.12%",
     mutated: "F Next.js line coverage 88.00%",
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "gate evidence"]
   },
@@ -61,6 +61,27 @@ export const mutations = [
     original: '"source": "local_result_store",',
     mutated: '"source": "fixture_records",',
     command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "serves validated"]
+  },
+  {
+    name: "frontend-h3-interactive-claim-boundary",
+    path: "lib/showcase-payload.json",
+    original: '    "claimBoundary": "no_alpha_claim",\n    "dataLineage": {',
+    mutated: '    "claimBoundary": "alpha_claim",\n    "dataLineage": {',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "interactive research sections"]
+  },
+  {
+    name: "frontend-h3-approximate-warning-gate",
+    path: "lib/showcase-payload.json",
+    original: '      "approximateAvailability": true,',
+    mutated: '      "approximateAvailability": false,',
+    command: ["npm", "test", "--", "--run", "tests/dashboard.test.tsx", "-t", "interactive research sections"]
+  },
+  {
+    name: "frontend-h3-e2e-failclosed-status-gate",
+    path: "scripts/interactive-research-e2e.mjs",
+    original: "setter.call(seedInput, String(Number(seedInput.value) + 1));",
+    mutated: "setter.call(seedInput, String(Number(seedInput.value)));",
+    command: ["npm", "run", "e2e:interactive"]
   },
   {
     name: "frontend-public-demo-hosting-classifier",

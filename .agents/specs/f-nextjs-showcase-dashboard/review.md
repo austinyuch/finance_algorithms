@@ -31,10 +31,10 @@ the refreshed branch-local `dataHash`.
 
 ## Verification Coverage
 
-- `npm test -- --run` -> 46 passed.
+- `npm test -- --run` -> 52 passed.
 - `npm run coverage` -> 89.85% line coverage.
 - `npm audit --json` -> 0 vulnerabilities.
-- `npm run mutation` -> 26/26 frontend mutations killed.
+- `npm run mutation` -> 29/29 frontend mutations killed.
 - `npm run build` -> success.
 - `npm run visual` and `npm run visual:browser` -> success; browser visual diff
   remains under the `0.001` threshold.

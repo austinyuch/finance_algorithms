@@ -18,12 +18,14 @@
 | 既有 API 使用者 | [流程 4 — 金字塔計算機 API](#流程-4--既有金字塔計算機-api) |
 | 跑真實資料 OOS-net 回測的研究者 | [流程 5 — 真實資料 OOS-net 回測](#流程-5--真實資料-oos-net-回測) |
 | 研究多個景氣循環的研究者 | [流程 6 — 歷史回補與多週期研究](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
+| 訓練深度模型（真實 PyTorch）的研究者 | [流程 7 — 深度學習實驗](#流程-7--深度學習實驗epic-h真實-pytorch) |
+| 從 dashboard 探索 Epic H 的審閱者 | [流程 8 — 互動研究 UI](#流程-8--互動研究-uiepic-h切片-h-3) |
 
 ## 快速開始 / Starter Assets
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 434 passed, 2 skipped
+uv run pytest -q             # 健檢：預期 435 passed, 2 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -148,14 +150,14 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 視覺精緻度。Live `npm run dev` 才會套用 `app/globals.css`。
 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；目前 branch-local public hosting 在 expected `dataHash e5794260…` 上維持 `configured_not_observed`，直到 Pages 服務 refreshed artifact（`docs/public-hosting-probe.json`）
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；目前 branch-local public hosting 在 expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` 上維持 `configured_not_observed`，直到 Pages 服務 refreshed artifact（`docs/public-hosting-probe.json`）
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`、`.agents/specs/f-public-static-showcase/review.md`、`docs/deployment-manifest.json`
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
-> - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`1077 / 1,296,000`
 >   mismatched pixels，threshold `0.001`），export readiness 面板現回報
 >   `visualRegression=proven`（CR-FPS-009）。Public-hosting probe 目前觀測到 HTTP 200
 >   與 manifest-contract metadata，但 deployed hash mismatch
->   （`status=configured_not_observed`、expected `dataHash e5794260…`）；freshness 現為 deterministic，過期證據會降級
+>   （`status=configured_not_observed`、expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`）；freshness 現為 deterministic，過期證據會降級
 >   而非 crash（CR-FPS-011）。Dashboard payload 自身的 `publicHosting` self-claim
 >   依設計**維持 `not_proven`** — static artifact 不能自我宣稱其部署；`proven` 狀態
 >   僅存在於觀測到的 probe/manifest，且為 point-in-time。
@@ -353,6 +355,71 @@ raise）。深度歷史為 CR-B21 近似 backfill（非 true PIT；strict 模式
 
 ---
 
+## 流程 8 — 互動研究 UI（Epic H，切片 H-3）
+
+**誰／何時：** 審閱者想從 showcase 儀表板**探索** Epic H 深度學習切片 — 調整參數、
+讀取 model-vs-baseline 排行榜與圖表 — 而不啟動 live 訓練工作。H-3 是對既有 H
+artifacts 的 deterministic **static replay**（尚無 live backend rerun）。
+
+```bash
+cd frontend
+npm run export:public-demo     # 重新匯出 dashboard（含 interactiveResearch 區塊）
+npm run e2e:interactive        # 真實 Chromium/Next.js：改 seed → computed → fail_closed → VRT
+```
+
+儀表板的 **Interactive Research** 面板曝露 H 實驗參數與 deterministic 結果：
+
+```
+parameters : backend=reference  hiddenUnits=4  lookback=6  epochs=20  seed=0
+             rebalance=monthly  symbols=[GROWTH, STEADY]
+ranges     : hiddenUnits 2..64 · lookback 3..24 · epochs 5..200 · seed 0..999
+             rebalance {monthly, quarterly} · backend {reference, pytorch, jax, tensorflow}
+mode       : static_replay        status : computed
+metric_authority : out_of_sample_net_only        claim_boundary : no_alpha_claim
+
+OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
+  DeepForecastAllocationStrategy   oos_net_sharpe = 0.91   maxDD = -16%   [model]
+  StaticWeights                    oos_net_sharpe = 0.63   maxDD = -19%   [baseline]
+
+data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
+               approximateAvailability=true  strictPitExcluded=true
+               warning=research_mode_approximate_availability
+```
+
+**怎麼讀：** 面板僅以樣本外**淨值** Sharpe 排名，且永遠保留笨 `StaticWeights`
+baseline 可見。每一列都帶有 equity-curve、drawdown、return-distribution，以及
+（model 列）learning-curve 序列。資料 lineage 是 CR-B21 `is_approximate=true`
+backfill，因此面板顯示 `research_mode_approximate_availability` 警告 — 它是 research
+replay，**非** true PIT、**非** alpha 宣稱。
+
+### Fail-closed 行為
+
+要求超出公布 range 的參數集合，或 report checksum 不再相符的 payload，會把面板翻成
+`status=fail_closed`，而非渲染陳舊或捏造的結果。`npm run e2e:interactive` 瀏覽器流程
+正是驅動這條路徑（`computed` → 改 seed → `fail_closed`），並將 fail-closed 截圖與已
+commit 的 VRT baseline `frontend/visual-baselines/interactive-research-failclosed.png`
+比對，0 個 mismatched pixels。
+
+> - Evidence Source：`report_artifact`（已 commit 的 `interactiveResearch`
+>   static-replay 區塊，位於 `frontend/lib/showcase-payload.json` / `docs/showcase.json`）
+>   ＋ `live_command_output`（`npm run e2e:interactive` 真實 Chromium fail-closed VRT）
+> - Coverage Tier：`hybrid` · Readiness State：`PASS` —《Implemented · Review
+>   PASSED（repo-side/local static-replay）》（`h-interactive-research-ui/review.md`）
+> - Source Ref：`.agents/specs/h-interactive-research-ui/review.md`、
+>   `.agents/specs/h-interactive-research-ui/requirements.md`
+> - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 52 tests
+>   pass、coverage 84.12%、`npm run e2e:interactive` 通過（真實 Chromium
+>   `computed`→`fail_closed`、0-pixel VRT）、browser visual diff `1077 / 1,296,000`
+>   低於 threshold `0.001`，H-3 mutations `frontend-h3-interactive-claim-boundary`
+>   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
+>   皆 killed。Public Pages parity 為 deploy-gated（在 Pages 服務 expected
+>   `dataHash c33da57d…` 前維持 `configured_not_observed`）。
+> - `MOCK_DOMINANT_EVIDENCE` — 對既有 H artifacts 的 `static_replay`（無 live
+>   backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3）；
+>   `no_alpha_claim`。
+
+---
+
 ## 視覺缺口盤點
 
 **Render 驗證（2026-06-15，headless chromium `1440×2600`）：** 本手冊（en/zh）與
@@ -363,6 +430,16 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 剩餘視覺殘留。
 
 **自上次檢查以來已解決（CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011，as of 2026-06-15）：**
+
+- **互動研究 UI 已落地（Epic H 切片 H-3）— 新增流程 8。** showcase 儀表板現帶有
+  一個對既有 H artifacts 的互動參數面板 — deterministic `static_replay` 的
+  model-vs-baseline 排行榜，含 equity/drawdown/return-distribution/learning-curve
+  圖表、僅 OOS-net 排名且 baseline 可見、`research_mode_approximate_availability`
+  警告，以及對不支援參數或陳舊 checksum 的 **fail-closed** 行為。由
+  `tests/quantlab/test_h3_interactive_showcase.py`、
+  `frontend/tests/interactive-research.test.ts` 與真實 Chromium
+  `npm run e2e:interactive` fail-closed VRT（0-pixel）證明。`no_alpha_claim`；無 live
+  backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3。
 
 - **深度歷史回填已落地（CR-B21）— 新增流程 6。** 研究 vintage 現已回溯至
   **1990**（Yahoo deep indices + 完整 FRED + NOAA，`is_approximate=true`，
@@ -391,10 +468,10 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 - **Dashboard visual readiness 已 wire-through（CR-FPS-009）。** Export 的 readiness
   面板現由 repo-side browser visual diff 證據回報 `visualRegression=proven`（先前未接線）。
 - **Public hosting 對 refreshed artifact 仍為 deploy-gated。**
-  目前已 commit manifest 預期 `dataHash e5794260…`，但 live probe 仍觀測到較舊的
-  deployed hash（`16486e36…`），因此 branch-local parity 是
+  目前已 commit manifest 預期 `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`，但 live probe 仍觀測到較舊的
+  deployed hash（`e5794260…`），因此 branch-local parity 是
   `configured_not_observed` / `mismatched`（`docs/deployment-manifest.json`、
-  `docs/public-hosting-probe.json`，觀測於 `2026-06-18T03:25Z`）。較早的
+  `docs/public-hosting-probe.json`，觀測於 `2026-06-18T05:53Z`）。較早的
   CR-B21 hosting proof（`0f170441…`）只保留為 historical point-in-time evidence；
   dashboard payload 自身的 `publicHosting` self-claim 依設計仍為 `not_proven`。
 - **Hosting-freshness time-bomb 已移除（CR-FPS-011）。** Freshness 現以注入的 `asof`
@@ -403,11 +480,11 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 
 **更早已解決（2026-06-11 → 2026-06-13）：**
 
-- 預設 root 測試套件目前為 **434 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **118/118 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **26/26 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
+- 預設 root 測試套件目前為 **435 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **118/118 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **29/29 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；CR-FPS-006 regenerated local result-store payload 產生新的 `dataHash`，因此 branch-local deployment parity 正確維持 `configured_not_observed`，直到 Pages 服務 refreshed artifact。
-- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`0 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`1077 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
 
@@ -415,7 +492,7 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`；目前已 commit probe/manifest parity 在 Pages 服務 `dataHash e5794260…` 前維持 `configured_not_observed` | Low | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
+| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`；目前已 commit probe/manifest parity 在 Pages 服務 `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` 前維持 `configured_not_observed` | Low | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
 | 真實資料 OOS 使用 `approximate_event_date`（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作 | Low | `real-data-oos-backtest/review.md` |
 | Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |

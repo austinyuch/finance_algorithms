@@ -53,6 +53,7 @@
   <a href="#f5">5 · Real-data OOS-net</a>
   <a href="#f6">6 · Historical backfill</a>
   <a href="#f7">7 · Deep-learning</a>
+  <a href="#f8">8 · Interactive research</a>
   <h2>Reference</h2>
   <a href="#gaps">Visual gap inventory</a>
   <a href="../zh-tw/index.html">繁體中文版</a>
@@ -70,7 +71,7 @@
   <section class="card" id="start">
     <h2>Getting started / starter assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 deps</span>
-uv run pytest -q             <span style="color:#7d90b0"># expect 434 passed, 2 skipped</span>
+uv run pytest -q             <span style="color:#7d90b0"># expect 435 passed, 2 skipped</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js deps</span></pre>
     <p>Committed seed/sample data:</p>
     <ul>
@@ -140,7 +141,7 @@ npm run smoke                  <span style="color:#7d90b0"># local HTTP smoke (a
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-pass">hosting proven (point-in-time)</span><span class="badge b-mock">local_demo_only</span><br>
       <b>Evidence Source:</b> live_screenshot (chromium-headless) + static_export + canonical_local_result_store · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> f-demo-hardening/review.md, f-public-static-showcase/review.md, docs/public-hosting-probe.json<br>
-      <b>Resolved:</b> browser screenshot captured; visual diff repo-baseline pixel-backed (<code>0 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); export readiness panel now reports <code>visualRegression=proven</code> (CR-FPS-009). Public-hosting probe currently observes HTTP 200 plus manifest-contract metadata but a mismatched deployed hash (<code>status=configured_not_observed</code>, expected <code>dataHash e5794260…</code>); freshness is deterministic and stale evidence downgrades rather than crashing (CR-FPS-011). The dashboard payload's own <code>publicHosting</code> self-claim <b>stays <code>not_proven</code></b> by design.
+      <b>Resolved:</b> browser screenshot captured; visual diff repo-baseline pixel-backed (<code>1077 / 1,296,000</code> mismatched pixels at threshold <code>0.001</code>); export readiness panel now reports <code>visualRegression=proven</code> (CR-FPS-009). Public-hosting probe currently observes HTTP 200 plus manifest-contract metadata but a mismatched deployed hash (<code>status=configured_not_observed</code>, expected <code>dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…</code>); freshness is deterministic and stale evidence downgrades rather than crashing (CR-FPS-011). The dashboard payload's own <code>publicHosting</code> self-claim <b>stays <code>not_proven</code></b> by design.
     </div>
   </section>
 
@@ -238,25 +239,56 @@ OOS-net leaderboard (ranked OOS-net only; baseline visible):
     </div>
   </section>
 
+  <section class="card" id="f8">
+    <h2>Flow 8 · Interactive research UI (Epic H, slice H-3)</h2>
+    <p><b>Who/when:</b> a reviewer wants to <em>explore</em> the Epic H deep-learning slice from the showcase dashboard — adjust parameters and read a model-vs-baseline leaderboard with charts — without running a live training job. H-3 is a deterministic <b>static replay</b> over the existing H artifacts (no live backend rerun yet).</p>
+    <pre>cd frontend
+npm run export:public-demo     <span style="color:#7d90b0"># regenerates the dashboard incl. the interactiveResearch block</span>
+npm run e2e:interactive        <span style="color:#7d90b0"># real Chromium/Next.js: change seed → computed → fail_closed → VRT</span></pre>
+    <p>The dashboard's <b>Interactive Research</b> panel exposes the H experiment parameters and a deterministic result:</p>
+    <pre>parameters : backend=reference  hiddenUnits=4  lookback=6  epochs=20  seed=0
+             rebalance=monthly  symbols=[GROWTH, STEADY]
+ranges     : hiddenUnits 2..64 · lookback 3..24 · epochs 5..200 · seed 0..999
+             rebalance {monthly, quarterly} · backend {reference, pytorch, jax, tensorflow}
+mode       : static_replay        status : computed
+metric_authority : out_of_sample_net_only        claim_boundary : no_alpha_claim
+
+OOS-net leaderboard (ranked OOS-net only; baseline visible):
+  DeepForecastAllocationStrategy   oos_net_sharpe = 0.91   maxDD = −16%   [model]
+  StaticWeights                    oos_net_sharpe = 0.63   maxDD = −19%   [baseline]
+
+data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
+               approximateAvailability=true  strictPitExcluded=true
+               warning=research_mode_approximate_availability</pre>
+    <p><b>How to read it:</b> the panel ranks strategies by out-of-sample <em>net</em> Sharpe only and always keeps the dumb <code>StaticWeights</code> baseline visible. Each row carries equity-curve, drawdown, return-distribution, and (for the model) learning-curve series. The data lineage is the CR-B21 <code>is_approximate=true</code> backfill, so the panel shows the <code>research_mode_approximate_availability</code> warning — it is research replay, <b>not</b> true PIT and <b>not</b> an alpha claim.</p>
+    <div class="alert">⚠️ <b>Fail-closed:</b> requesting a parameter set outside the published ranges, or a payload whose report checksum no longer matches, flips the panel to <code>status=fail_closed</code> instead of rendering a stale or fabricated result. The <code>npm run e2e:interactive</code> browser flow drives exactly this (<code>computed</code> → seed change → <code>fail_closed</code>) and diffs the fail-closed screenshot against the committed VRT baseline <code>frontend/visual-baselines/interactive-research-failclosed.png</code> with 0 mismatched pixels.</div>
+    <div class="evidence">
+      <span class="badge b-pass">PASS (Review PASSED · repo-side/local static-replay)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source:</b> report_artifact (committed <code>interactiveResearch</code> static-replay block in <code>frontend/lib/showcase-payload.json</code> / <code>docs/showcase.json</code>) + live_command_output (<code>npm run e2e:interactive</code> real-Chromium fail-closed VRT) · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> h-interactive-research-ui/review.md<br>
+      <b>Captured:</b> per <code>h-interactive-research-ui/review.md</code> (2026-06-18) — frontend 52 tests pass, coverage 84.12%, <code>npm run e2e:interactive</code> passed (real Chromium <code>computed</code>→<code>fail_closed</code>, 0-pixel VRT), browser visual diff <code>1077 / 1,296,000</code> under threshold <code>0.001</code>, and H-3 mutations <code>frontend-h3-interactive-claim-boundary</code> / <code>frontend-h3-approximate-warning-gate</code> / <code>frontend-h3-e2e-failclosed-status-gate</code> killed. Public Pages parity is deploy-gated (<code>configured_not_observed</code> until Pages serves expected <code>dataHash c33da57d…</code>). <code>no_alpha_claim</code>; <code>static_replay</code> over existing H artifacts — no live backend rerun, JAX/TF real training, GPU/native models, or production Tier3.
+    </div>
+  </section>
+
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
     <p><b>Render validation (2026-06-15, headless chromium 1440×2600):</b> this manual (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal code blocks, evidence captions and warning badges (<code>PASS</code>, <code>MOCK_DOMINANT_EVIDENCE</code>) intact, no broken CSS or missing assets. The review's UX-flow diagram is now a <b>self-contained inline SVG</b> (renders offline / <code>file://</code>, no CDN or client-side JS, with an accessible text-equivalent caption), so there is no remaining visual residual.</p>
     <p><b>Gaps resolved since last check (CR-B21 / CR-RDO-004 / CR-FBP-001 / CR-FPS-009/010/011, as of 2026-06-15):</b></p>
     <ul>
+      <li><b>Interactive research UI landed (Epic H slice H-3) — NEW Flow 8:</b> the showcase dashboard now carries an interactive parameter panel over the existing H artifacts — a deterministic <code>static_replay</code> model-vs-baseline leaderboard with equity/drawdown/return-distribution/learning-curve charts, OOS-net-only ranking with a visible baseline, the <code>research_mode_approximate_availability</code> warning, and <b>fail-closed</b> behavior on unsupported parameters or stale checksums. Proven by <code>tests/quantlab/test_h3_interactive_showcase.py</code>, <code>frontend/tests/interactive-research.test.ts</code>, and a real-Chromium <code>npm run e2e:interactive</code> fail-closed VRT (0-pixel). <code>no_alpha_claim</code>; no live backend rerun, JAX/TF real training, GPU/native models, or production Tier3.</li>
       <li><b>Deep historical backfill landed (CR-B21) — NEW Flow 6:</b> the research vintage now reaches <b>1990</b> (Yahoo deep indices + full FRED + NOAA, <code>is_approximate=true</code>, strict-excluded, 24/24 sources, fail=0). It enables a real multi-cycle backtest (deep {^GSPC,^IXIC} 1990→2026, 437 months, <code>computed</code>) and validates against the real record (dot-com −49%/−78%, GFC −57%, COVID −34%, 2022 −25%). Flow 5's default run consequently widened from SP500-only to a 12-asset co-temporal universe. <code>no_alpha_claim</code>; the residual 6 FRED rate/FX series (incl. <code>T10Y2Y</code>) were captured by an idempotent re-run → regime family now full-feature.</li>
       <li><b>Front + back services live-verified (2026-06-15):</b> the Next.js dashboard smoke passed against an ephemeral <code>next start</code> (served <code>/</code> and the real <code>/api/showcase</code> payload — <code>assets/frontend-smoke-01.txt</code>), and the legacy FastAPI pyramid calculator returned a real arithmetic-pyramid response (<code>assets/legacy-api-01.txt</code>), so the "started services" evidence is now <code>live_command_output</code> rather than only the committed payload.</li>
       <li><b>Sampling-frequency honesty gap closed (CR-RDO-004):</b> real-data OOS now estimates each asset's native cadence and <b>fails closed</b> (<code>reason=oversampled_vs_native_frequency</code>) when the rebalance cadence is finer than the coarsest selected asset, instead of forward-filling stale prices into fabricated flat returns that inflate Sharpe. The default run (now 12 co-temporal daily-native assets) is unaffected and stays <code>computed</code> (Flow 5).</li>
       <li><b>Browser pixel baseline now real and re-pin-tolerant (CR-FBP-001):</b> the stale-baseline-hash guard fires only when <code>baselineHash != currentHash</code>, so a deterministic re-pin (<code>baselineHash == currentHash</code>, <code>mismatchedPixels == 0</code>) no longer blocks honest UI changes; the tolerant pixel-diff threshold gate is unchanged.</li>
       <li><b>Dashboard visual readiness wired through (CR-FPS-009):</b> the export readiness panel now reports <code>visualRegression=proven</code> from repo-side browser visual diff evidence.</li>
-      <li><b>Public hosting remains deploy-gated for the refreshed artifact:</b> the current committed manifest expects <code>dataHash e5794260…</code>, while the live probe still observes an older deployed hash (<code>16486e36…</code>), so branch-local parity is <code>configured_not_observed</code> / mismatched (observed <code>2026-06-18T03:25Z</code>). Older CR-B21 hosting proof at <code>0f170441…</code> remains historical point-in-time evidence only. The dashboard payload's <code>publicHosting</code> self-claim stays <code>not_proven</code> by design.</li>
+      <li><b>Public hosting remains deploy-gated for the refreshed artifact:</b> the current committed manifest expects <code>dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…</code>, while the live probe still observes an older deployed hash (<code>e5794260…</code>), so branch-local parity is <code>configured_not_observed</code> / mismatched (observed <code>2026-06-18T05:53Z</code>). Older CR-B21 hosting proof at <code>0f170441…</code> remains historical point-in-time evidence only. The dashboard payload's <code>publicHosting</code> self-claim stays <code>not_proven</code> by design.</li>
       <li><b>Hosting-freshness time-bomb removed (CR-FPS-011):</b> freshness is classified deterministically against an injected <code>asof</code>; stale committed evidence downgrades to <code>configured_not_observed</code> rather than crashing the build/suite ~24h after a re-prove.</li>
     </ul>
-    <p><b>Resolved earlier (2026-06-11 → 2026-06-13):</b> default-root tests now <b>434 passed, 2 skipped</b>; the <b>430 passed</b> count remains only H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped source set; mutation spot checks remain 118/118 configured/killed, including CR-RDO-004 sampling-frequency, governance stale-evidence, public-hosting drift, payload-sync, import-linter drift, E production evidence, source-quorum, proof replay, and Stooq fail-closed guards; frontend mutation 26/26 killed including <code>frontend-smoke-html-api-parity-regression</code>, so local smoke covers HTML/API payload parity. Browser visual, pixel diff, source-quorum, and Stooq restoration proof remain recorded; branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash.</p>
+    <p><b>Resolved earlier (2026-06-11 → 2026-06-13):</b> default-root tests now <b>435 passed, 2 skipped</b>; the <b>430 passed</b> count remains only H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped source set; mutation spot checks remain 118/118 configured/killed, including CR-RDO-004 sampling-frequency, governance stale-evidence, public-hosting drift, payload-sync, import-linter drift, E production evidence, source-quorum, proof replay, and Stooq fail-closed guards; frontend mutation 29/29 killed including <code>frontend-smoke-html-api-parity-regression</code>, so local smoke covers HTML/API payload parity. Browser visual, pixel diff, source-quorum, and Stooq restoration proof remain recorded; branch-local public-hosting parity is <code>configured_not_observed</code> until Pages serves the refreshed dataHash.</p>
     <table>
       <tr><th>Open visual gap</th><th>Severity</th><th>Source</th></tr>
       <tr><td>No CI-managed visual baseline history beyond the repo baseline</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
       <tr><td>Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof</td><td>Low</td><td>b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md</td></tr>
-      <tr><td>Dashboard payload <code>publicHosting</code> self-claim stays <code>not_proven</code> by contract; current committed probe/manifest parity is <code>configured_not_observed</code> until Pages serves <code>dataHash e5794260…</code></td><td>Low</td><td>frontend/out/index.html, docs/public-hosting-probe.json</td></tr>
+      <tr><td>Dashboard payload <code>publicHosting</code> self-claim stays <code>not_proven</code> by contract; current committed probe/manifest parity is <code>configured_not_observed</code> until Pages serves <code>dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…</code></td><td>Low</td><td>frontend/out/index.html, docs/public-hosting-probe.json</td></tr>
       <tr><td>Real-data OOS uses <code>approximate_event_date</code> (not true PIT); a co-temporal multi-asset default universe with true vintage history is the follow-up</td><td>Low</td><td>real-data-oos-backtest/review.md</td></tr>
       <tr><td>Vintage co-temporal multi-asset readiness still accumulating (single-capture FRED; daily-vintage backtest deferred)</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>
@@ -264,7 +296,7 @@ OOS-net leaderboard (ranked OOS-net only; baseline visible):
   </section>
 
   <footer>
-    Generated 2026-06-15 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
+    Generated 2026-06-15 · H-3 interactive-research flow added 2026-06-18 · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
   </footer>
 </main>
 </div>
