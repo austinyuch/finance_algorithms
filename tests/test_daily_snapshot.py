@@ -69,16 +69,23 @@ def _invalid_fixture_url(path: str) -> str:
     return "https://" + f"invalid.test/{path}"
 
 
+_STOOQ_HEADER = ",".join(["Symbol", "Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+
+
+def _stooq_csv(date: str = "2026-06-09", close: str = "1.5") -> str:
+    return f"{_STOOQ_HEADER}\nSPY.US,{date},22:00:00,1,2,0.5,{close},1000\n"
+
+
 # --- _record:bitemporal 欄位 -------------------------------------------------
 
 def test_record_has_bitemporal_fields():
     rec = ds._record("fred:CPIAUCSL", "2026-06-09", "raw-text", event_date="2026-05-01")
-    assert rec["source"] == "fred:CPIAUCSL"
-    assert rec["available_date"] == "2026-06-09"   # 自建 snapshot = 真實可得日
-    assert rec["is_approximate"] is False          # 非估算
-    assert rec["raw"] == "raw-text"
-    assert rec["event_date"] == "2026-05-01"
-    assert "captured_at" in rec
+    assert rec["source"] == "fred:CPIAUCSL", "record should preserve source id"
+    assert rec["available_date"] == "2026-06-09", "record should preserve snapshot availability date"
+    assert rec["is_approximate"] is False, "fresh daily snapshots are not approximate"
+    assert rec["raw"] == "raw-text", "record should retain raw payload"
+    assert rec["event_date"] == "2026-05-01", "record should preserve source event date"
+    assert "captured_at" in rec, "record should stamp capture time"
 
 
 # --- _write:append-only / immutable -----------------------------------------
@@ -116,7 +123,7 @@ def test_fetch_fred_parses_event_date(monkeypatch):
 
 
 def test_fetch_stooq_parses_event_date(monkeypatch):
-    csv = "Symbol,Date,Time,Open,High,Low,Close,Volume\nSPY.US,2026-06-09,22:00:00,1,2,0.5,1.5,1000\n"
+    csv = _stooq_csv()
     monkeypatch.setattr(ds.requests, "get", lambda *a, **k: FakeResp(csv))
     rec = ds.fetch_stooq("spy.us", "2026-06-09")
     assert rec["source"] == "stooq:spy.us"
@@ -152,7 +159,7 @@ def test_fetch_yahoo_chart_parses_event_date(monkeypatch):
     ).filter(lambda rows: any(close is not None for _, close in rows)),
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_pbt_yahoo_latest_event_date_matches_last_valid_close(monkeypatch, observations):
+def test_pbt_yahoo_event_date_uses_generated_close_sequence(monkeypatch, observations):
     ts = [timestamp for timestamp, _ in observations]
     close = [value for _, value in observations]
     payload = json.dumps({
@@ -228,14 +235,14 @@ def test_main_writes_machine_readable_report_for_dry_run(monkeypatch, tmp_path):
     rc = ds.main()
     report = json.loads(report_path.read_text(encoding="utf-8"))
 
-    assert rc == 0
-    assert report["available_date"] == ds._today()
-    assert report["dry_run"] is True
-    assert report["counts"] == {"ok": 0, "skip": 0, "fail": 0, "dry": 3}
-    assert report["source_health"]["claim_boundary"] == "source_contract_status_only"
-    assert report["source_health"]["stooq"]["status"] == "blocked"
-    assert report["source_health"]["stooq"]["default_enabled"] is False
-    assert report["source_health"]["yahoo"]["status"] == "available"
+    assert rc == 0, "dry-run report should exit cleanly"
+    assert report["available_date"] == ds._today(), "report should use today's availability date"
+    assert report["dry_run"] is True, "report should record dry-run mode"
+    assert report["counts"] == {"ok": 0, "skip": 0, "fail": 0, "dry": 3}, "dry-run counts should cover all jobs"
+    assert report["source_health"]["claim_boundary"] == "source_contract_status_only", "claim boundary missing"
+    assert report["source_health"]["stooq"]["status"] == "blocked", "Stooq should remain blocked by default"
+    assert report["source_health"]["stooq"]["default_enabled"] is False, "Stooq must stay default-disabled"
+    assert report["source_health"]["yahoo"]["status"] == "available", "Yahoo should remain available"
 
 
 def test_main_scoped_live_write_uses_out_root_and_scoped_source_health(monkeypatch, tmp_path):
@@ -265,16 +272,16 @@ def test_main_scoped_live_write_uses_out_root_and_scoped_source_health(monkeypat
     out_dir = out_root / ds._today()
     written = out_dir / "fred_FEDFUNDS.json"
 
-    assert rc == 0
-    assert written.exists()
-    assert report["dry_run"] is False
-    assert report["out_dir"] == str(out_dir)
-    assert report["counts"] == {"ok": 1, "skip": 0, "fail": 0, "dry": 0}
-    assert report["jobs"] == [{"source_id": "fred:FEDFUNDS", "safe_id": "fred_FEDFUNDS", "status": "ok"}]
-    assert report["source_health"]["fred"]["symbols"] == ["FEDFUNDS"]
-    assert "yahoo" not in report["source_health"]
-    assert "noaa" not in report["source_health"]
-    assert report["source_health"]["stooq"]["status"] == "blocked"
+    assert rc == 0, "scoped live write should exit cleanly"
+    assert written.exists(), "scoped FRED output file should be written"
+    assert report["dry_run"] is False, "report should record live-write mode"
+    assert report["out_dir"] == str(out_dir), "report should use requested output directory"
+    assert report["counts"] == {"ok": 1, "skip": 0, "fail": 0, "dry": 0}, "scoped counts should show one success"
+    assert report["jobs"] == [{"source_id": "fred:FEDFUNDS", "safe_id": "fred_FEDFUNDS", "status": "ok"}], "job row should name the scoped FRED source"
+    assert report["source_health"]["fred"]["symbols"] == ["FEDFUNDS"], "source health should list scoped FRED symbol"
+    assert "yahoo" not in report["source_health"], "disabled Yahoo scope should be absent"
+    assert "noaa" not in report["source_health"], "disabled NOAA scope should be absent"
+    assert report["source_health"]["stooq"]["status"] == "blocked", "Stooq should remain blocked"
 
 
 def test_main_scoped_live_write_is_append_only_on_second_run(monkeypatch, tmp_path):
@@ -541,13 +548,13 @@ def test_source_quorum_proof_marks_valid_live_quorum_as_proven(tmp_path):
     target = tmp_path / "source-quorum-proof.json"
     write_source_quorum_proof(proof, target)
 
-    assert proof["artifact_kind"] == "source_quorum_proof"
-    assert proof["status"] == "proven"
-    assert proof["evidence_tier"] == "live_source_quorum"
-    assert proof["claim_boundary"] == "source_contract_status_only"
-    assert proof["groups"]["fred_macro"] == ["fred:FEDFUNDS"]
-    assert proof["snapshot_files"]["fred:FEDFUNDS"].endswith("fred_FEDFUNDS.json")
-    assert json.loads(target.read_text(encoding="utf-8"))["status"] == "proven"
+    assert proof["artifact_kind"] == "source_quorum_proof", "proof should identify artifact kind"
+    assert proof["status"] == "proven", "valid broad quorum should be proven"
+    assert proof["evidence_tier"] == "live_source_quorum", "proof should keep live quorum evidence tier"
+    assert proof["claim_boundary"] == "source_contract_status_only", "proof should not exceed source-contract claims"
+    assert proof["groups"]["fred_macro"] == ["fred:FEDFUNDS"], "FRED macro group should be represented"
+    assert proof["snapshot_files"]["fred:FEDFUNDS"].endswith("fred_FEDFUNDS.json"), "FRED file proof missing"
+    assert json.loads(target.read_text(encoding="utf-8"))["status"] == "proven", "written proof should match status"
 
 
 def test_source_quorum_proof_rejects_scoped_or_failed_attempts(tmp_path):
@@ -611,10 +618,10 @@ def test_source_quorum_proof_cli_runs_quorum_scope_without_network(monkeypatch, 
         returncode = 0
 
     def fake_run(command, **kwargs):
-        assert "--fred-series" in command
-        assert source_quorum_proof.QUORUM_FRED_SERIES in command
-        assert "--yahoo-symbols" in command
-        assert source_quorum_proof.QUORUM_YAHOO_SYMBOLS in command
+        assert "--fred-series" in command, "quorum proof CLI should pass FRED scope flag"
+        assert source_quorum_proof.QUORUM_FRED_SERIES in command, "quorum proof CLI should pass quorum FRED series"
+        assert "--yahoo-symbols" in command, "quorum proof CLI should pass Yahoo scope flag"
+        assert source_quorum_proof.QUORUM_YAHOO_SYMBOLS in command, "quorum proof CLI should pass quorum Yahoo symbols"
         report_path.write_text(json.dumps(_broad_source_quorum_report_with_files(tmp_path)), encoding="utf-8")
         return FakeCompleted()
 
@@ -631,9 +638,9 @@ def test_source_quorum_proof_cli_runs_quorum_scope_without_network(monkeypatch, 
     ])
     out = json.loads(capsys.readouterr().out)
 
-    assert rc == 0
-    assert out["status"] == "proven"
-    assert json.loads(proof_path.read_text(encoding="utf-8"))["status"] == "proven"
+    assert rc == 0, "source quorum proof CLI should exit cleanly"
+    assert out["status"] == "proven", "source quorum proof CLI should print proven status"
+    assert json.loads(proof_path.read_text(encoding="utf-8"))["status"] == "proven", "proof file should be proven"
 
 
 def test_schedule_report_records_retention_and_latest_pointer(tmp_path):
@@ -700,12 +707,12 @@ def test_schedule_run_proof_records_smoke_tier_and_degraded_exit():
         finished_at="2026-06-11T00:01:00Z",
     )
 
-    assert proof["artifact_kind"] == "snapshot_schedule_run_proof"
-    assert proof["status"] == "clean"
-    assert proof["evidence_tier"] == "smoke"
-    assert proof["retention"] == "append_only"
-    assert degraded["status"] == "degraded"
-    assert degraded["evidence_tier"] == "live"
+    assert proof["artifact_kind"] == "snapshot_schedule_run_proof", "proof should identify schedule artifact kind"
+    assert proof["status"] == "clean", "dry-run smoke schedule proof should be clean"
+    assert proof["evidence_tier"] == "smoke", "dry-run schedule proof should remain smoke tier"
+    assert proof["retention"] == "append_only", "schedule proof should preserve append-only retention"
+    assert degraded["status"] == "degraded", "failed live command should degrade schedule proof"
+    assert degraded["evidence_tier"] == "live", "non-dry command should be classified as live tier"
 
 
 def test_daily_snapshot_workflow_records_report_and_schedule_contract():
@@ -737,13 +744,13 @@ def test_scheduled_run_observer_keeps_manual_dispatch_as_pending(tmp_path):
     observation = build_scheduled_run_observation(runs, workflow="daily-snapshot")
     target = write_scheduled_run_observation(observation, tmp_path)
 
-    assert observation["artifact_kind"] == "scheduled_run_observation"
-    assert observation["status"] == "pending"
-    assert observation["claim_boundary"] == "manual_dispatch_is_not_cron"
-    assert observation["latest_manual_success"]["databaseId"] == 27387041974
-    assert observation["latest_schedule_success"] is None
-    assert "event=schedule" in observation["next_action"]
-    assert target.name == "scheduled-run-observation.json"
+    assert observation["artifact_kind"] == "scheduled_run_observation", "observer should identify artifact kind"
+    assert observation["status"] == "pending", "manual dispatch alone should stay pending"
+    assert observation["claim_boundary"] == "manual_dispatch_is_not_cron", "observer should not overclaim manual runs"
+    assert observation["latest_manual_success"]["databaseId"] == 27387041974, "manual success should be retained"
+    assert observation["latest_schedule_success"] is None, "manual dispatch must not count as scheduled success"
+    assert "event=schedule" in observation["next_action"], "next action should request schedule evidence"
+    assert target.name == "scheduled-run-observation.json", "observer should write the canonical artifact name"
 
 
 def test_scheduled_run_observer_promotes_only_successful_schedule_run():
@@ -843,7 +850,7 @@ def _stooq_snapshot_payload(close: str = "123.45") -> dict[str, object]:
         "is_approximate": False,
         "captured_at": "2026-06-12T00:00:00Z",
         "event_date": "2026-06-11",
-        "raw": f"Symbol,Date,Time,Open,High,Low,Close,Volume\nSPY.US,2026-06-11,22:00:00,1,2,1,{close},10",
+        "raw": _stooq_csv(date="2026-06-11", close=close),
     }
 
 
@@ -880,11 +887,11 @@ def test_stooq_contract_proof_marks_file_backed_positive_close_as_opt_in_eligibl
         command=["python", "scripts/daily_snapshot.py"],
     )
 
-    assert proof["status"] == "eligible_for_opt_in_review"
-    assert proof["decision"]["decision"] == "eligible_for_opt_in_review"
-    assert proof["decision"]["default_enabled"] == "false"
-    assert proof["claim_boundary"] == "source_contract_status_only"
-    assert proof["rows"] == [{"symbol": "spy.us", "event_date": "2026-06-11", "close": 123.45}]
+    assert proof["status"] == "eligible_for_opt_in_review", "positive Stooq close should be opt-in eligible"
+    assert proof["decision"]["decision"] == "eligible_for_opt_in_review", "decision should match proof status"
+    assert proof["decision"]["default_enabled"] == "false", "Stooq proof must not default-enable the source"
+    assert proof["claim_boundary"] == "source_contract_status_only", "Stooq proof should stay source-contract scoped"
+    assert proof["rows"] == [{"symbol": "spy.us", "event_date": "2026-06-11", "close": 123.45}], "row proof should preserve parsed positive close"
 
 
 def test_stooq_contract_proof_rejects_failed_or_replayed_reports(tmp_path: Path):
@@ -965,13 +972,13 @@ def test_stooq_contract_proof_cli_runs_opt_in_scope_without_network(monkeypatch,
         "--observed-at", "2026-06-12T00:00:00Z",
     ])
 
-    assert rc == 0
-    assert calls
-    assert "--fred-series" in calls[0] and "" in calls[0]
-    assert "--yahoo-symbols" in calls[0]
-    assert "--no-noaa" in calls[0]
+    assert rc == 0, "Stooq proof CLI should exit cleanly for positive close proof"
+    assert calls, "Stooq proof CLI should invoke the snapshot command"
+    assert "--fred-series" in calls[0] and "" in calls[0], "Stooq proof should clear FRED scope"
+    assert "--yahoo-symbols" in calls[0], "Stooq proof should explicitly clear Yahoo scope"
+    assert "--no-noaa" in calls[0], "Stooq proof should disable NOAA scope"
     proof = json.loads(proof_path.read_text(encoding="utf-8"))
-    assert proof["status"] == "eligible_for_opt_in_review"
+    assert proof["status"] == "eligible_for_opt_in_review", "written Stooq proof should be opt-in eligible"
 
 
 def test_stooq_contract_proof_cli_rejects_empty_symbol_scope(tmp_path: Path):
