@@ -53,6 +53,78 @@ def _showcase_pytest_label() -> str:
     raise ValueError("showcase evidence tests must include a pytest passed label")
 
 
+_PUBLIC_HOSTING_PROOF_TEST = (
+    "uv",
+    "run",
+    "pytest",
+    "-q",
+    "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof",
+)
+
+
+def _public_hosting_proof_mutation(
+    *,
+    name: str,
+    path: str,
+    original: str,
+    mutated: str,
+) -> MutationSpec:
+    return MutationSpec(
+        name=name,
+        path=path,
+        original=original,
+        mutated=mutated,
+        test_command=_PUBLIC_HOSTING_PROOF_TEST,
+    )
+
+
+def _public_hosting_proof_mutations() -> tuple[MutationSpec, ...]:
+    return (
+        _public_hosting_proof_mutation(
+            name="public-hosting-manifest-status-overclaim",
+            path="docs/deployment-manifest.json",
+            original='"status": "configured_not_observed"',
+            mutated='"status": "proven"',
+        ),
+        _public_hosting_proof_mutation(
+            name="public-hosting-probe-status-overclaim",
+            path="docs/public-hosting-probe.json",
+            original='"status": "configured_not_observed"',
+            mutated='"status": "proven"',
+        ),
+        _public_hosting_proof_mutation(
+            name="review-public-hosting-probe-status-overclaim",
+            path="docs/review/assets/public-hosting-probe.json",
+            original='"status": "configured_not_observed"',
+            mutated='"status": "proven"',
+        ),
+        _public_hosting_proof_mutation(
+            name="public-hosting-manifest-hash-overclaim",
+            path="docs/deployment-manifest.json",
+            original='"hashStatus": "mismatched"',
+            mutated='"hashStatus": "matched"',
+        ),
+        _public_hosting_proof_mutation(
+            name="public-hosting-probe-hash-overclaim",
+            path="docs/public-hosting-probe.json",
+            original='"hashStatus": "mismatched"',
+            mutated='"hashStatus": "matched"',
+        ),
+        _public_hosting_proof_mutation(
+            name="public-hosting-probe-expected-hash-drift",
+            path="docs/public-hosting-probe.json",
+            original=f'"expectedDataHash": "{_public_probe_expected_hash()}"',
+            mutated='"expectedDataHash": "269bb251c5480976e98ec6533b1fdbbbc2b383b85fd0cae4852aec859be1922c"',
+        ),
+        _public_hosting_proof_mutation(
+            name="public-hosting-manifest-contract-regression",
+            path="docs/deployment-manifest.json",
+            original='"manifestContractStatus": "matched"',
+            mutated='"manifestContractStatus": "mismatched"',
+        ),
+    )
+
+
 MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="h-deep-report-oos-net-ranking",
@@ -818,62 +890,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_browser_visual_smoke_fails_closed_on_stale_committed_docs"),
     ),
-    MutationSpec(
-        name="public-hosting-manifest-status-overclaim",
-        path="docs/deployment-manifest.json",
-        original='"status": "configured_not_observed"',
-        mutated='"status": "proven"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="public-hosting-probe-status-overclaim",
-        path="docs/public-hosting-probe.json",
-        original='"status": "configured_not_observed"',
-        mutated='"status": "proven"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="review-public-hosting-probe-status-overclaim",
-        path="docs/review/assets/public-hosting-probe.json",
-        original='"status": "configured_not_observed"',
-        mutated='"status": "proven"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="public-hosting-manifest-hash-overclaim",
-        path="docs/deployment-manifest.json",
-        original='"hashStatus": "mismatched"',
-        mutated='"hashStatus": "matched"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="public-hosting-probe-hash-overclaim",
-        path="docs/public-hosting-probe.json",
-        original='"hashStatus": "mismatched"',
-        mutated='"hashStatus": "matched"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="public-hosting-probe-expected-hash-drift",
-        path="docs/public-hosting-probe.json",
-        original=f'"expectedDataHash": "{_public_probe_expected_hash()}"',
-        mutated='"expectedDataHash": "269bb251c5480976e98ec6533b1fdbbbc2b383b85fd0cae4852aec859be1922c"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
-    MutationSpec(
-        name="public-hosting-manifest-contract-regression",
-        path="docs/deployment-manifest.json",
-        original='"manifestContractStatus": "matched"',
-        mutated='"manifestContractStatus": "mismatched"',
-        test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"),
-    ),
+    *_public_hosting_proof_mutations(),
     MutationSpec(
         name="public-hosting-freshness-downgrade-window",
         path="quantlab/showcase/scenario.py",

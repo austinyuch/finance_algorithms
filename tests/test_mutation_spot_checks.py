@@ -152,6 +152,70 @@ def test_public_probe_expected_hash_mutation_tracks_current_artifact():
     )
 
 
+def test_public_hosting_mutations_share_proof_guard_and_stable_anchors():
+    from scripts.run_mutation_spot_checks import selected_specs
+
+    names = [
+        "public-hosting-manifest-status-overclaim",
+        "public-hosting-probe-status-overclaim",
+        "review-public-hosting-probe-status-overclaim",
+        "public-hosting-manifest-hash-overclaim",
+        "public-hosting-probe-hash-overclaim",
+        "public-hosting-probe-expected-hash-drift",
+        "public-hosting-manifest-contract-regression",
+    ]
+    specs = selected_specs(names)
+    probe = json.loads(Path("docs/public-hosting-probe.json").read_text(encoding="utf-8"))
+
+    assert [(spec.name, spec.path, spec.original, spec.mutated) for spec in specs] == [
+        (
+            "public-hosting-manifest-status-overclaim",
+            "docs/deployment-manifest.json",
+            '"status": "configured_not_observed"',
+            '"status": "proven"',
+        ),
+        (
+            "public-hosting-probe-status-overclaim",
+            "docs/public-hosting-probe.json",
+            '"status": "configured_not_observed"',
+            '"status": "proven"',
+        ),
+        (
+            "review-public-hosting-probe-status-overclaim",
+            "docs/review/assets/public-hosting-probe.json",
+            '"status": "configured_not_observed"',
+            '"status": "proven"',
+        ),
+        (
+            "public-hosting-manifest-hash-overclaim",
+            "docs/deployment-manifest.json",
+            '"hashStatus": "mismatched"',
+            '"hashStatus": "matched"',
+        ),
+        (
+            "public-hosting-probe-hash-overclaim",
+            "docs/public-hosting-probe.json",
+            '"hashStatus": "mismatched"',
+            '"hashStatus": "matched"',
+        ),
+        (
+            "public-hosting-probe-expected-hash-drift",
+            "docs/public-hosting-probe.json",
+            f'"expectedDataHash": "{probe["expectedDataHash"]}"',
+            '"expectedDataHash": "269bb251c5480976e98ec6533b1fdbbbc2b383b85fd0cae4852aec859be1922c"',
+        ),
+        (
+            "public-hosting-manifest-contract-regression",
+            "docs/deployment-manifest.json",
+            '"manifestContractStatus": "matched"',
+            '"manifestContractStatus": "mismatched"',
+        ),
+    ]
+    assert {spec.test_command[-1] for spec in specs} == {
+        "tests/quantlab/test_governance_guards.py::test_public_hosting_manifest_carries_observed_proof"
+    }
+
+
 def test_purge_python_bytecode_removes_pycache(tmp_path):
     from scripts.run_mutation_spot_checks import purge_python_bytecode
 
