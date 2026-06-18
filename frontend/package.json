@@ -13,6 +13,7 @@
     "visual": "tsx scripts/export-public-demo.tsx",
     "visual:browser": "node scripts/browser-visual-smoke.mjs",
     "visual:browser:update-docs": "QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS=1 node scripts/browser-visual-smoke.mjs",
+    "e2e:interactive": "node scripts/interactive-research-e2e.mjs",
     "probe:public-demo": "node scripts/probe-public-demo.mjs",
     "mutation": "node scripts/run-mutation-checks.mjs",
     "smoke": "node scripts/public-demo-smoke.mjs"

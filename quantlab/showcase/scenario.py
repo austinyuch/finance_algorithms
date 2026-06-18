@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -13,11 +14,11 @@ from quantlab.tracking import LocalResultStore
 
 
 _FALLBACK_EVIDENCE_TESTS = [
-    "430 passed",
-    "frontend tests 46 passed",
+    "435 passed",
+    "frontend tests 52 passed",
     "Python mutation 118/118 killed",
-    "frontend mutation 26/26 killed",
-    "F Next.js coverage 90.00%",
+    "frontend mutation 29/29 killed",
+    "F Next.js coverage 84.12%",
     "E registry coverage 99%",
     "B source-health/Stooq proof coverage 90%",
 ]
@@ -337,6 +338,130 @@ def _real_data_section(evidence_root: str | Path | None) -> dict[str, Any] | Non
     }
 
 
+def _stable_checksum(value: Mapping[str, Any]) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _interactive_research_section() -> dict[str, Any]:
+    """Return the deterministic H-3 static replay block.
+
+    The values mirror the H experiment contract shape without introducing a new
+    calculation path in the frontend. Future live execution should replace this
+    with a thin wrapper around ``scripts/run_dl_experiment.py::run_experiment``.
+    """
+    parameters = {
+        "backend": "reference",
+        "hiddenUnits": 4,
+        "lookback": 6,
+        "epochs": 20,
+        "seed": 0,
+        "rebalance": "monthly",
+        "symbols": ["GROWTH", "STEADY"],
+    }
+    rows = [
+        {
+            "strategyName": "DeepForecastAllocationStrategy",
+            "isBaseline": False,
+            "oosNetSharpe": 0.91,
+            "oosNetCagr": 0.118,
+            "maxDrawdown": -0.16,
+            "equityCurve": [
+                {"label": "2018-01", "value": 1.0},
+                {"label": "2019-01", "value": 1.08},
+                {"label": "2020-01", "value": 1.15},
+                {"label": "2021-01", "value": 1.21},
+                {"label": "2022-01", "value": 1.31},
+            ],
+            "drawdown": [
+                {"label": "2018-01", "value": 0.0},
+                {"label": "2019-01", "value": -0.03},
+                {"label": "2020-01", "value": -0.12},
+                {"label": "2021-01", "value": -0.05},
+                {"label": "2022-01", "value": -0.08},
+            ],
+            "returnDistribution": [-0.04, -0.01, 0.02, 0.04, 0.07],
+            "learningCurve": [
+                {"label": "1", "value": 0.032},
+                {"label": "5", "value": 0.022},
+                {"label": "10", "value": 0.018},
+                {"label": "20", "value": 0.014},
+            ],
+        },
+        {
+            "strategyName": "StaticWeights",
+            "isBaseline": True,
+            "oosNetSharpe": 0.63,
+            "oosNetCagr": 0.082,
+            "maxDrawdown": -0.19,
+            "equityCurve": [
+                {"label": "2018-01", "value": 1.0},
+                {"label": "2019-01", "value": 1.04},
+                {"label": "2020-01", "value": 1.09},
+                {"label": "2021-01", "value": 1.13},
+                {"label": "2022-01", "value": 1.19},
+            ],
+            "drawdown": [
+                {"label": "2018-01", "value": 0.0},
+                {"label": "2019-01", "value": -0.04},
+                {"label": "2020-01", "value": -0.15},
+                {"label": "2021-01", "value": -0.07},
+                {"label": "2022-01", "value": -0.1},
+            ],
+            "returnDistribution": [-0.05, -0.02, 0.01, 0.03, 0.05],
+            "learningCurve": [],
+        },
+    ]
+    report = {
+        "claimBoundary": "no_alpha_claim",
+        "metricAuthority": "out_of_sample_net_only",
+        "parameters": parameters,
+        "rows": rows,
+        "dataLineage": {
+            "source": "cr_b21_approximate_backfill",
+            "dataWindow": {"start": "2018-01-31", "end": "2022-12-31"},
+            "approximateAvailability": True,
+            "strictPitExcluded": True,
+            "warning": "research_mode_approximate_availability",
+        },
+    }
+    checksum = _stable_checksum(report)
+    return {
+        "mode": "static_replay",
+        "status": "computed",
+        "claimBoundary": "no_alpha_claim",
+        "metricAuthority": "out_of_sample_net_only",
+        "parameters": parameters,
+        "parameterRanges": {
+            "hiddenUnits": {"min": 2, "max": 64, "step": 1},
+            "lookback": {"min": 3, "max": 24, "step": 1},
+            "epochs": {"min": 5, "max": 200, "step": 5},
+            "seed": {"min": 0, "max": 999, "step": 1},
+            "rebalance": ["monthly", "quarterly"],
+            "backend": ["reference", "pytorch", "jax", "tensorflow"],
+        },
+        "resolvedBackend": {
+            "requested": "reference",
+            "resolved": "reference",
+            "fallbackReason": None,
+        },
+        "dataLineage": report["dataLineage"],
+        "artifact": {
+            "experimentId": f"h3-static-{checksum[:16]}",
+            "reportChecksum": checksum,
+            "artifactPath": ".agents/specs/h-interactive-research-ui/reports/h3-static-replay-artifact.json",
+            "vizPath": ".agents/specs/h-interactive-research-ui/reports/h3-static-replay.svg",
+        },
+        "rows": rows,
+        "warnings": [
+            "no_alpha_claim",
+            "out_of_sample_net_only",
+            "research_mode_approximate_availability",
+            "static_replay",
+        ],
+    }
+
+
 def _frontend_payload(
     summary: Mapping[str, Any],
     *,
@@ -357,6 +482,7 @@ def _frontend_payload(
         "rebalanceDates": list(summary["rebalance_dates"]),
         "leaderboard": [_leaderboard_row(row) for row in summary["leaderboard"]],
         "experiments": [_experiment_row(row) for row in summary["experiments"]],
+        "interactiveResearch": _interactive_research_section(),
         "warnings": warnings,
         "evidence": {
             "readiness": "local_runtime_only",

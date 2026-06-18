@@ -103,10 +103,10 @@ Reason` on the asset block.
 Authoritative gates (recorded in the manual evidence panel):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py       # 434 passed (2026-06-18)
+uv run python scripts/capture_pytest_gate.py       # 435 passed (2026-06-18)
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean, 69 files
 uv run lint-imports                                # engine/data KEPT, 88 files / 242 dependencies
-(cd frontend && npm test && npm audit --omit=dev)  # 46 passed, 0 vulnerabilities
+(cd frontend && npm test && npm audit --omit=dev)  # 52 passed, 0 vulnerabilities
 ```
 
 ## 4. Evidence capture (Web UI lane — secondary)
@@ -134,11 +134,11 @@ allocation. The committed dashboard screenshot in `docs/manual/assets/` is
 `dashboard-browser-visual.png`; the embedded static export is
 `dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
 
-Public hosting is currently observed `proven` **point-in-time** at
-`dataHash 0f170441…` (`docs/deployment-manifest.json`,
-`docs/public-hosting-probe.json`, observed `2026-06-14T09:39Z`). The dashboard
-payload's own `publicHosting` self-claim stays `not_proven` by design — a static
-artifact cannot self-claim its deployment. Freshness is deterministic
+Public hosting is currently `configured_not_observed` for expected
+`dataHash a3a487e1…` while Pages serves `e5794260…`; older `proven`
+observations remain point-in-time historical evidence only. The dashboard payload's
+own `publicHosting` self-claim stays `not_proven` by design — a static artifact
+cannot self-claim its deployment. Freshness is deterministic
 (CR-FPS-011): stale committed evidence downgrades to `configured_not_observed`
 rather than crashing.
 

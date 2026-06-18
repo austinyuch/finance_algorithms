@@ -231,7 +231,7 @@ def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
     }, "canonical artifact must disclose its generated local-result-store source"
     assert artifact["activeRunId"] == "forecast-run", "forecast run should remain the active showcase run"
     assert artifact["claimBoundary"] == "no_alpha_claim", "canonical artifact must stay no-alpha"
-    assert "frontend mutation 26/26 killed" in artifact["evidence"]["tests"], "current mutation count missing"
+    assert "frontend mutation 29/29 killed" in artifact["evidence"]["tests"], "current mutation count missing"
     assert "frontend mutation 21/21 killed" not in artifact["evidence"]["tests"], "stale mutation count leaked"
     assert [row["runId"] for row in artifact["leaderboard"]] == [
         "forecast-run",
@@ -249,7 +249,7 @@ def _write_current_evidence_root(root: Path) -> None:
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-test.txt").write_text(
-        " Test Files  6 passed (6)\n      Tests  44 passed (44)\n",
+        " Test Files  7 passed (7)\n      Tests  52 passed (52)\n",
         encoding="utf-8",
     )
     (root / "docs/review/assets/gate-frontend-audit.txt").write_text(
@@ -262,7 +262,7 @@ def _write_current_evidence_root(root: Path) -> None:
     )
     (root / ".agents/specs/f-browser-pixel-baseline/review.md").write_text(
         "- Frontend coverage: **89.85% line coverage**.\n"
-        "- Frontend mutation: **26/26 killed**.\n",
+        "- Frontend mutation: **29/29 killed**.\n",
         encoding="utf-8",
     )
     (root / "docs/browser-visual-diff.json").write_text(
@@ -336,9 +336,9 @@ def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     assert artifact["demoReadiness"]["visualRegression"] == "proven"
     assert artifact["evidence"]["tests"] == [
         "288 passed",
-        "frontend tests 44 passed",
+        "frontend tests 52 passed",
         "Python mutation 100/100 killed",
-        "frontend mutation 26/26 killed",
+        "frontend mutation 29/29 killed",
         "F Next.js coverage 89.85%",
         "frontend audit 0 vulnerabilities",
         "browser visual diff passed",

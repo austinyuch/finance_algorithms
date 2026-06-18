@@ -2,12 +2,13 @@
   "baselineKind": "static_visual_contract",
   "claimBoundary": "no_alpha_claim",
   "publicHosting": "configured_not_observed",
-  "htmlHash": "6a4b5b77fcee0a39b43d848f60e000dbae13bb0275c0a1f0484d8c1ad9c8b176",
+  "htmlHash": "942fbe9debd89835a59d0a4fdd4aa1d4df567152d0e2678048b7e3998e79fc8b",
   "sections": [
     "leaderboard",
     "allocation-regime",
     "rebalance",
     "experiments",
+    "interactive-research",
     "evidence"
   ],
   "viewportContracts": [

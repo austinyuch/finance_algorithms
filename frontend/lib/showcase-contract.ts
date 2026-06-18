@@ -36,6 +36,83 @@ export interface RealDataComparison {
   rows: RealDataOosRow[];
 }
 
+export type ResearchBackend = "reference" | "pytorch" | "jax" | "tensorflow";
+export type ResearchRebalance = "monthly" | "quarterly";
+
+export interface ResearchParameters {
+  backend: ResearchBackend;
+  hiddenUnits: number;
+  lookback: number;
+  epochs: number;
+  seed: number;
+  rebalance: ResearchRebalance;
+  symbols: string[];
+}
+
+export interface IntegerRange {
+  min: number;
+  max: number;
+  step: number;
+}
+
+export interface ResearchParameterRanges {
+  hiddenUnits: IntegerRange;
+  lookback: IntegerRange;
+  epochs: IntegerRange;
+  seed: IntegerRange;
+  rebalance: ResearchRebalance[];
+  backend: ResearchBackend[];
+}
+
+export interface ResearchPoint {
+  label: string;
+  value: number;
+}
+
+export interface InteractiveResearchRow {
+  strategyName: string;
+  isBaseline: boolean;
+  oosNetSharpe: number;
+  oosNetCagr: number;
+  maxDrawdown: number;
+  equityCurve: ResearchPoint[];
+  drawdown: ResearchPoint[];
+  returnDistribution: number[];
+  learningCurve: ResearchPoint[];
+}
+
+export interface InteractiveResearchPayload {
+  mode: "static_replay";
+  status: "computed" | "fail_closed";
+  claimBoundary: ClaimBoundary;
+  metricAuthority: "out_of_sample_net_only";
+  parameters: ResearchParameters;
+  parameterRanges: ResearchParameterRanges;
+  resolvedBackend: {
+    requested: ResearchBackend;
+    resolved: ResearchBackend;
+    fallbackReason: string | null;
+  };
+  dataLineage: {
+    source: "cr_b21_approximate_backfill";
+    dataWindow: {
+      start: string;
+      end: string;
+    };
+    approximateAvailability: true;
+    strictPitExcluded: true;
+    warning: "research_mode_approximate_availability";
+  };
+  artifact: {
+    experimentId: string;
+    reportChecksum: string;
+    artifactPath: string;
+    vizPath: string;
+  };
+  rows: InteractiveResearchRow[];
+  warnings: string[];
+}
+
 export interface ShowcaseDashboard {
   activeRunId: string;
   strategyName: string;
@@ -54,6 +131,7 @@ export interface ShowcaseDashboard {
   rebalanceDates: string[];
   leaderboard: LeaderboardRow[];
   experiments: ExperimentRegistryRow[];
+  interactiveResearch: InteractiveResearchPayload;
   warnings: string[];
   evidence: {
     readiness: "local_runtime_only";
@@ -73,6 +151,63 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function isLeaderboardSorted(rows: LeaderboardRow[]): boolean {
   return rows.every((row, index) => index === 0 || rows[index - 1].oosNetSharpe >= row.oosNetSharpe);
+}
+
+function isInteractiveRowsSorted(rows: InteractiveResearchRow[]): boolean {
+  return rows.every((row, index) => index === 0 || rows[index - 1].oosNetSharpe >= row.oosNetSharpe);
+}
+
+function isSha256(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+}
+
+function assertInteractiveResearch(value: unknown): asserts value is InteractiveResearchPayload {
+  if (!isRecord(value)) {
+    throw new Error("interactive research payload must be an object");
+  }
+  if (value.mode !== "static_replay" || !["computed", "fail_closed"].includes(String(value.status))) {
+    throw new Error("interactive research must declare static_replay mode and supported status");
+  }
+  if (value.claimBoundary !== "no_alpha_claim") {
+    throw new Error("interactive research must preserve no_alpha_claim");
+  }
+  if (value.metricAuthority !== "out_of_sample_net_only") {
+    throw new Error("interactive research must use out_of_sample_net_only metrics");
+  }
+  if (!isRecord(value.dataLineage)) {
+    throw new Error("interactive research must include data lineage");
+  }
+  if (
+    value.dataLineage.source !== "cr_b21_approximate_backfill" ||
+    value.dataLineage.approximateAvailability !== true ||
+    value.dataLineage.strictPitExcluded !== true ||
+    value.dataLineage.warning !== "research_mode_approximate_availability"
+  ) {
+    throw new Error("interactive research must disclose approximate CR-B21 data and strict PIT exclusion");
+  }
+  if (
+    !isRecord(value.artifact) ||
+    typeof value.artifact.experimentId !== "string" ||
+    value.artifact.experimentId.length < 8 ||
+    !isSha256(value.artifact.reportChecksum)
+  ) {
+    throw new Error("interactive research artifact lineage must include experiment id and checksum");
+  }
+  if (!Array.isArray(value.rows) || value.rows.length < 2) {
+    throw new Error("interactive research must include model and baseline rows");
+  }
+  if (!value.rows.some((row) => isRecord(row) && row.isBaseline === true)) {
+    throw new Error("interactive research must keep a visible baseline row");
+  }
+  if (!isInteractiveRowsSorted(value.rows as InteractiveResearchRow[])) {
+    throw new Error("interactive research rows must be ranked by descending OOS-net Sharpe");
+  }
+  if (!Array.isArray(value.warnings) || !value.warnings.includes("no_alpha_claim")) {
+    throw new Error("interactive research warnings must preserve no_alpha_claim");
+  }
+  if (!value.warnings.includes("research_mode_approximate_availability")) {
+    throw new Error("interactive research warnings must include approximate data disclosure");
+  }
 }
 
 export function assertDashboardPayload(value: unknown): asserts value is ShowcaseDashboard {
@@ -115,6 +250,7 @@ export function assertDashboardPayload(value: unknown): asserts value is Showcas
       throw new Error("experiment registry rows must remain research_only registry_only no_alpha_claim");
     }
   }
+  assertInteractiveResearch(value.interactiveResearch);
   if (!isRecord(value.evidence) || value.evidence.readiness !== "local_runtime_only") {
     throw new Error("dashboard evidence must be local_runtime_only");
   }

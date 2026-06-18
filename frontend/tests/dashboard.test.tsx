@@ -28,8 +28,11 @@ describe("F Next.js showcase dashboard", () => {
     expect(html).toContain("data-section=\"allocation-regime\"");
     expect(html).toContain("data-section=\"rebalance\"");
     expect(html).toContain("data-section=\"experiments\"");
+    expect(html).toContain("data-section=\"interactive-research\"");
     expect(html).toContain("data-section=\"evidence\"");
     expect(html).toContain("no_alpha_claim");
+    expect(html).toContain("static_replay");
+    expect(html).toContain("research_mode_approximate_availability");
     expect(html).toContain("registry_only");
     expect(html).toContain("local_runtime_only");
     expect(html).toContain("not_proven");
@@ -50,6 +53,10 @@ describe("F Next.js showcase dashboard", () => {
     expect(payload.claimBoundary).toBe("no_alpha_claim");
     expect(payload.experiments[0].readiness).toBe("registry_only");
     expect(payload.experiments[0].claimBoundary).toBe("no_alpha_claim");
+    expect(payload.interactiveResearch.mode).toBe("static_replay");
+    expect(payload.interactiveResearch.claimBoundary).toBe("no_alpha_claim");
+    expect(payload.interactiveResearch.metricAuthority).toBe("out_of_sample_net_only");
+    expect(payload.interactiveResearch.rows.some((row) => row.isBaseline)).toBe(true);
     expect(payload.demoReadiness.dependencyAudit).toBe("clean");
     expect(payload.demoReadiness.publicHosting).toBe("not_proven");
     expect(payload.demoReadiness.visualRegression).toBe("proven");
@@ -59,7 +66,7 @@ describe("F Next.js showcase dashboard", () => {
     const payload = getShowcaseDashboard();
     const frontendCoverage = currentFrontendLineCoveragePercent();
 
-    expect(payload.evidence.tests).toContain("frontend mutation 26/26 killed");
+    expect(payload.evidence.tests).toContain("frontend mutation 29/29 killed");
     expect(payload.evidence.tests).not.toContain("frontend mutation 21/21 killed");
     expect(payload.evidence.tests).toContain(`F Next.js coverage ${frontendCoverage}`);
     expect(payload.evidence.tests).not.toContain("mutation 9/9 killed");
@@ -117,6 +124,37 @@ describe("F Next.js showcase dashboard", () => {
         ...base,
         realData: { ...base.realData, rows: base.realData?.rows.map((r) => ({ ...r, isBaseline: false })) },
       })
+    ).toThrow(/visible baseline/);
+  });
+
+  it("rejects malformed interactive research sections", () => {
+    const base = getShowcaseDashboard();
+    expect(() =>
+      assertDashboardPayload({
+        ...base,
+        interactiveResearch: { ...base.interactiveResearch, claimBoundary: "alpha_claim" },
+      }),
+    ).toThrow(/interactive research.*no_alpha_claim/);
+    expect(() =>
+      assertDashboardPayload({
+        ...base,
+        interactiveResearch: {
+          ...base.interactiveResearch,
+          dataLineage: {
+            ...base.interactiveResearch.dataLineage,
+            approximateAvailability: false,
+          },
+        },
+      }),
+    ).toThrow(/approximate/);
+    expect(() =>
+      assertDashboardPayload({
+        ...base,
+        interactiveResearch: {
+          ...base.interactiveResearch,
+          rows: base.interactiveResearch.rows.map((row) => ({ ...row, isBaseline: false })),
+        },
+      }),
     ).toThrow(/visible baseline/);
   });
 

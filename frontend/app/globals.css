@@ -73,6 +73,7 @@ body {
 
 .leaderboard-panel,
 .experiments-panel,
+.interactive-panel,
 .evidence-panel {
   grid-column: 1 / -1;
 }
@@ -152,6 +153,108 @@ th {
   color: var(--accent-2);
 }
 
+.research-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.research-grid label {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.8rem;
+  gap: 5px;
+}
+
+.research-grid input,
+.research-grid select {
+  appearance: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font: inherit;
+  min-block-size: 38px;
+  min-inline-size: 0;
+  padding: 8px 10px;
+}
+
+.artifact-select {
+  grid-column: span 2;
+}
+
+.research-status {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 14px;
+}
+
+.research-status span,
+.empty-state {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  min-block-size: 36px;
+  padding: 9px 10px;
+}
+
+.research-status[data-status="computed"] span:first-child {
+  border-color: #9fccc0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.research-status[data-status="fail_closed"] span:first-child,
+.empty-state {
+  border-color: #e3b9a9;
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
+.research-chart-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.research-chart-grid > div {
+  border-top: 1px solid var(--line);
+  min-block-size: 96px;
+  padding-top: 10px;
+}
+
+.research-chart-grid strong {
+  display: block;
+  font-size: 0.86rem;
+  margin-bottom: 8px;
+}
+
+.mini-bars {
+  display: grid;
+  gap: 5px;
+}
+
+.mini-bars span {
+  background: #edf2ee;
+  block-size: 9px;
+  display: block;
+  overflow: hidden;
+}
+
+.mini-bars i {
+  background: var(--accent);
+  block-size: 100%;
+  display: block;
+}
+
+.mini-bars.drawdown i {
+  background: var(--accent-2);
+}
+
 @media (max-width: 760px) {
   .dashboard-shell {
     grid-template-columns: 1fr;
@@ -162,5 +265,14 @@ th {
   .panel-heading {
     align-items: start;
     flex-direction: column;
+  }
+
+  .research-grid,
+  .research-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .artifact-select {
+    grid-column: auto;
   }
 }

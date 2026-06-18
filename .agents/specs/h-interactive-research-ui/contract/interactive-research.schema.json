@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantlab.local/specs/h-interactive-research-ui/interactive-research.schema.json",
+  "title": "HInteractiveResearchPayload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mode",
+    "status",
+    "claimBoundary",
+    "metricAuthority",
+    "parameters",
+    "parameterRanges",
+    "resolvedBackend",
+    "dataLineage",
+    "artifact",
+    "rows",
+    "warnings"
+  ],
+  "properties": {
+    "mode": {
+      "const": "static_replay"
+    },
+    "status": {
+      "enum": ["computed", "fail_closed"]
+    },
+    "claimBoundary": {
+      "const": "no_alpha_claim"
+    },
+    "metricAuthority": {
+      "const": "out_of_sample_net_only"
+    },
+    "parameters": {
+      "$ref": "#/$defs/parameters"
+    },
+    "parameterRanges": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hiddenUnits", "lookback", "epochs", "seed", "rebalance", "backend"],
+      "properties": {
+        "hiddenUnits": { "$ref": "#/$defs/range" },
+        "lookback": { "$ref": "#/$defs/range" },
+        "epochs": { "$ref": "#/$defs/range" },
+        "seed": { "$ref": "#/$defs/range" },
+        "rebalance": {
+          "type": "array",
+          "items": { "enum": ["monthly", "quarterly"] },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "backend": {
+          "type": "array",
+          "items": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "resolvedBackend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "resolved", "fallbackReason"],
+      "properties": {
+        "requested": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "resolved": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "fallbackReason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "dataLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "dataWindow",
+        "approximateAvailability",
+        "strictPitExcluded",
+        "warning"
+      ],
+      "properties": {
+        "source": { "const": "cr_b21_approximate_backfill" },
+        "dataWindow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "end": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          }
+        },
+        "approximateAvailability": { "const": true },
+        "strictPitExcluded": { "const": true },
+        "warning": { "const": "research_mode_approximate_availability" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experimentId", "reportChecksum", "artifactPath", "vizPath"],
+      "properties": {
+        "experimentId": { "type": "string", "minLength": 8 },
+        "reportChecksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "artifactPath": { "type": "string", "minLength": 1 },
+        "vizPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/$defs/resultRow" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "step"],
+      "properties": {
+        "min": { "type": "integer" },
+        "max": { "type": "integer" },
+        "step": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "hiddenUnits", "lookback", "epochs", "seed", "rebalance", "symbols"],
+      "properties": {
+        "backend": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "hiddenUnits": { "type": "integer", "minimum": 1 },
+        "lookback": { "type": "integer", "minimum": 1 },
+        "epochs": { "type": "integer", "minimum": 1 },
+        "seed": { "type": "integer", "minimum": 0 },
+        "rebalance": { "enum": ["monthly", "quarterly"] },
+        "symbols": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 2,
+          "uniqueItems": true
+        }
+      }
+    },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "number" }
+      }
+    },
+    "resultRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategyName",
+        "isBaseline",
+        "oosNetSharpe",
+        "oosNetCagr",
+        "maxDrawdown",
+        "equityCurve",
+        "drawdown",
+        "returnDistribution",
+        "learningCurve"
+      ],
+      "properties": {
+        "strategyName": { "type": "string", "minLength": 1 },
+        "isBaseline": { "type": "boolean" },
+        "oosNetSharpe": { "type": "number" },
+        "oosNetCagr": { "type": "number" },
+        "maxDrawdown": { "type": "number" },
+        "equityCurve": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/point" },
+          "minItems": 2
+        },
+        "drawdown": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/point" },
+          "minItems": 2
+        },
+        "returnDistribution": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3
+        },
+        "learningCurve": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/point" }
+        }
+      }
+    }
+  }
+}

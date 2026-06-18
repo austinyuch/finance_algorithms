@@ -115,6 +115,7 @@ describe("F public static showcase proof", () => {
       "allocation-regime",
       "rebalance",
       "experiments",
+      "interactive-research",
       "evidence",
     ]);
     expect(manifest.dataHash).toMatch(/^[a-f0-9]{64}$/);
@@ -227,6 +228,7 @@ describe("F public static showcase proof", () => {
     expect(snapshot.publicHosting).toBe("configured_not_observed");
     expect(snapshot.htmlHash).toMatch(/^[a-f0-9]{64}$/);
     expect(snapshot.sections).toContain("experiments");
+    expect(snapshot.sections).toContain("interactive-research");
     expect(() => assertVisualSnapshotMatchesBaseline(snapshot, snapshot)).not.toThrow();
   });
 
@@ -328,7 +330,7 @@ describe("F public static showcase proof", () => {
       experiments: [],
     };
 
-    expect(() => dashboardSections(dashboard)).toThrow(/leaderboard and experiment/);
+    expect(() => dashboardSections(dashboard)).toThrow(/leaderboard, experiment, and interactive research/);
     expect(() => buildVisualSnapshot("<main data-section=\"leaderboard\"></main>", getShowcaseDashboard())).toThrow(
       /missing section/,
     );

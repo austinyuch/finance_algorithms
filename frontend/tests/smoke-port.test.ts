@@ -53,17 +53,24 @@ describe("public demo smoke port selection", () => {
         dependencyAudit: "clean",
       },
       experiments: [{ readiness: "registry_only", modelFamily: "return-risk-forecast" }],
+      interactiveResearch: {
+        artifact: { experimentId: "h3-static-fixture" },
+      },
       evidence: { tests: ["279 passed"] },
     };
     const html = [
       "Experiment Registry",
+      "Interactive Research",
       "local_demo_only",
+      "static_replay",
+      "research_mode_approximate_availability",
       "forecast-run",
       "ForecastAllocationStrategy",
       "risk_on",
       "Public hosting: <!-- -->not_proven",
       "Visual regression: <!-- -->proven",
       "return-risk-forecast",
+      "h3-static-fixture",
       "279 passed",
     ].join("\n");
 

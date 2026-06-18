@@ -31,9 +31,9 @@ Closed current-state governance drift across the active UAT/production-readiness
 - Python mutation: `uv run python scripts/run_mutation_spot_checks.py` -> 100/100 configured/killed.
 - Type check: `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py --ignore-missing-imports` -> success over 58 source files.
 - Import architecture: `uv run lint-imports` -> KEPT over 75 files / 189 dependencies.
-- Frontend unit: `cd frontend && npm test -- --run` -> 46 passed.
+- Frontend unit: `cd frontend && npm test -- --run` -> 52 passed.
 - Frontend build/smoke/visual: `cd frontend && npm run build && npm run smoke && npm run visual && npm run visual:browser` -> PASS.
-- Browser visual diff: `0 / 1,296,000` mismatched pixels, `mismatchRatio=0.0`, threshold `0.001`.
+- Browser visual diff: `1077 / 1,296,000` mismatched pixels, `mismatchRatio=0.0008310185185185185`, threshold `0.001`.
 - Local-first CI policy: `tests/quantlab/test_governance_guards.py::test_local_first_ci_policy_is_repo_guided_and_skill_backed` verifies `AGENTS.md` and `.agents/skills/local-first-ci/SKILL.md` keep hosted Actions as explicit/necessary-only proof rather than the default discovery path or routine queue, trigger on workflow-cost / "Actions are expensive" wording, require local subagent gate bundles for routine Python/static/PBT/integration/coverage/mutation/frontend/smoke/visual/audit/dependency/evidence checks before hosted CI confirmation, and require hosted-only exception details when local/subagent proof is insufficient.
 - Local CI matrix: `scripts/local_ci_matrix.py --list-json` exposes the repo-runnable `daily-snapshot` dry-run report and schedule-proof commands with `generated-artifact` isolation, while preserving hosted-only schedule event semantics and artifact upload transport.
 - Local-first CI mutation spot check: `uv run python scripts/run_mutation_spot_checks.py --only governance-local-first-ci-default-regression --only governance-local-first-ci-skill-default-regression --only governance-workflow-hosted-only-contract --report-json /tmp/local-first-ci-mutation.json` -> 3/3 killed.
