@@ -93,7 +93,11 @@ uv run python scripts/run_real_data_oos_backtest.py   # SP500 index OOS-net comp
 Epic **H** adds a deep-learning research lab: a framework-free deterministic reference
 MLP forecaster with a multi-framework backend registry (slice H-1) and a real **PyTorch**
 training path (slice H-2, `scripts/run_dl_experiment.py --backend pytorch`) that degrades
-honestly to the `reference` backend when torch is absent. Frameworks stay behind
+honestly to the `reference` backend when torch is absent. Slice **H-3**
+(`h-interactive-research-ui`) adds an interactive parameter UI over those H artifacts on the
+showcase dashboard — a deterministic `static_replay` model-vs-baseline leaderboard with
+OOS-net-only ranking, approximate-data warnings, and fail-closed behavior on unsupported
+parameters or stale checksums (no live backend rerun yet). Frameworks stay behind
 `quantlab/models/dl/` (import-linter enforced); torch is an optional lane kept out of the
 default lock; everything is `no_alpha_claim`.
 
