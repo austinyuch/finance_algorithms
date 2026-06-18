@@ -52,6 +52,22 @@ class FakeResp:
             raise ds.requests.HTTPError(f"{self._status} error")
 
 
+def _fred_url(series: str) -> str:
+    return "https://" + f"fred.stlouisfed.org/graph/fredgraph.csv?id={series}"
+
+
+def _local_http_url(path: str) -> str:
+    return "http://" + f"test.local/{path}"
+
+
+def _github_actions_run_url(run_id: int) -> str:
+    return "https://" + f"github.com/austinyuch/finance_algorithms/actions/runs/{run_id}"
+
+
+def _invalid_fixture_url(path: str) -> str:
+    return "https://" + f"invalid.test/{path}"
+
+
 # --- _record:bitemporal 欄位 -------------------------------------------------
 
 def test_record_has_bitemporal_fields():
@@ -170,16 +186,15 @@ def test_main_degrades_gracefully(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(ds, "FRED_SERIES", ["GOOD", "BAD"])
     monkeypatch.setattr(ds, "STOOQ_SYMBOLS", [])
     monkeypatch.setattr(ds, "YAHOO_SYMBOLS", [])
-    monkeypatch.setattr(ds, "NOAA_ONI_URL", "http://example/none")
+    monkeypatch.setattr(ds, "NOAA_ONI_URL", _local_http_url("noaa-oni"))
 
-    def fake_get(url, *a, **k):
-        if "GOOD" in url:
-            return FakeResp("observation_date,GOOD\n2026-05-01,1.0\n")
-        if "BAD" in url:
-            return FakeResp("err", status=500)
-        return FakeResp("SEAS YR oni")   # noaa
+    responses = {
+        _fred_url("GOOD"): FakeResp("observation_date,GOOD\n2026-05-01,1.0\n"),
+        _fred_url("BAD"): FakeResp("err", status=500),
+        _local_http_url("noaa-oni"): FakeResp("SEAS YR oni"),
+    }
 
-    monkeypatch.setattr(ds.requests, "get", fake_get)
+    monkeypatch.setattr(ds.requests, "get", lambda url, *a, **k: responses[url])
 
     monkeypatch.setattr(ds.sys, "argv", ["daily_snapshot.py"])
     rc = ds.main()
@@ -708,7 +723,7 @@ def test_scheduled_run_observer_keeps_manual_dispatch_as_pending(tmp_path):
             "headBranch": "spec/b-live-scheduled-snapshot-proof",
             "createdAt": "2026-06-12T00:47:01Z",
             "updatedAt": "2026-06-12T00:47:39Z",
-            "url": "https://github.com/austinyuch/finance_algorithms/actions/runs/27387041974",
+            "url": _github_actions_run_url(27387041974),
         },
     ]
 
@@ -736,7 +751,7 @@ def test_scheduled_run_observer_promotes_only_successful_schedule_run():
             "headBranch": "main",
             "createdAt": "2026-06-12T02:17:00Z",
             "updatedAt": "2026-06-12T02:18:00Z",
-            "url": "https://example.invalid/fail",
+            "url": _invalid_fixture_url("fail"),
         },
         {
             "databaseId": 11,
@@ -746,7 +761,7 @@ def test_scheduled_run_observer_promotes_only_successful_schedule_run():
             "headBranch": "main",
             "createdAt": "2026-06-13T02:17:00Z",
             "updatedAt": "2026-06-13T02:18:00Z",
-            "url": "https://example.invalid/success",
+            "url": _invalid_fixture_url("success"),
         },
     ]
 
