@@ -25,6 +25,7 @@ describe("F Next.js showcase dashboard", () => {
     const html = renderToStaticMarkup(<Dashboard data={getShowcaseDashboard()} />);
 
     expect(html).toContain("data-section=\"leaderboard\"");
+    expect(html).toContain("data-section=\"investment-charts\"");
     expect(html).toContain("data-section=\"allocation-regime\"");
     expect(html).toContain("data-section=\"rebalance\"");
     expect(html).toContain("data-section=\"experiments\"");
@@ -37,6 +38,26 @@ describe("F Next.js showcase dashboard", () => {
     expect(html).toContain("local_runtime_only");
     expect(html).toContain("not_proven");
     expect(html).toContain("local_demo_only");
+  });
+
+  it("renders a real algorithm results dashboard with interactive controls and chart canvases", () => {
+    const html = renderToStaticMarkup(<Dashboard data={getShowcaseDashboard()} />);
+
+    expect(html).toContain("Algorithm Results Dashboard");
+    expect(html).toContain("Algorithm dashboard controls");
+    expect(html).toContain("Leaderboard: OOS net Sharpe");
+    expect(html).toContain("Real-data OOS-net comparison");
+    expect(html).toContain("Interactive research: OOS net Sharpe");
+    expect(html).not.toContain("Interactive research equity curve");
+    expect(html).toContain("data-control=\"dashboard-backend\"");
+    expect(html).toContain("data-control=\"dashboard-hiddenUnits\"");
+    expect(html).toContain("data-control=\"dashboard-lookback\"");
+    expect(html).toContain("data-control=\"dashboard-epochs\"");
+    expect(html).toContain("data-control=\"dashboard-seed\"");
+    expect(html).toContain("data-control=\"dashboard-rebalance\"");
+    expect(html).toContain("<canvas");
+    expect(html).toContain("static_replay artifact selected");
+    expect(html).toContain("research_mode_approximate_availability");
   });
 
   it("serves validated dashboard payload from the API route", async () => {

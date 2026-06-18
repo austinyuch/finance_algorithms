@@ -1,4 +1,5 @@
 import type { ShowcaseDashboard } from "../lib/showcase-contract";
+import { InvestmentCharts } from "./InvestmentCharts";
 import { InteractiveResearchPanel } from "./InteractiveResearchPanel";
 
 function formatWeight(value: number): string {
@@ -17,6 +18,8 @@ export function Dashboard({ data }: { data: ShowcaseDashboard }) {
         <h1>Research Dashboard</h1>
         <span>{data.claimBoundary}</span>
       </header>
+
+      <InvestmentCharts data={data} />
 
       <section className="panel leaderboard-panel" data-section="leaderboard">
         <div className="panel-heading">
