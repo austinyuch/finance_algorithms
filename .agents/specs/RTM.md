@@ -31,7 +31,7 @@
 
 | Gate | Command | Result |
 |---|---|---|
-| Python suite | `uv run pytest -q` | **430 passed** |
+| Python suite | `uv run pytest -q` | **422 passed, 2 skipped** (default root env); H-2 torch-enabled UAT remains **430 passed** |
 | Type check | `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports` | clean, 69 files |
 | Architecture | `uv run lint-imports` | KEPT (88 files, 242 deps) |
 | Frontend unit | `cd frontend && npm test` | 46 passed |

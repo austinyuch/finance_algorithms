@@ -28,9 +28,9 @@ experimentation capability*, **not** alpha. Every model slice declares
 | 10 | **Deep-learning research lab** (framework-free reference MLP forecaster + A0 adapter, multi-framework backend registry (torch/jax/tf) with honest reference fallback, statistical performance report — distribution/rolling-Sharpe/drawdown/learning-curve, self-contained SVG/HTML viz, parameterized experiment CLI with ExperimentRegistry MLOps lineage) | H | library / CLI | PASSED (slice H-1) | `test_h_dl_forecaster`/`test_h_model_performance_report`/`test_h_dl_experiment_cli` (22 tests), 95.7% focused coverage, 3 mutations killed, import-linter DL-backend-boundary contract | OOS-net authority; `no_alpha_claim`; reference backend proves the mechanism; real torch/jax/tf GPU training, live interactive UI, and production Tier3 deferred |
 | 9 | **Legacy pyramid calculator** (arithmetic + geometric order sizing) | — | FastAPI | stable legacy baseline | `tests/test_algo_pyramid.py` | Immutable; preserved unchanged |
 
-## Latest authoritative gate evidence (2026-06-13)
+## Latest authoritative gate evidence (2026-06-18)
 
-- `uv run pytest -q` → **430 passed** (default env)
+- `uv run pytest -q` → **422 passed, 2 skipped** (default root env; H-2 torch-enabled UAT remains **430 passed** with optional torch lane running)
 - `uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports` → clean, **69 source files**
 - `uv run lint-imports` → engine/data framework-agnostic **KEPT** (88 files, 242 deps)
 - `frontend` `npm test` → **46 passed**; `npm audit --omit=dev` → **0 vulnerabilities**

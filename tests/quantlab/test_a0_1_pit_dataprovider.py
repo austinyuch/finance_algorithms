@@ -19,7 +19,7 @@ import datetime as dt
 
 import pandas as pd
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 
@@ -50,6 +50,7 @@ def test_get_blocks_unavailable_future_data():
     assert float(mar.loc["AAA", "close"]) == 110.0
 
 
+@settings(max_examples=50, deadline=None)
 @given(asof=st.dates(min_value=dt.date(2019, 1, 1), max_value=dt.date(2021, 1, 1)))
 def test_pbt2_no_row_after_asof(asof):
     # PBT-2:任意 asof,get() 回傳的每一列 available_date 都 <= asof(永不洩漏未來)

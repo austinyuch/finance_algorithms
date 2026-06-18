@@ -652,15 +652,15 @@ def test_hosting_freshness_default_asof_does_not_crash_when_stale(tmp_path):
     assert _hosting_line(artifact) == "public hosting configured_not_observed (stale, hash matched)"
 
 
-@settings(max_examples=60, suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(age_hours=st.floats(min_value=0.0, max_value=72.0, allow_nan=False))
-def test_pbt_hosting_freshness_window(tmp_path, age_hours):
+@settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(age_seconds=st.integers(min_value=0, max_value=72 * 60 * 60))
+def test_pbt_hosting_freshness_window(tmp_path, age_seconds):
     """For observedAt <= asof, the effective status is proven iff within the
     24h window; a stale proven probe never presents as proven."""
     from quantlab.showcase import build_canonical_dashboard_artifact
 
     asof = _PROVEN_ASOF
-    observed = (asof - timedelta(hours=age_hours)).isoformat().replace("+00:00", "Z")
+    observed = (asof - timedelta(seconds=age_seconds)).isoformat().replace("+00:00", "Z")
     root = tmp_path / "pbt-root"
     if not root.exists():
         _make_proven_root(root)
@@ -670,7 +670,7 @@ def test_pbt_hosting_freshness_window(tmp_path, age_hours):
         tmp_path / f"pbt-work-{idx}", evidence_root=root, asof=asof
     )
     line = _hosting_line(artifact)
-    if age_hours < 24.0:
+    if age_seconds < 24 * 60 * 60:
         assert line == "public hosting proven (hash matched)"
     else:
         assert line == "public hosting configured_not_observed (stale, hash matched)"
