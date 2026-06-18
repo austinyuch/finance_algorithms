@@ -70,7 +70,7 @@
   <section class="card" id="start">
     <h2>快速開始 / Starter Assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 依賴</span>
-uv run pytest -q             <span style="color:#7d90b0"># 預期 432 passed, 2 skipped</span>
+uv run pytest -q             <span style="color:#7d90b0"># 預期 433 passed, 2 skipped</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js 依賴</span></pre>
     <p>已 commit 的 seed／樣本資料：</p>
     <ul>
@@ -136,7 +136,7 @@ npm run smoke                  <span style="color:#7d90b0"># 本地 HTTP smoke�
     <div class="evidence">
       <span class="badge b-cond">CONDITIONAL</span><span class="badge b-pass">browser visual PASSED</span><span class="badge b-pass">hosting proven (point-in-time)</span><span class="badge b-mock">local_demo_only</span><br>
       <b>Evidence Source：</b>live_screenshot（chromium-headless）+ static_export + canonical_local_result_store · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>f-demo-hardening/review.md、f-public-static-showcase/review.md、docs/public-hosting-probe.json<br>
-      <b>已解決：</b>已擷取瀏覽器截圖；visual diff repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>），export readiness 面板現回報 <code>visualRegression=proven</code>（CR-FPS-009）。Public-hosting probe 目前觀測到 HTTP 200 與 manifest-contract metadata，但 deployed hash mismatch（<code>status=configured_not_observed</code>、expected <code>dataHash 5d742c80…</code>）；freshness 現為 deterministic，過期證據降級而非 crash（CR-FPS-011）。Dashboard payload 自身的 <code>publicHosting</code> self-claim 依設計<b>維持 <code>not_proven</code></b>。
+      <b>已解決：</b>已擷取瀏覽器截圖；visual diff repo-baseline pixel-backed（<code>0 / 1,296,000</code> mismatched pixels，threshold <code>0.001</code>），export readiness 面板現回報 <code>visualRegression=proven</code>（CR-FPS-009）。Public-hosting probe 目前觀測到 HTTP 200 與 manifest-contract metadata，但 deployed hash mismatch（<code>status=configured_not_observed</code>、expected <code>dataHash dc7bb732…</code>）；freshness 現為 deterministic，過期證據降級而非 crash（CR-FPS-011）。Dashboard payload 自身的 <code>publicHosting</code> self-claim 依設計<b>維持 <code>not_proven</code></b>。
     </div>
   </section>
 
@@ -244,15 +244,15 @@ OOS-net 排行榜（僅以 OOS-net 排名；baseline 可見）：
       <li><b>Sampling-frequency 誠實缺口已關閉（CR-RDO-004）：</b>真實資料 OOS 現會估計每個資產的 native cadence，並在 rebalance cadence 比最粗的選中資產更細時 <b>fail closed</b>（<code>reason=oversampled_vs_native_frequency</code>），不再把陳舊價格 forward-fill 成會灌水 Sharpe 的捏造 flat returns。預設 run（現為 12 個 co-temporal daily-native 資產）不受影響、維持 <code>computed</code>（流程 5）。</li>
       <li><b>Browser pixel baseline 現為真實且容許 re-pin（CR-FBP-001）：</b>stale-baseline-hash guard 只在 <code>baselineHash != currentHash</code> 時觸發，因此 deterministic re-pin（<code>baselineHash == currentHash</code>、<code>mismatchedPixels == 0</code>）不再阻擋誠實 UI 變更；tolerant pixel-diff threshold gate 不變。</li>
       <li><b>Dashboard visual readiness 已 wire-through（CR-FPS-009）：</b>export readiness 面板現由 repo-side browser visual diff 證據回報 <code>visualRegression=proven</code>。</li>
-      <li><b>Public hosting 對 refreshed artifact 仍為 deploy-gated：</b>目前已 commit manifest 預期 <code>dataHash 5d742c80…</code>，但 live probe 仍觀測到較舊的 deployed hash（<code>16486e36…</code>），因此 branch-local parity 是 <code>configured_not_observed</code> / mismatched（觀測於 <code>2026-06-18T02:52Z</code>）。較早的 CR-B21 hosting proof（<code>0f170441…</code>）只保留為 historical point-in-time evidence；dashboard payload 的 <code>publicHosting</code> self-claim 依設計維持 <code>not_proven</code>。</li>
+      <li><b>Public hosting 對 refreshed artifact 仍為 deploy-gated：</b>目前已 commit manifest 預期 <code>dataHash dc7bb732…</code>，但 live probe 仍觀測到較舊的 deployed hash（<code>16486e36…</code>），因此 branch-local parity 是 <code>configured_not_observed</code> / mismatched（觀測於 <code>2026-06-18T03:10Z</code>）。較早的 CR-B21 hosting proof（<code>0f170441…</code>）只保留為 historical point-in-time evidence；dashboard payload 的 <code>publicHosting</code> self-claim 依設計維持 <code>not_proven</code>。</li>
       <li><b>Hosting-freshness time-bomb 已移除（CR-FPS-011）：</b>freshness 以注入的 <code>asof</code> 做 deterministic 分類；過期的已 commit 證據降級為 <code>configured_not_observed</code>，而非在 re-prove ~24h 後讓 build/suite crash。</li>
     </ul>
-    <p><b>更早已解決（2026-06-11 → 2026-06-13）：</b>預設 root 測試目前 <b>432 passed, 2 skipped</b>；<b>430 passed</b> 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped source set 上 clean；mutation spot checks 維持 118/118 configured/killed，涵蓋 CR-RDO-004 sampling-frequency、governance stale-evidence、public-hosting drift、payload-sync、import-linter drift、E production evidence、source-quorum、proof replay 與 Stooq fail-closed guards；frontend mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity。Browser visual、pixel diff、source-quorum 與 Stooq restoration proof 仍已記錄；branch-local public-hosting parity 在 Pages 服務 refreshed dataHash 前維持 <code>configured_not_observed</code>。</p>
+    <p><b>更早已解決（2026-06-11 → 2026-06-13）：</b>預設 root 測試目前 <b>433 passed, 2 skipped</b>；<b>430 passed</b> 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped source set 上 clean；mutation spot checks 維持 118/118 configured/killed，涵蓋 CR-RDO-004 sampling-frequency、governance stale-evidence、public-hosting drift、payload-sync、import-linter drift、E production evidence、source-quorum、proof replay 與 Stooq fail-closed guards；frontend mutation 26/26 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity。Browser visual、pixel diff、source-quorum 與 Stooq restoration proof 仍已記錄；branch-local public-hosting parity 在 Pages 服務 refreshed dataHash 前維持 <code>configured_not_observed</code>。</p>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>
       <tr><td>Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理</td><td>Low</td><td>b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md</td></tr>
-      <tr><td>Dashboard payload <code>publicHosting</code> self-claim 依契約維持 <code>not_proven</code>；目前已 commit probe/manifest parity 在 Pages 服務 <code>dataHash 5d742c80…</code> 前維持 <code>configured_not_observed</code></td><td>Low</td><td>frontend/out/index.html、docs/public-hosting-probe.json</td></tr>
+      <tr><td>Dashboard payload <code>publicHosting</code> self-claim 依契約維持 <code>not_proven</code>；目前已 commit probe/manifest parity 在 Pages 服務 <code>dataHash dc7bb732…</code> 前維持 <code>configured_not_observed</code></td><td>Low</td><td>frontend/out/index.html、docs/public-hosting-probe.json</td></tr>
       <tr><td>真實資料 OOS 使用 <code>approximate_event_date</code>（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作</td><td>Low</td><td>real-data-oos-backtest/review.md</td></tr>
       <tr><td>Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後）</td><td>Low</td><td>run_vintage_slice.py</td></tr>
       <tr><td>Stooq source blocked</td><td>Low</td><td>ISSUE-B3-001</td></tr>

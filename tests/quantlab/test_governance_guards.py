@@ -478,7 +478,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "<b>23</b><span>frontend tests passing</span>",
         "27 frontend tests",
         "27 tests pass",
-        "33 passed",
+        " 33 passed",
         "16/16 killed",
         "16/16 frontend",
         "188 passed, 1 skipped",

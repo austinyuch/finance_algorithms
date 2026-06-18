@@ -98,7 +98,7 @@ def test_showcase_api_rejects_missing_claim_boundary_metadata(tmp_path):
         build_dashboard_summary(api.run_detail(run_id), [])
 
 
-def test_dashboard_summary_conservative_defaults_and_no_mutation(tmp_path):
+def test_dashboard_summary_does_not_mutate_source_run(tmp_path):
     from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary
 
     store, _, rid_b = _store(tmp_path)
@@ -110,6 +110,16 @@ def test_dashboard_summary_conservative_defaults_and_no_mutation(tmp_path):
 
     assert source == before
     assert summary["active_run_id"] == rid_b
+
+
+def test_dashboard_summary_uses_conservative_defaults_for_missing_regime_metadata(tmp_path):
+    from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary
+
+    store, _, rid_b = _store(tmp_path)
+    api = ShowcaseReadAPI(store)
+
+    summary = build_dashboard_summary(api.run_detail(rid_b), api.leaderboard())
+
     assert summary["regime"]["label"] == "unknown"
     assert summary["regime"]["confidence"] == 0.0
     assert summary["claim_boundary"] == "no_alpha_claim"

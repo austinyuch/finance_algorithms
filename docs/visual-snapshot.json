@@ -2,7 +2,7 @@
   "baselineKind": "static_visual_contract",
   "claimBoundary": "no_alpha_claim",
   "publicHosting": "configured_not_observed",
-  "htmlHash": "0cf9ddca7de238f9b8f53a2f7e9a12d27238a95b9397f09e3e645b64ac11f92d",
+  "htmlHash": "b855f5c0f1cb1a58c83b3f704127fbc4b8a7776d241ce0f6af296c17dec8b886",
   "sections": [
     "leaderboard",
     "allocation-regime",
