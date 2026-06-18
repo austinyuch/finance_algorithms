@@ -59,6 +59,15 @@ def _store(tmp_path):
     return store, rid_a, rid_b
 
 
+def _store_with_scores(tmp_path, scores):
+    from quantlab.tracking import LocalResultStore
+
+    store = LocalResultStore(tmp_path / "pbt.db")
+    for run_number, score in enumerate(scores):
+        store.log(_record(f"run-{run_number}", float(score)))
+    return store
+
+
 def test_showcase_api_returns_sorted_leaderboard_and_run_detail(tmp_path):
     from quantlab.showcase import ShowcaseReadAPI
 
@@ -146,12 +155,8 @@ def test_showcase_api_exposes_e_lite_registry_without_tier3_overclaim(tmp_path):
                                  allow_infinity=False), min_size=1, max_size=12))
 def test_pbt_dashboard_preserves_leaderboard_order(tmp_path, scores):
     from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary
-    from quantlab.tracking import LocalResultStore
 
-    store = LocalResultStore(tmp_path / "pbt.db")
-    for i, score in enumerate(scores):
-        store.log(_record(f"run-{i}", float(score)))
-
+    store = _store_with_scores(tmp_path, scores)
     api = ShowcaseReadAPI(store)
     board = api.leaderboard()
     summary = build_dashboard_summary(api.run_detail(board[0]["run_id"]), board)
