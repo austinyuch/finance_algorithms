@@ -153,6 +153,10 @@ The implemented QuantLab foundation includes:
 - Epic A TSMC hedge slice: hedge strategy, LSTM adapter, baselines, and leaderboard writeup.
 - Epic B data platform: vintage snapshot loader, FRED price proxies, as-of alignment, and `pit_strictness`.
 - Epic C portfolio core: optimizer, multi-period allocation, regime rebalance selector, pyramid-entry adapter, and integration leaderboard.
-- Epic D first regime model: PIT-safe deterministic regime signal, OOS-net baseline comparison, and real-source-format benchmark helper with no-alpha claim boundary.
+- Epic D model families: PIT-safe deterministic regime signal, return/risk forecaster, robust optimizer, and family evaluator — OOS-net baseline comparison with a no-alpha claim boundary.
+- Epic E MLOps-lite: experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge, and a Tier3 readiness gate (local smoke evidence; production-tier proof fails closed without externally-proven serving/retraining/drift URIs).
+- Epic F showcase dashboard: ShowcaseReadAPI + Next.js static export, browser-visual diff, and a public-hosting probe — a canonical local result-store scenario (`local_demo_only`), not a live backend service.
+- Epic G alt-data slices: source-contract-first local CSV loader, two optional default-disabled slices.
+- Epic H deep-learning research lab: framework-free reference MLP forecaster (H-1), a real PyTorch training path behind a lazy backend boundary (H-2), and an interactive parameter UI over the H artifacts on the dashboard — deterministic `static_replay`, OOS-net-only ranking, fail-closed on unsupported parameters or stale checksums (H-3).
 
-See `.agents/specs/SPECS.md` and `.agents/specs/NEXT_STEPS.md` before starting new feature work.
+Every slice declares `no_alpha_claim`. See `.agents/specs/SPECS.md` and `.agents/specs/NEXT_STEPS.md` before starting new feature work.

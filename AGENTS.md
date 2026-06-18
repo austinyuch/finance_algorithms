@@ -64,6 +64,13 @@ plus refreshed gate evidence. Keep readiness claims copied from
   that separates resolved-since-last-check from still-open (no false greens, claim
   cap from `review.md`), and an audit row recorded in
   [`.agents/specs/ISSUE_LOG.md`](.agents/specs/ISSUE_LOG.md).
+- Both the manual and review now cover Epic H through slice **H-3**
+  (interactive research UI): the manual's bilingual Flow 8 and the review's H-3
+  core-feature card. Its dedicated evidence path is the real-Chromium
+  `cd frontend && npm run e2e:interactive` fail-closed VRT (`computed` → seed
+  change → `fail_closed`, 0-pixel diff vs
+  `frontend/visual-baselines/interactive-research-failclosed.png`); readiness is
+  copied from `.agents/specs/h-interactive-research-ui/review.md`.
 - **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
   [`docs/EVIDENCE_METADATA_CONTRACT.md`](docs/EVIDENCE_METADATA_CONTRACT.md),
   [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](docs/DEMO_RISK_WARNING_TAXONOMY.md).
