@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -138,18 +139,22 @@ def test_fetch_yahoo_chart_parses_event_date(monkeypatch):
 
 
 @given(
-    ts=st.lists(st.integers(min_value=1_600_000_000, max_value=1_900_000_000), min_size=1, max_size=8),
-    close=st.lists(st.one_of(st.none(), st.floats(min_value=1.0, max_value=10_000.0,
-                                                  allow_nan=False, allow_infinity=False)),
-                   min_size=1, max_size=8),
+    observations=st.lists(
+        st.tuples(
+            st.integers(min_value=1_600_000_000, max_value=1_900_000_000),
+            st.one_of(
+                st.none(),
+                st.floats(min_value=1.0, max_value=10_000.0, allow_nan=False, allow_infinity=False),
+            ),
+        ),
+        min_size=1,
+        max_size=8,
+    ).filter(lambda rows: any(close is not None for _, close in rows)),
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_pbt_yahoo_latest_event_date_matches_last_valid_close(monkeypatch, ts, close):
-    n = min(len(ts), len(close))
-    ts = ts[:n]
-    close = close[:n]
-    if not any(v is not None for v in close):
-        close[-1] = 123.0
+def test_pbt_yahoo_latest_event_date_matches_last_valid_close(monkeypatch, observations):
+    ts = [timestamp for timestamp, _ in observations]
+    close = [value for _, value in observations]
     payload = json.dumps({
         "chart": {"result": [{
             "timestamp": ts,
@@ -306,16 +311,16 @@ def test_main_report_records_failed_sources_without_corrupting_successes(monkeyp
     monkeypatch.setattr(ds, "FRED_SERIES", ["GOOD", "BAD"])
     monkeypatch.setattr(ds, "STOOQ_SYMBOLS", [])
     monkeypatch.setattr(ds, "YAHOO_SYMBOLS", [])
+    monkeypatch.setattr(ds, "NOAA_ONI_URL", _local_http_url("noaa-oni-report"))
     report_path = tmp_path / "snapshot-report.json"
 
-    def fake_get(url, *a, **k):
-        if "GOOD" in url:
-            return FakeResp("observation_date,GOOD\n2026-05-01,1.0\n")
-        if "BAD" in url:
-            return FakeResp("err", status=500)
-        return FakeResp("SEAS YR oni")
+    responses = {
+        _fred_url("GOOD"): FakeResp("observation_date,GOOD\n2026-05-01,1.0\n"),
+        _fred_url("BAD"): FakeResp("err", status=500),
+        _local_http_url("noaa-oni-report"): FakeResp("SEAS YR oni"),
+    }
 
-    monkeypatch.setattr(ds.requests, "get", fake_get)
+    monkeypatch.setattr(ds.requests, "get", lambda url, *a, **k: responses[url])
     monkeypatch.setattr(ds.sys, "argv", [
         "daily_snapshot.py",
         "--report-json",
@@ -422,10 +427,13 @@ def _broad_source_quorum_report_with_files(tmp_path: Path) -> dict[str, object]:
     out_dir.mkdir(parents=True)
     jobs = report["jobs"]
     assert isinstance(jobs, list)
-    for job in jobs:
+
+    def write_snapshot_file(job: dict[str, object]) -> None:
         safe_id = str(job["source_id"]).replace(":", "_").replace("^", "idx_")
         job["safe_id"] = safe_id
         (out_dir / f"{safe_id}.json").write_text(json.dumps({"source": job["source_id"]}), encoding="utf-8")
+
+    list(map(write_snapshot_file, jobs))
     report["out_dir"] = str(out_dir)
     return report
 
@@ -580,8 +588,7 @@ def test_source_quorum_proof_rejects_replayed_report_without_snapshot_files(tmp_
     from scripts.source_quorum_proof import build_source_quorum_proof
 
     report = _broad_source_quorum_report_with_files(tmp_path)
-    for path in (tmp_path / "vintage" / "2026-06-12").glob("*.json"):
-        path.unlink()
+    shutil.rmtree(tmp_path / "vintage" / "2026-06-12")
 
     proof = build_source_quorum_proof(
         report,
