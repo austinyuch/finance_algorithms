@@ -164,6 +164,7 @@ def test_quantlab_test_registry_governance_rows_match_current_test_inventory():
     registry = (ROOT / "quantlab/TESTS.md").read_text(encoding="utf-8")
     governed_rows = {
         "test_e_1_experiment_registry": ROOT / "tests/quantlab/test_e_1_experiment_registry.py",
+        "test_e_production_evidence": ROOT / "tests/quantlab/test_e_production_evidence.py",
         "test_governance_guards": ROOT / "tests/quantlab/test_governance_guards.py",
         "test_mutation_spot_checks": ROOT / "tests/test_mutation_spot_checks.py",
     }
@@ -918,8 +919,8 @@ def test_current_review_gate_transcripts_match_published_evidence():
     assert "36 passed     → gate-frontend-test.txt" not in review_guide
     assert "`npm test` → **36 passed**" not in features
     assert "| Frontend unit | `cd frontend && npm test` | 36 passed |" not in rtm
-    assert "| E registry line coverage |" in rtm
-    assert "| E registry line coverage | `uv run pytest --cov=quantlab.mlops.experiment_registry --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py` | 37 passed; 99% line coverage |" in rtm
+    assert "| E registry + production evidence line coverage |" in rtm
+    assert "| E registry + production evidence line coverage | `uv run pytest --cov=quantlab.mlops.experiment_registry --cov=quantlab.mlops.production_evidence --cov-report=term-missing tests/quantlab/test_e_1_experiment_registry.py tests/quantlab/test_e_production_evidence.py` | 37 passed; 99% combined line coverage |" in rtm
     assert "35 passed; 99% line coverage" not in rtm
     assert f"Success: no issues found in {mypy_source_count} source files" in mypy_gate
     assert f"clean, {mypy_source_count} files" in manual_guide
