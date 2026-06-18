@@ -25,7 +25,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 425 passed, 2 skipped
+uv run pytest -q             # sanity: expect 432 passed, 2 skipped
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -155,14 +155,14 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 `npm run dev` app applies `app/globals.css`.
 
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; public hosting observed `proven` **point-in-time** at `dataHash 0f170441…` (`f-public-static-showcase/review.md`, `docs/public-hosting-probe.json`)
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; current branch-local public hosting is `configured_not_observed` at expected `dataHash 5d742c80…` until Pages serves the refreshed artifact (`docs/public-hosting-probe.json`)
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`, `.agents/specs/f-public-static-showcase/review.md`, `docs/deployment-manifest.json`
 > - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
 > - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
 >   mismatched pixels at threshold `0.001`) and the export readiness panel now
->   reports `visualRegression=proven` (CR-FPS-009). Public-hosting probe observed
->   HTTP 200, matched hash + manifest contract, fresh observation
->   (`status=proven`, `dataHash 0f170441…`, CR-FPS-010); freshness is now
+>   reports `visualRegression=proven` (CR-FPS-009). Public-hosting probe currently
+>   observes HTTP 200 plus manifest-contract metadata but a mismatched deployed hash
+>   (`status=configured_not_observed`, expected `dataHash 5d742c80…`); freshness is
 >   deterministic and stale evidence downgrades rather than crashing (CR-FPS-011).
 >   The dashboard payload's own `publicHosting` self-claim **stays `not_proven`**
 >   by design — a static artifact cannot self-claim its deployment; the `proven`
@@ -416,14 +416,14 @@ caption), so there is no remaining visual residual.
 - **Dashboard visual readiness wired through (CR-FPS-009).** The export's
   readiness panel now reports `visualRegression=proven` from repo-side browser
   visual diff evidence (previously unwired).
-- **Public hosting re-proven, point-in-time, at `dataHash 0f170441…`.**
-  After the CR-B21 dashboard refresh landed on `main`, GitHub Pages redeployed and
-  the deployed `dataHash` matches the committed manifest (`0f1704414d1369c9…`),
-  HTTP 200, hash/contract matched, observation fresh
+- **Public hosting remains deploy-gated for the refreshed artifact.**
+  The current committed manifest expects `dataHash 5d742c80…`, while the live
+  probe still observes an older deployed hash (`16486e36…`), so branch-local
+  parity is `configured_not_observed` / `mismatched`
   (`docs/deployment-manifest.json`, `docs/public-hosting-probe.json`, observed
-  `2026-06-15T07:07Z`, `status=proven`). This is **point-in-time** evidence: the
-  dashboard payload's own `publicHosting` self-claim stays `not_proven` by design
-  (a static artifact cannot self-claim its deployment).
+  `2026-06-18T02:52Z`). Older CR-B21 hosting proof at `0f170441…` remains
+  historical point-in-time evidence only. The dashboard payload's own
+  `publicHosting` self-claim stays `not_proven` by design.
 - **Hosting-freshness time-bomb removed (CR-FPS-011).** Freshness is now
   classified deterministically against an injected `asof` (no hidden wall-clock);
   stale committed evidence **downgrades** to `configured_not_observed` rather than
@@ -431,7 +431,7 @@ caption), so there is no remaining visual residual.
 
 **Gaps resolved earlier (2026-06-11 → 2026-06-13):**
 
-- Default-root test suite is now **425 passed, 2 skipped**; the **430 passed** count remains only the H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped `quantlab/` source set, and mutation spot checks remain **118/118 configured/killed**, including the CR-RDO-004 sampling-frequency oversampling guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS public-hosting drift guards, stakeholder and app payload copy drift, import-linter count/formalization drift, governance registry row-count drift, E production evidence gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **26/26 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
+- Default-root test suite is now **432 passed, 2 skipped**; the **430 passed** count remains only the H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped `quantlab/` source set, and mutation spot checks remain **118/118 configured/killed**, including the CR-RDO-004 sampling-frequency guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS public-hosting drift guards, stakeholder and app payload copy drift, import-linter count/formalization drift, governance registry row-count drift, E production evidence gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **26/26 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after CR-FPS-006 the regenerated local result-store payload has a new `dataHash`, so branch-local deployment parity is intentionally `configured_not_observed` until Pages serves the refreshed artifact.
@@ -443,7 +443,7 @@ caption), so there is no remaining visual residual.
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Dashboard payload `publicHosting` self-claim stays `not_proven` by contract (live deployment is `proven` only point-in-time via the committed probe/manifest, currently `0f170441…`) | Low | `frontend/out/index.html`, `docs/public-hosting-probe.json` |
+| Dashboard payload `publicHosting` self-claim stays `not_proven` by contract; current committed probe/manifest parity is `configured_not_observed` until Pages serves `dataHash 5d742c80…` | Low | `frontend/out/index.html`, `docs/public-hosting-probe.json` |
 | Real-data OOS uses `approximate_event_date` (not true PIT); a co-temporal multi-asset default universe with true vintage history is the follow-up | Low | `real-data-oos-backtest/review.md` |
 | Vintage co-temporal multi-asset readiness still accumulating (single-capture FRED; daily-vintage backtest deferred) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |

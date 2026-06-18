@@ -269,6 +269,28 @@ def _write_current_evidence_root(root: Path) -> None:
     )
 
 
+def _assert_visual_diff_patch_rejected(
+    tmp_path: Path,
+    patch: dict,
+    message: str,
+    case_id: str,
+) -> bool:
+    from quantlab.showcase import build_canonical_dashboard_artifact
+
+    invalid_root = tmp_path / f"evidence-{case_id}"
+    _write_current_evidence_root(invalid_root)
+    visual_diff = json.loads((invalid_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    visual_diff.update(patch)
+    (invalid_root / "docs/browser-visual-diff.json").write_text(
+        json.dumps(visual_diff),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=message):
+        build_canonical_dashboard_artifact(tmp_path / f"work-{case_id}", evidence_root=invalid_root)
+    return True
+
+
 def test_canonical_showcase_artifact_reads_current_evidence_artifacts(tmp_path):
     from quantlab.showcase import build_canonical_dashboard_artifact
     from quantlab.showcase.scenario import write_canonical_dashboard_artifact
@@ -374,53 +396,6 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
 
     with pytest.raises(ValueError, match="browser visual diff evidence is not passed"):
         build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
-
-    invalid_cases = [
-        (
-            {"artifactKind": "hash_only_visual"},
-            "browser visual diff evidence kind",
-        ),
-        (
-            {"claimBoundary": "alpha_claim"},
-            "browser visual diff evidence must preserve no_alpha_claim",
-        ),
-        (
-            {"mismatchRatio": None},
-            "browser visual diff evidence has invalid numeric fields",
-        ),
-        (
-            {"mismatchRatio": 86 / 1296000, "maxMismatchRatio": -0.001},
-            "browser visual diff evidence has invalid threshold",
-        ),
-        (
-            {
-                "mismatchedPixels": 2000,
-                "mismatchRatio": 2000 / 1296000,
-                "maxMismatchRatio": 0.001,
-            },
-            "browser visual diff evidence exceeds threshold",
-        ),
-        (
-            {"mismatchRatio": 0.0, "maxMismatchRatio": 0.001},
-            "browser visual diff evidence ratio",
-        ),
-        (
-            {"mismatchedPixels": -1},
-            "browser visual diff evidence has invalid pixel counts",
-        ),
-    ]
-    for patch, message in invalid_cases:
-        invalid_root = tmp_path / f"evidence-{len(message)}"
-        _write_current_evidence_root(invalid_root)
-        visual_diff = json.loads((invalid_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
-        visual_diff.update(patch)
-        (invalid_root / "docs/browser-visual-diff.json").write_text(
-            json.dumps(visual_diff),
-            encoding="utf-8",
-        )
-
-        with pytest.raises(ValueError, match=message):
-            build_canonical_dashboard_artifact(tmp_path / f"work-{len(message)}", evidence_root=invalid_root)
 
     missing_field_root = tmp_path / "missing-field-evidence"
     _write_current_evidence_root(missing_field_root)
@@ -557,6 +532,59 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
     )
     with pytest.raises(ValueError, match="frontend audit evidence is not clean"):
         build_canonical_dashboard_artifact(tmp_path / "audit-work", evidence_root=audit_root)
+
+
+@pytest.mark.parametrize(
+    ("patch", "message", "case_id"),
+    [
+        (
+            {"artifactKind": "hash_only_visual"},
+            "browser visual diff evidence kind",
+            "kind",
+        ),
+        (
+            {"claimBoundary": "alpha_claim"},
+            "browser visual diff evidence must preserve no_alpha_claim",
+            "claim",
+        ),
+        (
+            {"mismatchRatio": None},
+            "browser visual diff evidence has invalid numeric fields",
+            "numeric",
+        ),
+        (
+            {"mismatchRatio": 86 / 1296000, "maxMismatchRatio": -0.001},
+            "browser visual diff evidence has invalid threshold",
+            "threshold",
+        ),
+        (
+            {
+                "mismatchedPixels": 2000,
+                "mismatchRatio": 2000 / 1296000,
+                "maxMismatchRatio": 0.001,
+            },
+            "browser visual diff evidence exceeds threshold",
+            "exceeds",
+        ),
+        (
+            {"mismatchRatio": 0.0, "maxMismatchRatio": 0.001},
+            "browser visual diff evidence ratio",
+            "ratio",
+        ),
+        (
+            {"mismatchedPixels": -1},
+            "browser visual diff evidence has invalid pixel counts",
+            "pixels",
+        ),
+    ],
+)
+def test_canonical_showcase_artifact_rejects_invalid_browser_visual_contract_cases(
+    tmp_path,
+    patch,
+    message,
+    case_id,
+):
+    assert _assert_visual_diff_patch_rejected(tmp_path, patch, message, case_id)
 
 
 _PROVEN_OBSERVED_AT = "2026-06-14T02:00:00.000Z"

@@ -631,6 +631,7 @@ def test_current_governance_surfaces_do_not_publish_stale_gate_counts():
         "1 skipped",
         "264 passed",
         "275 passed",
+        "`uv run pytest -q`(430 passed)",
         "275 Python tests",
         "275 suite evidence",
         "276 Python tests",
