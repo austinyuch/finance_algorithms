@@ -205,7 +205,7 @@ def test_dashboard_html_smoke_surfaces_warning_and_claim_boundary(tmp_path):
     assert "no_alpha_claim" in html
 
 
-def test_dashboard_html_rejects_missing_claim_boundary_rows():
+def test_dashboard_html_row_claim_metadata_guard():
     from quantlab.showcase import render_dashboard_html
 
     summary = {
@@ -228,15 +228,15 @@ def test_canonical_showcase_artifact_uses_result_store_source(tmp_path):
         "source": "local_result_store",
         "sourceRecordCount": 2,
         "experimentRegistry": "experiment_registry",
-    }
-    assert artifact["activeRunId"] == "forecast-run"
-    assert artifact["claimBoundary"] == "no_alpha_claim"
-    assert "frontend mutation 26/26 killed" in artifact["evidence"]["tests"]
-    assert "frontend mutation 21/21 killed" not in artifact["evidence"]["tests"]
+    }, "canonical artifact must disclose its generated local-result-store source"
+    assert artifact["activeRunId"] == "forecast-run", "forecast run should remain the active showcase run"
+    assert artifact["claimBoundary"] == "no_alpha_claim", "canonical artifact must stay no-alpha"
+    assert "frontend mutation 26/26 killed" in artifact["evidence"]["tests"], "current mutation count missing"
+    assert "frontend mutation 21/21 killed" not in artifact["evidence"]["tests"], "stale mutation count leaked"
     assert [row["runId"] for row in artifact["leaderboard"]] == [
         "forecast-run",
         "baseline-run",
-    ]
+    ], "leaderboard should keep forecast before baseline"
 
 
 def _write_current_evidence_root(root: Path) -> None:
@@ -362,14 +362,14 @@ def test_canonical_showcase_artifact_surfaces_real_data_section(tmp_path):
     repo_root = Path(__file__).resolve().parents[2]
     artifact = build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=repo_root)
     real = artifact.get("realData")
-    assert real is not None
-    assert real["source"] == "real_data_oos_backtest_artifact"
-    assert real["status"] == "computed"
-    assert real["claimBoundary"] == "no_alpha_claim"
-    assert len(real["rows"]) >= 2
-    assert any(row["isBaseline"] for row in real["rows"])
+    assert real is not None, "real-data section should be present when repo evidence is available"
+    assert real["source"] == "real_data_oos_backtest_artifact", "real-data source must cite the OOS artifact"
+    assert real["status"] == "computed", "real-data section should surface the computed artifact"
+    assert real["claimBoundary"] == "no_alpha_claim", "real-data section must stay no-alpha"
+    assert len(real["rows"]) >= 2, "real-data section should include candidate and baseline rows"
+    assert any(row["isBaseline"] for row in real["rows"]), "real-data leaderboard must keep a baseline visible"
     sharpes = [row["oosNetSharpe"] for row in real["rows"]]
-    assert sharpes == sorted(sharpes, reverse=True)
+    assert sharpes == sorted(sharpes, reverse=True), "real-data rows should be sorted by OOS-net Sharpe"
 
 
 def test_canonical_showcase_artifact_omits_real_data_without_evidence_root(tmp_path):
@@ -605,7 +605,7 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
         ),
     ],
 )
-def test_canonical_showcase_artifact_rejects_invalid_browser_visual_contract_cases(
+def test_canonical_showcase_artifact_browser_visual_contract_cases(
     tmp_path,
     patch,
     message,
@@ -739,7 +739,6 @@ def test_canonical_showcase_artifact_fails_closed_without_evidence_artifacts(tmp
 
 
 def test_showcase_api_tests_do_not_reintroduce_retired_fixture_marker():
-    """Current F test data must not point future work back to the retired fixture source."""
     test_source = Path(__file__).read_text(encoding="utf-8")
     retired_marker = "showcase" + "-fixture"
 
