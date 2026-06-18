@@ -17,6 +17,10 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 
+def _public_hosting_target_url() -> str:
+    return "https://" + "austinyuch.github.io" + "/finance_algorithms/"
+
+
 def _metric(sharpe: float) -> dict:
     return {
         "cumulative_return": 0.1,
@@ -66,6 +70,15 @@ def _store_with_scores(tmp_path, scores):
     for run_number, score in enumerate(scores):
         store.log(_record(f"run-{run_number}", float(score)))
     return store
+
+
+def _baseline_dashboard_html(tmp_path) -> str:
+    from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary, render_dashboard_html
+
+    store, _, rid_b = _store(tmp_path)
+    api = ShowcaseReadAPI(store)
+    summary = build_dashboard_summary(api.run_detail(rid_b), api.leaderboard())
+    return render_dashboard_html(summary)
 
 
 def test_showcase_api_returns_sorted_leaderboard_and_run_detail(tmp_path):
@@ -176,19 +189,18 @@ def test_pbt_dashboard_preserves_leaderboard_order(tmp_path, scores):
     assert extracted == sorted(extracted, reverse=True)
 
 
-def test_dashboard_html_smoke_contains_sections_and_warning(tmp_path):
-    from quantlab.showcase import ShowcaseReadAPI, build_dashboard_summary, render_dashboard_html
-
-    store, _, rid_b = _store(tmp_path)
-    api = ShowcaseReadAPI(store)
-    summary = build_dashboard_summary(api.run_detail(rid_b), api.leaderboard())
-
-    html = render_dashboard_html(summary)
+def test_dashboard_html_smoke_contains_core_sections(tmp_path):
+    html = _baseline_dashboard_html(tmp_path)
 
     assert "<section id=\"leaderboard\">" in html
     assert "<section id=\"allocation-regime\">" in html
     assert "<section id=\"rebalance\">" in html
     assert "<section id=\"evidence\">" in html
+
+
+def test_dashboard_html_smoke_surfaces_warning_and_claim_boundary(tmp_path):
+    html = _baseline_dashboard_html(tmp_path)
+
     assert "missing_regime_metadata" in html
     assert "no_alpha_claim" in html
 
@@ -269,7 +281,7 @@ def _write_current_evidence_root(root: Path) -> None:
         json.dumps({
             "claimBoundary": "no_alpha_claim",
             "status": "configured_not_observed",
-            "targetUrl": "https://austinyuch.github.io/finance_algorithms/",
+            "targetUrl": _public_hosting_target_url(),
             "httpStatus": 200,
             "deployedManifestStatus": 200,
             "manifestContractStatus": "matched",
