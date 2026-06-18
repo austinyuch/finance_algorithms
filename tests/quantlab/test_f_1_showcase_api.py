@@ -561,6 +561,10 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
 
 _PROVEN_OBSERVED_AT = "2026-06-14T02:00:00.000Z"
 _PROVEN_ASOF = datetime(2026, 6, 14, 3, 0, 0, tzinfo=timezone.utc)
+_HOSTING_LINE_BY_FRESHNESS = {
+    True: "public hosting proven (hash matched)",
+    False: "public hosting configured_not_observed (stale, hash matched)",
+}
 
 
 def _set_probe(root: Path, **patch) -> None:
@@ -661,19 +665,14 @@ def test_pbt_hosting_freshness_window(tmp_path, age_seconds):
 
     asof = _PROVEN_ASOF
     observed = (asof - timedelta(seconds=age_seconds)).isoformat().replace("+00:00", "Z")
-    root = tmp_path / "pbt-root"
-    if not root.exists():
-        _make_proven_root(root)
+    root = tmp_path / f"pbt-root-{age_seconds}"
+    _make_proven_root(root)
     _set_probe(root, observedAt=observed)
-    idx = len(list(tmp_path.glob("pbt-work-*")))
+    expected_line = _HOSTING_LINE_BY_FRESHNESS[age_seconds < 24 * 60 * 60]
     artifact = build_canonical_dashboard_artifact(
-        tmp_path / f"pbt-work-{idx}", evidence_root=root, asof=asof
+        tmp_path / f"pbt-work-{age_seconds}", evidence_root=root, asof=asof
     )
-    line = _hosting_line(artifact)
-    if age_seconds < 24 * 60 * 60:
-        assert line == "public hosting proven (hash matched)"
-    else:
-        assert line == "public hosting configured_not_observed (stale, hash matched)"
+    assert _hosting_line(artifact) == expected_line
     assert artifact["demoReadiness"]["publicHosting"] == "not_proven"
 
 
