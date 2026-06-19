@@ -190,7 +190,9 @@ def test_event_driven_replays_explicit_event_dates_only():
     assert result["config"]["engine"] == "event_driven"
 
 
-@settings(max_examples=40)
+# deadline=None: same engine-run-under-load FlakyFailure class as the regime PBT below
+# (ISSUE-A0-PBT-ASOF-001 pattern); invariant assertion unchanged.
+@settings(max_examples=40, deadline=None)
 @given(mask=st.lists(st.booleans(), min_size=2, max_size=12))
 def test_pbt_event_driven_replay_uses_sorted_unique_events(mask):
     from quantlab.engine import VectorizedEngine
@@ -249,7 +251,10 @@ def test_regime_rebalance_policy_filters_engine_schedule():
     assert strategy.calls == [dates[0], dates[2], dates[3], dates[5]]
 
 
-@settings(max_examples=40)
+# deadline=None: provider construction under full-suite load makes the first Hypothesis
+# call exceed the 200ms deadline then pass on retry (FlakyFailure). Same runtime-flake
+# stabilization as ISSUE-A0-PBT-ASOF-001; the invariant assertion is unchanged.
+@settings(max_examples=40, deadline=None)
 @given(labels=st.lists(st.sampled_from(["risk_on", "defensive", "unknown"]), min_size=2, max_size=18))
 def test_pbt_regime_rebalance_policy_matches_portfolio_selector(labels):
     from quantlab.engine import VectorizedEngine

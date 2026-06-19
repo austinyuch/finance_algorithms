@@ -8,6 +8,7 @@ event_driven 目前支援低頻 event-date replay;高頻/order-book 撮合仍非
 """
 from __future__ import annotations
 
+import math
 from typing import Any, Mapping
 
 import pandas as pd
@@ -48,7 +49,15 @@ class VectorizedEngine:
         df = data.get(asof, ["close"], [symbol])
         if df.empty or symbol not in df.index:
             return None
-        return float(df.loc[symbol, "close"])
+        value = float(df.loc[symbol, "close"])
+        # Chaos hardening (CR-A0-CHAOS-001): a non-finite (NaN/±inf) or non-positive
+        # close is invalid market data, not a tradable price. Treat it as missing so the
+        # simulator skips the leg instead of fabricating a NaN/bogus return that would
+        # silently corrupt OOS-net metrics on the dashboard. `_simulate`'s `if p0 and p1`
+        # guard already drops missing legs.
+        if not math.isfinite(value) or value <= 0.0:
+            return None
+        return value
 
     @staticmethod
     def _result_config(config: Mapping[str, Any]) -> dict:
