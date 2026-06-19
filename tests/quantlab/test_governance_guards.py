@@ -328,8 +328,14 @@ def test_github_workflows_are_hosted_only_not_routine_ci_queue():
         "pnpm test",
         "yarn test",
     ]
-    for marker in routine_ci_markers:
-        assert marker not in combined, f"{marker} should stay local/subagent-owned, not in hosted workflow"
+    for path, text in workflow_texts.items():
+        protected_branch_confirmation = "hosted-only: branch protection status contexts" in text
+        for marker in routine_ci_markers:
+            if marker in text:
+                assert protected_branch_confirmation, (
+                    f"{marker} should stay local/subagent-owned unless {path.name} "
+                    "is explicitly limited to protected-branch hosted confirmation"
+                )
 
 
 def test_local_ci_matrix_exposes_repo_runnable_workflow_equivalents():
