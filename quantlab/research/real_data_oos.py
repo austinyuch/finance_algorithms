@@ -126,12 +126,25 @@ class DataSufficiency:
 
 
 def _asset_spans(provider: Any) -> dict[str, tuple[Any, Any]]:
-    """Per-asset (earliest, latest) event_date from the PIT price panel."""
+    """Per-asset (earliest, latest) event_date over rows with *usable* closes.
+
+    A row whose ``close`` is non-finite (NaN/±inf) or non-positive is invalid
+    market data, not a tradable price — the same boundary the A0 engine enforces
+    in ``VectorizedEngine._close`` (CR-A0-CHAOS-001). Spans (and therefore the
+    co-temporal universe) are computed from usable rows only, so an asset with no
+    usable closes contributes no span and drops out of the universe: a
+    NaN/garbage-poisoned asset fails sufficiency *closed* instead of silently
+    entering the comparison at a fabricated weight while the engine drops its legs.
+    """
     prices = provider._prices
     spans: dict[str, tuple[Any, Any]] = {}
     if not len(prices):
         return spans
-    for sym, grp in prices.groupby("symbol"):
+    # finite & positive only: ``close > 0`` already drops NaN/0/negative;
+    # ``!= inf`` drops +inf. Mirrors VectorizedEngine._close (CR-A0-CHAOS-001).
+    close = prices["close"]
+    usable = prices[(close > 0.0) & (close != float("inf"))]
+    for sym, grp in usable.groupby("symbol"):
         events = grp["event_date"]
         spans[str(sym)] = (events.min(), events.max())
     return spans

@@ -54,3 +54,15 @@ Hardens local capture durability/resilience. Does not change broad source availa
 Stooq policy, or downstream vintage-loader validation of malformed-but-captured bodies
 (a 200 HTML error page is still stored as raw — downstream PIT loading remains the validator).
 `no_alpha_claim`.
+
+## Review verdict
+
+**State: Implemented · Review PASSED (repo-side).** The atomic-write fix (temp + `os.replace`,
+temp cleanup on failure) and the 5 chaos tests meet FMEA-B-CHAOS-01/02/03; append-only/immutable
+and dry-run semantics are unchanged and Stooq stays blocked/default-disabled. Evidence:
+`test_daily_snapshot_chaos.py` + `test_daily_snapshot.py` **49 passed**; mutation guard
+`b-chaos-snapshot-atomic-write` **registered + KILLED** (direct-write mutation bypasses the
+temp+replace and is caught by `test_write_is_atomic_no_partial_or_temp_on_failure`); full
+default-env suite green. Publishing the new mutation total is bundled with the deploy-coupled
+dataHash re-pin at `dev`→`main` (see CR-A0-CHAOS-001 Boundary). No source-contract or
+default-enablement change.
