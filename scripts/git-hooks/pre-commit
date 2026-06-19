@@ -19,7 +19,7 @@ if git diff --cached --name-only | grep -E "$ENV_FILE_RE" | grep -qvE "$ENV_ALLO
     exit 1
 fi
 
-SENSITIVE_PATTERN='(password|passwd|pwd|api[_-]?key|apikey|secret|token|bearer|private[_-]?key|access[_-]?key|broker[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]*]+'
+SENSITIVE_PATTERN='(password|passwd|pwd|api[_-]?key|apikey|secret|token|bearer|private[_-]?key|access[_-]?key|broker[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]]+'
 REF_RE='[:=][[:space:]]*([$]|[$][{]|[{][{]|<|%\(|env::)'
 ENVREAD_RE="[:=][[:space:]]*['\"]?(os\.environ|os\.getenv|getenv\(|process\.env|system\.getenv|deno\.env|ENV\[)"
 TYPE_RE="[:=][[:space:]]*['\"]?(str|string|int|integer|bool|boolean|float|double|number|text|varchar|char|uuid|bytes|object|array|map|any|none|null|nil|true|false|optional|list|dict|set)\b"
