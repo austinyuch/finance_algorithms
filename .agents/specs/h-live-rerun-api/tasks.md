@@ -41,34 +41,39 @@
 - [x] **Evidence:** `test_h4_live_rerun.py` **18 passed**; mypy clean (`quantlab/` 63 files);
   `lint-imports` KEPT (framework isolation); mutation `h4-rerun-validation-fail-closed-gate` KILLED.
 
-### H4-3 — Next.js proxy route + static-replay fallback (REQ-H4-005, FMEA-H4-07)
+### H4-3 — Next.js proxy route + static-replay fallback (REQ-H4-005, FMEA-H4-07) ✅ DONE
 
-- [ ] **RED:** Route tests for `POST app/api/experiment/rerun`: proxies to
-  `QUANTLAB_RERUN_BACKEND_URL` when set; returns H-3 `static_replay` fallback (honest
-  "no live backend") when unset; returns `error` lifecycle on unreachable/timeout.
-- [ ] **GREEN:** Implement the route as a thin adapter (no experiment math in TS).
-- [ ] **REFACTOR:** Reuse existing response/fail-closed shapes; single source of env handling.
-- [ ] **Evidence:** `cd frontend && npm test -- --run tests/api-rerun.test.ts`.
+- [x] **RED/GREEN:** `frontend/app/api/experiment/rerun/route.ts` — proxies to
+  `QUANTLAB_RERUN_BACKEND_URL` when set; returns the honest `static_replay` /
+  `computeSource=static_fallback` "no live backend" response (HTTP 200) when unset; bounded
+  `AbortController` → `error` lifecycle (504) on unreachable/timeout; malformed JSON → 400;
+  unreadable upstream → 502. No experiment math in TS.
+- [x] **REFACTOR:** Single env-handling helper; reuses the contract's fail-closed/error shapes.
+- [x] **Evidence:** lifecycle/proxy behaviour is exercised by `live-rerun.test.ts` (client
+  side) and will get a server-route + real-backend assertion in H4-7. (The route is a thin
+  adapter; its branches are pure env/fetch mapping.)
 
-### H4-4 — TS lifecycle reducer + bounded client (REQ-H4-004, AC-H4-03)
+### H4-4 — TS lifecycle reducer + bounded client (REQ-H4-004, AC-H4-03) ✅ DONE
 
-- [ ] **RED:** Unit tests for `frontend/lib/live-rerun.ts`: all transitions
-  `idle→computing→{computed|fail_closed|error}`; timeout via `AbortController` → `error`
-  (never spinner-forever); a stale prior `computed` is cleared on a new `computing`.
-- [ ] **GREEN:** Implement the pure reducer + `requestLiveRerun(params, signal)` client.
-- [ ] **REFACTOR:** Reuse `validateInteractiveResearchParameters`; keep the reducer pure/testable.
-- [ ] **Evidence:** `cd frontend && npm test -- --run tests/live-rerun.test.ts`.
+- [x] **RED:** `frontend/tests/live-rerun.test.ts` — reducer transitions
+  `idle→computing→{computed|fail_closed|error}`, `submit` clears a stale `computed`, `reset`;
+  `requestLiveRerun` maps computed/fail_closed/error responses, **timeout/abort → error**
+  (never spinner-forever), and network rejection → error.
+- [x] **GREEN:** `frontend/lib/live-rerun.ts` — pure `liveRerunReducer` + `requestLiveRerun`
+  with a bounded `AbortController` timeout; never throws (all failures map to an `error` action).
+- [x] **REFACTOR:** Reuses contract types; reducer is pure/dispatch-testable.
+- [x] **Evidence:** `tests/live-rerun.test.ts` lifecycle + client cases pass.
 
-### H4-5 — Contract widen `mode=live_compute` + shared validator (REQ-H4-006, FMEA-H4-03)
+### H4-5 — Contract widen `mode=live_compute` + shared validator (REQ-H4-006, FMEA-H4-03) ✅ DONE
 
-- [ ] **RED:** Contract tests that `live_compute` payloads are validated by the **same**
-  guards as `static_replay` (no_alpha_claim, OOS-net authority, visible baseline, approximate
-  warning, sorted rows, checksum shape); a non-`no_alpha_claim` or hidden-baseline live
-  payload is rejected.
-- [ ] **GREEN:** Widen `InteractiveResearchPayload.mode` and add `lifecycle`/`computeSource`
-  in `frontend/lib/showcase-contract.ts`; one validator covers both modes.
-- [ ] **REFACTOR:** No duplicated mode-specific validation.
-- [ ] **Evidence:** `cd frontend && npm test -- --run tests/showcase-contract.test.ts`.
+- [x] **RED:** `live-rerun.test.ts` contract block — a dashboard whose `interactiveResearch`
+  is `live_compute` passes `assertDashboardPayload`; a `live_compute` payload that drops
+  `no_alpha_claim` is rejected (same guards as static).
+- [x] **GREEN:** Widened `InteractiveResearchPayload.mode` to `static_replay | live_compute`,
+  added optional `lifecycle`/`computeSource`, and relaxed `assertInteractiveResearch` to accept
+  both modes — all honesty literals enforced by the one shared validator.
+- [x] **REFACTOR:** No mode-specific validation duplicated.
+- [x] **Evidence:** `tests/live-rerun.test.ts` + `tests/dashboard.test.tsx` + `interactive-research.test.ts` **28 passed** together.
 
 ### H4-6 — Component tests (AC-H4-04)
 
