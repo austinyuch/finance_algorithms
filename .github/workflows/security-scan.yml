@@ -1,0 +1,84 @@
+name: security-scan
+
+# local-first-ci contract:
+# hosted-only: branch protection status contexts, GitHub token security-events upload, and hosted scanner integration.
+# hosted-confirmation-only: local/subagent matrix must be completed before manual dispatch.
+# local-equivalent: bash scripts/tests/test_pre_commit_hook.sh
+# local-equivalent: gitleaks detect --redact --source .
+# local-equivalent: trivy fs --severity CRITICAL,HIGH --ignore-unfixed .
+# local-equivalent: semgrep scan --config auto .
+# local-equivalent: cd frontend && npm audit --audit-level=high
+# Routine unit/type/import/mutation/frontend/smoke gates stay local/subagent-owned.
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy-fs:
+    name: trivy-fs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:1.126.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep default scan
+        run: semgrep scan --config auto --error --sarif --output semgrep-results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep-results.sarif
+
+  npm-audit:
+    name: npm-audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: NPM audit
+        run: npm audit --audit-level=high

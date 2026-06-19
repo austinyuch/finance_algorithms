@@ -1,0 +1,13 @@
+# Require an owner review for governance, CI, data, and correctness-sensitive changes.
+* @austinyuch
+
+# High-risk project surfaces.
+/.github/ @austinyuch
+/.agents/ @austinyuch
+/AGENTS.md @austinyuch
+/quantlab/ @austinyuch
+/invest_algorithms/ @austinyuch
+/scripts/ @austinyuch
+/data/ @austinyuch
+/frontend/ @austinyuch
+/docs/ @austinyuch
