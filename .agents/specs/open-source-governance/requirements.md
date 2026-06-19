@@ -59,8 +59,8 @@ submit PRs, and obtain owner review.
 2. `CONTRIBUTING.md` exists.
 3. `.github/CODEOWNERS` exists.
 4. A pull request template exists.
-5. License selection is explicitly tracked as an owner decision until a license
-   is chosen.
+5. License selection is explicit and documented for software, documentation,
+   third-party data, market data, and excluded materials.
 
 ### REQ-OSG-005 Local Secret Guard
 

@@ -21,6 +21,17 @@ Regeneration steps live in `docs/MANUAL_GENERATION_GUIDE.md` and
 `.agents/specs/**/review.md`; every model slice carries an explicit
 `no_alpha_claim` boundary.
 
+## License
+
+Software source code is licensed under the Apache License 2.0. See `LICENSE`.
+
+Original project documentation, manuals, review pages, and portfolio materials
+are licensed under CC BY 4.0. See `LICENSE-DOCS.md`.
+
+Third-party dependencies, market data, reconstructed historical data, point-in-time
+snapshots, trademarks, external media, and private credentials are not licensed by
+this repository unless a file explicitly says otherwise. See `NOTICE`.
+
 ## Repository Map
 
 | Path | Purpose |

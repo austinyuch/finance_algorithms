@@ -16,6 +16,15 @@ This project uses a spec-governed workflow. Start with:
 - Promote `dev` to `main` only through reviewed PRs.
 - Do not force-push or delete protected branches.
 
+## Licensing
+
+By contributing software source code, you agree that your contribution is
+licensed under the Apache License 2.0. By contributing original documentation or
+portfolio material, you agree that your contribution is licensed under CC BY 4.0.
+Do not contribute third-party data, market data, external media, trademarks, or
+other restricted material unless its license is documented and compatible with
+the repository scope in `NOTICE`.
+
 ## Local Gates
 
 Use the narrowest gate that covers your change. For broad QuantLab changes:
