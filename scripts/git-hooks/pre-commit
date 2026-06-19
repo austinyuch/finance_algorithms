@@ -1,0 +1,64 @@
+#!/bin/bash
+# Pre-commit hook for finance_algorithms.
+# Purpose: prevent committing .env files, literal credentials, and secret files.
+
+set -e
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo "Checking for sensitive information..."
+
+ENV_FILE_RE='(^|/)\.env($|\..*)'
+ENV_ALLOW_RE='(^|/)\.env\.(example|sample|template)$'
+if git diff --cached --name-only | grep -E "$ENV_FILE_RE" | grep -qvE "$ENV_ALLOW_RE"; then
+    echo -e "${RED}Error: .env file detected in commit${NC}"
+    git diff --cached --name-only | grep -E "$ENV_FILE_RE" | grep -vE "$ENV_ALLOW_RE" | sed 's/^/  - /'
+    echo "Commit .env.example instead; keep real secrets outside version control."
+    exit 1
+fi
+
+SENSITIVE_PATTERN='(password|passwd|pwd|api[_-]?key|apikey|secret|token|bearer|private[_-]?key|access[_-]?key|broker[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]*]+'
+REF_RE='[:=][[:space:]]*([$]|[$][{]|[{][{]|<|%\(|env::)'
+ENVREAD_RE="[:=][[:space:]]*['\"]?(os\.environ|os\.getenv|getenv\(|process\.env|system\.getenv|deno\.env|ENV\[)"
+TYPE_RE="[:=][[:space:]]*['\"]?(str|string|int|integer|bool|boolean|float|double|number|text|varchar|char|uuid|bytes|object|array|map|any|none|null|nil|true|false|optional|list|dict|set)\b"
+PLACEHOLDER_RE="[:=][[:space:]]*['\"]?(changeme|change-me|change_me|your[-_a-z0-9]*|placeholder|example|sample|dummy|redacted|fixme|todo|tbd|n/a|na|set[-_]me|replace[-_]me|xxx+|[*]{3,}|[.]{3,})\b"
+EMPTY_RE="[:=][[:space:]]*(\"\"|''|[[:space:]]*$)"
+
+DIFF="$(git diff --cached -- . \
+    ':(exclude)*.env.example' ':(exclude)*.env.sample' ':(exclude)*.env.template' \
+    ':(exclude)docs/**/public-hosting-probe.json' ':(exclude)docs/deployment-manifest.json')"
+
+ADDED="$(printf '%s\n' "$DIFF" | grep -E '^\+' | grep -vE '^\+\+\+' | sed 's/^\+//' || true)"
+
+LEAKS="$(printf '%s\n' "$ADDED" \
+    | grep -iE "$SENSITIVE_PATTERN" \
+    | grep -vE 'env:|file:' \
+    | grep -v 'REDACTED' \
+    | grep -ivE "$REF_RE" \
+    | grep -ivE "$ENVREAD_RE" \
+    | grep -ivE "$TYPE_RE" \
+    | grep -ivE "$PLACEHOLDER_RE" \
+    | grep -ivE "$EMPTY_RE" \
+    || true)"
+
+if [ -n "$LEAKS" ]; then
+    echo -e "${RED}Error: potential sensitive data detected${NC}"
+    printf '%s\n' "$LEAKS" | head -5 | sed 's/^/  /'
+    echo "Use environment variables, placeholders, or documented secret references."
+    exit 1
+fi
+
+SECRET_FILES='(\.pem|\.key|\.p12|\.pfx|id_rsa|credentials\.json)$'
+if git diff --cached --name-only | grep -qE "$SECRET_FILES"; then
+    echo -e "${YELLOW}Warning: secret file pattern detected${NC}"
+    git diff --cached --name-only | grep -E "$SECRET_FILES" | sed 's/^/  - /'
+    read -p "Continue committing these files? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+echo "No sensitive information detected"
