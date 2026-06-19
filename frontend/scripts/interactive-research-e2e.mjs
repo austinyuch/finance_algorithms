@@ -199,60 +199,109 @@ async function runBrowserFlow() {
         (async () => {
           const deadline = Date.now() + 10000;
           while (Date.now() < deadline) {
-            const panel = document.querySelector('[data-section="interactive-research"]');
-            if (panel?.dataset.hydrated === 'true' && panel.querySelector('[data-control="seed"]') && panel.textContent.includes('static_replay')) {
+            const panel = document.querySelector('[data-section="investment-charts"]');
+            if (
+              panel?.dataset.hydrated === 'true' &&
+              panel.querySelector('[data-control="dashboard-seed"]') &&
+              panel.querySelector('canvas') &&
+              panel.textContent.includes('static_replay artifact selected')
+            ) {
               return true;
             }
             await new Promise((resolve) => setTimeout(resolve, 50));
           }
-          throw new Error('interactive research panel did not hydrate');
+          throw new Error('algorithm results dashboard did not hydrate');
         })()
       `);
       const before = await evaluate(client, `
         (() => {
-          const panel = document.querySelector('[data-section="interactive-research"]');
+          const panel = document.querySelector('[data-section="investment-charts"]');
           return {
-            status: panel.querySelector('.research-status')?.dataset.status,
+            status: panel.querySelector('.dashboard-result-strip')?.dataset.status,
             text: panel.textContent,
+            canvasCount: panel.querySelectorAll('canvas').length,
           };
         })()
       `);
+      const backendTarget = await evaluate(client, `
+        (() => {
+          const panel = document.querySelector('[data-section="investment-charts"]');
+          const backendSelect = panel.querySelector('[data-control="dashboard-backend"]');
+          if (!backendSelect) {
+            throw new Error('dashboard backend select not found');
+          }
+          const rect = backendSelect.getBoundingClientRect();
+          return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          };
+        })()
+      `);
+      await client.send("Input.dispatchMouseEvent", {
+        type: "mousePressed",
+        x: backendTarget.x,
+        y: backendTarget.y,
+        button: "left",
+        clickCount: 1,
+      });
+      await client.send("Input.dispatchMouseEvent", {
+        type: "mouseReleased",
+        x: backendTarget.x,
+        y: backendTarget.y,
+        button: "left",
+        clickCount: 1,
+      });
+      await client.send("Input.dispatchKeyEvent", {
+        type: "rawKeyDown",
+        key: "ArrowDown",
+        code: "ArrowDown",
+        windowsVirtualKeyCode: 40,
+      });
+      await client.send("Input.dispatchKeyEvent", {
+        type: "keyUp",
+        key: "ArrowDown",
+        code: "ArrowDown",
+        windowsVirtualKeyCode: 40,
+      });
+      await client.send("Input.dispatchKeyEvent", {
+        type: "rawKeyDown",
+        key: "Enter",
+        code: "Enter",
+        windowsVirtualKeyCode: 13,
+      });
+      await client.send("Input.dispatchKeyEvent", {
+        type: "keyUp",
+        key: "Enter",
+        code: "Enter",
+        windowsVirtualKeyCode: 13,
+      });
       const after = await evaluate(client, `
         (async () => {
-          const panel = document.querySelector('[data-section="interactive-research"]');
-          const seedInput = panel.querySelector('[data-control="seed"]');
-          if (!seedInput) {
-            throw new Error('seed input not found');
-          }
-          const previousValue = seedInput.value;
-          const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-          setter.call(seedInput, String(Number(seedInput.value) + 1));
-          if (seedInput._valueTracker) {
-            seedInput._valueTracker.setValue(previousValue);
-          }
-          seedInput.dispatchEvent(new Event('input', { bubbles: true }));
-          seedInput.dispatchEvent(new Event('change', { bubbles: true }));
+          const panel = document.querySelector('[data-section="investment-charts"]');
           const deadline = Date.now() + 5000;
           while (Date.now() < deadline) {
-            const status = panel.querySelector('.research-status')?.dataset.status;
+            const status = panel.querySelector('.dashboard-result-strip')?.dataset.status;
             if (status === 'fail_closed') {
               break;
             }
             await new Promise((resolve) => setTimeout(resolve, 50));
           }
           return {
-            status: panel.querySelector('.research-status')?.dataset.status,
+            status: panel.querySelector('.dashboard-result-strip')?.dataset.status,
             text: panel.textContent,
-            hasEmptyState: panel.querySelector('.empty-state')?.textContent === 'fail_closed',
+            hasEmptyState: panel.querySelector('.chart-fail-closed span')?.textContent === 'fail_closed',
           };
         })()
       `);
       if (before.status !== "computed") {
-        throw new Error(`interactive research e2e expected computed initial state, got ${before.status}`);
+        throw new Error(`algorithm results dashboard e2e expected computed initial state, got ${before.status}`);
+      }
+      if (before.canvasCount < 3) {
+        throw new Error(`algorithm results dashboard e2e expected chart canvases, got ${before.canvasCount}`);
       }
       if (after.status !== "fail_closed" || !after.hasEmptyState || !after.text.includes("No deterministic replay artifact")) {
         throw new Error(
-          `interactive research e2e did not fail closed after unsupported parameter change: ${JSON.stringify(after)}`,
+          `algorithm results dashboard e2e did not fail closed after unsupported parameter change: ${JSON.stringify(after)}`,
         );
       }
       const screenshot = await client.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
