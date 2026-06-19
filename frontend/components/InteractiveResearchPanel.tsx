@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 
 import {
   resolveInteractiveResearchSelection,
   validateInteractiveResearchParameters,
 } from "../lib/interactive-research";
+import {
+  initialLiveRerunState,
+  liveRerunReducer,
+  requestLiveRerun,
+} from "../lib/live-rerun";
 import type {
   InteractiveResearchPayload,
   ResearchBackend,
   ResearchParameters,
   ResearchRebalance,
 } from "../lib/showcase-contract";
+import { LiveRerunStatus } from "./LiveRerunStatus";
 
 function metric(value: number): string {
   return value.toFixed(2);
@@ -50,6 +56,20 @@ export function InteractiveResearchPanel({ data }: { data: InteractiveResearchPa
   const selection = useMemo(() => resolveInteractiveResearchSelection(data, params), [data, params]);
   const modelRow = selection.rows?.find((row) => !row.isBaseline);
   const baselineRow = selection.rows?.find((row) => row.isBaseline);
+
+  // H-4 (REQ-H4-001/004): additive live backend rerun. When no backend is configured the
+  // proxy route returns a static-replay fallback and the lifecycle settles on fail_closed,
+  // so the static replay above stays the visible result. A live computed result never
+  // overwrites the honesty guards — the payload is contract-validated server-side.
+  const [liveState, dispatch] = useReducer(liveRerunReducer, initialLiveRerunState);
+  const runLive = async () => {
+    if (!validation.ok) {
+      dispatch({ type: "fail_closed", message: validation.errors.join("; ") });
+      return;
+    }
+    dispatch({ type: "submit" });
+    dispatch(await requestLiveRerun(params));
+  };
 
   return (
     <section className="panel interactive-panel" data-section="interactive-research" data-hydrated={hydrated}>
@@ -143,6 +163,13 @@ export function InteractiveResearchPanel({ data }: { data: InteractiveResearchPa
             <option value={data.artifact.experimentId}>{data.artifact.experimentId}</option>
           </select>
         </label>
+      </div>
+
+      <div className="live-rerun-controls">
+        <button type="button" data-control="run-live-rerun" onClick={runLive} disabled={!hydrated}>
+          Run live rerun
+        </button>
+        <LiveRerunStatus state={liveState} />
       </div>
 
       <div className="research-status" data-status={selection.status}>

@@ -75,15 +75,23 @@
 - [x] **REFACTOR:** No mode-specific validation duplicated.
 - [x] **Evidence:** `tests/live-rerun.test.ts` + `tests/dashboard.test.tsx` + `interactive-research.test.ts` **28 passed** together.
 
-### H4-6 — Component tests (AC-H4-04)
+### H4-6 — Component tests (AC-H4-04) ✅ DONE
 
-- [ ] **RED:** Co-located component tests for `InteractiveResearchPanel` and `InvestmentCharts`
-  rendering `idle`/`computing`/`computed`/`fail_closed`/`error`, closing the current
-  zero-component-test gap.
-- [ ] **GREEN:** Add the `computing`/`error` render states to the components (idle/computed/
-  fail_closed already exist).
-- [ ] **REFACTOR:** Reuse quiet dashboard styling; stable control/chart dimensions.
-- [ ] **Evidence:** `cd frontend && npm test -- --run tests/InteractiveResearchPanel.test.tsx tests/InvestmentCharts.test.tsx`; coverage ≥ existing thresholds.
+- [x] **RED:** `frontend/tests/live-rerun-status.test.tsx` — direct render tests for all five
+  lifecycle states (`idle`/`computing`/`computed`/`fail_closed`/`error`) via
+  `renderToStaticMarkup` (vitest `node` env, no RTL), closing the zero-component-test gap, plus
+  a panel test asserting the live control + idle lifecycle render without breaking static replay.
+- [x] **GREEN:** Extracted a pure presentational `components/LiveRerunStatus.tsx` (state →
+  markup, no async/effects so every state is render-testable) and wired it additively into
+  `InteractiveResearchPanel` (a `useReducer` + a "Run live rerun" button calling
+  `requestLiveRerun`). `computing` shows an `aria-busy` spinner and never a stale result;
+  `error` shows a visible message, never a spinner.
+- [x] **REFACTOR:** Async orchestration stays in the panel; the view is pure/SSR-testable.
+- [x] **Evidence:** `live-rerun-status.test.tsx` 6 + dashboard regression + live-rerun lib
+  **29 passed** together; full frontend suite **67 passed** (only the pre-existing
+  deploy-coupled `ISSUE-VRT-EXPORT-STALE-DEV-001` is red). NOTE: the new live controls change
+  the rendered Dashboard HTML, so the static-export/visual baseline re-pin at deploy (H4-11/
+  H4-12) must capture them.
 
 ### H4-7 — Real-backend smoke + negative stub-fails-closed (AC-H4-02, FMEA-H4-01) — load-bearing
 
