@@ -109,13 +109,14 @@
   driving the browser UI `idle→computing→computed` against the real backend — pairs with the
   H4-11 VRT and is deploy/browser-coupled; the Python socket smoke already proves FMEA-H4-01.
 
-### H4-8 — Determinism + static parity (AC-H4-01, FMEA-H4-05)
+### H4-8 — Determinism + static parity (AC-H4-01, FMEA-H4-05) — determinism ✅ DONE; parity deploy-coupled
 
-- [ ] **RED:** Integration test that the committed parameter set's live `reportChecksum`
-  equals the H-3 static artifact, and that two identical requests are byte-identical.
-- [ ] **GREEN:** Ensure temp-path/seed/ordering never leak into the checksum.
-- [ ] **REFACTOR:** Centralize artifact normalization shared by static + live.
-- [ ] **Evidence:** `uv run pytest -q tests/quantlab/test_h4_live_rerun.py -k parity_or_determinism`.
+- [x] **Determinism (AC-H4-01.2):** `test_run_rerun_is_deterministic` + smoke determinism —
+  identical params → byte-identical payload; temp-path/seed/ordering never leak into the checksum.
+- [ ] **Static byte-parity (AC-H4-01.1) — deploy-coupled.** The H-3 static block is a
+  hand-authored synthetic replay, not a `run_experiment` output, so byte-parity needs the
+  committed static artifact regenerated from a real run. That re-pin changes the dashboard
+  `dataHash` → bundle with the `dev`→`main` deploy (see review.md Residual 1).
 
 ### H4-9 — Charter guard: no actionable-signal surface (REQ-H4-008, FMEA-H4-04) ✅ DONE (payload guard)
 
@@ -125,32 +126,32 @@
   mechanism evidence only. The contract carries no allocation/recommendation field by design.
 - [x] **Evidence:** charter test passes within the H4-2 suite (18 passed).
 
-### H4-10 — Mutation (Python + frontend)
+### H4-10 — Mutation (Python + frontend) — Python ✅ DONE; frontend count deploy-coupled
 
-- [ ] **RED/GREEN:** Register Python mutations in `scripts/run_mutation_spot_checks.py` for
-  the rerun fail-closed gate and the provider usable-close filter; add frontend mutations for
-  the lifecycle `error`/timeout gate and the `live_compute` claim-boundary/baseline gate.
-- [ ] **REFACTOR:** Keep published mutation counts consistent with governance artifacts.
-- [ ] **Evidence:** `uv run python scripts/run_mutation_spot_checks.py --only <h4 guards>`; `cd frontend && npm run mutation`.
+- [x] **Python:** `h4-rerun-validation-fail-closed-gate` registered + KILLED; provider
+  usable-close filter guard (`a0-chaos-asset-span-usable-close-filter`, repointed) KILLED.
+- [ ] **Frontend mutations (deploy-coupled count).** Add lifecycle `error`/timeout +
+  `live_compute` claim-boundary mutations to `frontend/scripts/run-mutation-checks.mjs`. The
+  published frontend mutation total (`29/29`) lives in the deploy-coupled `showcase.json`
+  payload, so the bump bundles with the deploy (see H4-12).
 
-### H4-11 — VRT for new lifecycle states (FMEA-H4-02)
+### H4-11 — VRT for new lifecycle states (FMEA-H4-02) — deploy/browser-coupled
 
-- [ ] **RED:** Observe browser visual baselines for `computing` and `error` states.
-- [ ] **GREEN:** Pin the new VRT baselines (computed-state baseline reused) via the existing scripts only.
-- [ ] **Evidence:** `cd frontend && npm run visual:browser`; `npm run e2e:rerun` VRT.
+- [ ] **Deferred (deploy/browser).** The Python socket smoke (H4-7) already proves FMEA-H4-01.
+  Browser VRT baselines for `computing`/`error` + the new live controls require the static
+  export + visual baseline re-pin (`ISSUE-VRT-EXPORT-STALE-DEV-001`), bundled with the deploy.
 
-### H4-12 — Governance, review, and local-first closeout
+### H4-12 — Governance, review, and local-first closeout — repo-side ✅ DONE; deploy bump pending
 
-- [ ] Refresh `quantlab/TESTS.md`, `SPECS.md`, `RTM.md`, `ISSUE_LOG.md` (close
-  `ISSUE-DDD-PROVIDER-PRIVATE-001`), `NEXT_STEPS.md`, `docs/FEATURES.md`, and generated
-  proof surfaces affected by any new payload hash (deploy-coupled bump bundled with the
-  F-owned deploy, mirroring CR-RDO-005).
-- [ ] Author `review.md` capped to repo-side/local demo; public hosting stays `not_proven`
-  unless a fresh live probe proves the new deployed hash.
-- [ ] Run the local-first matrix or record explicit hosted-only gaps.
-- [ ] **Evidence:** `uv run pytest -q`; `uv run mypy quantlab/ --ignore-missing-imports`;
-  `uv run lint-imports`; `git diff --check`; full frontend test/coverage/build/smoke/visual/
-  mutation + `e2e:rerun` gates.
+- [x] `review.md` authored (Implemented · Review PASSED for the repo-side slice; residuals
+  documented). `quantlab/TESTS.md` rows added; `ISSUE-DDD-PROVIDER-PRIVATE-001` resolved;
+  `SPECS.md`/`NEXT_STEPS.md`/`ISSUE_LOG.md` updated; two new tech-debt/known-issue rows recorded.
+- [ ] **Deploy-coupled bump (bundled with `dev`→`main` + Pages deploy, mirrors CR-RDO-005):**
+  static export/`dataHash`/visual re-pin (incl. the new live UI controls), pytest + Python/
+  frontend mutation count surfaces, `docs/FEATURES.md`, `RTM.md`, and a fresh public probe.
+- [x] **Evidence (repo-side):** full Python suite (see closeout run), governance 25 green,
+  mypy `quantlab/` clean, `lint-imports` KEPT, frontend **67 passed** (only the pre-existing
+  `ISSUE-VRT-EXPORT-STALE-DEV-001` red), real-backend smoke 3 passed.
 
 ## FMEA Trace
 
