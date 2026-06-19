@@ -1,0 +1,25 @@
+Finance Algorithms
+Copyright 2026 Austin Yu
+
+Software source code in this repository is licensed under the Apache License,
+Version 2.0. See `LICENSE`.
+
+Original project documentation and portfolio materials are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0). See
+`LICENSE-DOCS.md`.
+
+The following materials are not licensed by this repository unless a file
+explicitly says otherwise:
+
+- third-party source code, packages, dependencies, and generated package
+  metadata, which remain under their respective licenses;
+- market data, benchmark data, point-in-time snapshots, reconstructed historical
+  data, broker data, and other third-party datasets;
+- trademarks, service marks, logos, and product names;
+- externally sourced screenshots, charts, images, or media;
+- private credentials, tokens, secrets, or configuration values.
+
+Research outputs, examples, and demonstrations are provided for education and
+software validation only. They do not provide investment advice and do not make
+an alpha, trading, production-readiness, or financial-performance claim unless a
+current spec review explicitly proves that claim.
