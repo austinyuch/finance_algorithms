@@ -2,6 +2,8 @@
 name = "invest-algorithms"
 version = "0.1.0"
 description = "Investment pyramid (arithmetic/geometric) algorithms API"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "YuehChengChang", email = "ycchang.pmp@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13"

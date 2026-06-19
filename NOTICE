@@ -1,0 +1,16 @@
+Finance Algorithms
+Copyright 2026 Yueh-Cheng Chang
+
+This product includes software developed by Yueh-Cheng Chang.
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file for the
+full terms.
+
+Research and demo boundary
+--------------------------
+This repository is a personal quantitative research workspace and public
+showcase. All model slices carry an explicit `no_alpha_claim` boundary, and
+historical/generated research data keeps the point-in-time and approximate-data
+boundaries documented under `.agents/specs/` and
+`quantlab/CORRECTNESS_CHECKLIST.md`. Nothing here is investment advice or a
+representation of realized trading performance.

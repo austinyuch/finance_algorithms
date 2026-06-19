@@ -1,11 +1,25 @@
 # Open Source Governance Review
 
-Status: Implemented for branch/CI protection; license decision pending
+Status: Implemented; license chosen and committed (Apache-2.0, owner decision `2026-06-19`)
 
 ## Evidence
 
 - Repo public state: `gh api repos/austinyuch/finance_algorithms` reported
-  `"private": false`, default branch `main`, and no detected license.
+  `"private": false`, default branch `main`, and (before this lane closed) no
+  detected license.
+- License decision (REQ-OSG-004 AC5; closes OSG-FM-005):
+  - Owner chose **Apache-2.0** on `2026-06-19` for the public quant lab + demo
+    (permissive reuse with an explicit patent grant and trademark protection).
+  - Committed license surfaces:
+    - `LICENSE` (verbatim Apache License 2.0 text; copyright
+      `2026 Yueh-Cheng Chang`).
+    - `NOTICE` (attribution plus the existing `no_alpha_claim` /
+      point-in-time / approximate-data research boundary).
+    - `pyproject.toml` -> `license = "Apache-2.0"`,
+      `license-files = ["LICENSE", "NOTICE"]`.
+    - `frontend/package.json` -> `"license": "Apache-2.0"` (`"private": true`
+      retained as an npm anti-publish guard, not a license statement).
+    - `README.md` and `CONTRIBUTING.md` License sections point at `LICENSE`.
 - Pre-existing GitHub protection state before this lane:
   - `main`: branch protection API returned `Branch not protected (HTTP 404)`.
   - `dev`: branch protection API returned `Branch not protected (HTTP 404)`.
@@ -44,9 +58,7 @@ Status: Implemented for branch/CI protection; license decision pending
 
 ## Current Verdict
 
-Protected PR workflow is now configured for `main` and `dev`.
-
-Remaining open-source readiness gap:
-
-1. The repository owner must choose and commit a license before advertising
-   reusable open-source terms.
+Protected PR workflow is configured for `main` and `dev`, and the repository now
+declares reusable open-source terms under **Apache-2.0**. All seven lane tasks
+(T-OSG-001 .. T-OSG-007) are complete; no open-source readiness gap remains in
+this lane.

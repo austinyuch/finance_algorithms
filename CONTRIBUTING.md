@@ -48,3 +48,9 @@ Install the local pre-commit hook before contributing:
 
 The hook blocks `.env` files and common secret literals. CI also runs secret and
 security scans on pull requests.
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](./LICENSE). By
+submitting a contribution, you agree that it is provided under the same license
+(Apache-2.0 Section 5), without any additional terms.

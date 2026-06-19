@@ -160,3 +160,11 @@ The implemented QuantLab foundation includes:
 - Epic H deep-learning research lab: framework-free reference MLP forecaster (H-1), a real PyTorch training path behind a lazy backend boundary (H-2), and an interactive parameter UI over the H artifacts on the dashboard — deterministic `static_replay`, OOS-net-only ranking, fail-closed on unsupported parameters or stale checksums (H-3).
 
 Every slice declares `no_alpha_claim`. See `.agents/specs/SPECS.md` and `.agents/specs/NEXT_STEPS.md` before starting new feature work.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](./LICENSE). See [`NOTICE`](./NOTICE)
+for attribution and the research/demo boundary (`no_alpha_claim`, point-in-time
+and approximate-data limits). This is a personal research workspace and public
+showcase, not investment advice or a representation of realized trading
+performance.
