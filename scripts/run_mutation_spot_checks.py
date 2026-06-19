@@ -1065,6 +1065,15 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     # closed (drop out of the co-temporal universe) rather than silently enter the
     # multi-cycle comparison at a fabricated weight once the engine drops its legs.
     MutationSpec(
+        # H4-2: invalid rerun parameters must fail closed before any computation.
+        name="h4-rerun-validation-fail-closed-gate",
+        path="quantlab/showcase/rerun_service.py",
+        original='    if errors:\n        return _fail_closed(parameters, "; ".join(errors), reason="invalid_parameters")',
+        mutated='    if False and errors:\n        return _fail_closed(parameters, "; ".join(errors), reason="invalid_parameters")',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_h4_live_rerun.py::test_run_rerun_invalid_params_fail_closed_no_rows"),
+    ),
+    MutationSpec(
         # H4-1 moved the usable-close filter into the provider public view; the boundary
         # is unchanged (sufficiency still drops a NaN-poisoned asset from the universe).
         name="a0-chaos-asset-span-usable-close-filter",

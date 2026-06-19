@@ -25,17 +25,21 @@
   tempstores + governance green; mypy clean (64 files); `lint-imports` KEPT. Grep guard green
   → **`ISSUE-DDD-PROVIDER-PRIVATE-001` resolved**.
 
-### H4-2 — Python rerun backend service (REQ-H4-001/002/003)
+### H4-2 — Python rerun backend service (REQ-H4-001/002/003) ✅ DONE
 
-- [ ] **RED:** Unit/integration for `quantlab/showcase/rerun_service.py`: valid params →
-  `computed` artifact (checksum + OOS-net rows, baseline visible); invalid/out-of-range/
-  unsupported-backend/non-integer-step → `fail_closed` (no rows); `run_experiment`
-  `insufficient_data` → `fail_closed` with upstream reason.
-- [ ] **GREEN:** Implement the ASGI app wrapping `run_experiment` into a temp workspace
-  (no repo pollution; mirror `test_demo_script_tempstores`); normalize the artifact to the
-  `live_compute` contract. No torch/tf/jax import (framework isolation; `lint-imports` KEPT).
-- [ ] **REFACTOR:** Share parameter validation with the H-3 range contract; keep the service thin.
-- [ ] **Evidence:** `uv run pytest -q tests/quantlab/test_h4_live_rerun.py`; `uv run lint-imports`.
+- [x] **RED:** `tests/quantlab/test_h4_live_rerun.py` (18 tests) — validation fail-closed
+  cases, computed-payload contract shape (OOS-net sorted, baseline visible, no_alpha_claim,
+  64-hex checksum), determinism, insufficient-data fail-closed, charter guard (no actionable
+  wording), and the dependency-free ASGI transport (200/422/404/405/400).
+- [x] **GREEN:** `quantlab/showcase/rerun_service.py` — `validate_parameters`, `run_rerun`
+  (wraps `run_experiment` in a `TemporaryDirectory`, no repo pollution; temp artifact paths
+  are not leaked), `build_live_payload` (reuses the run_experiment report as the sole
+  calculation authority — derives `returnDistribution` from equity ratios, CAGR/maxDD from
+  the curve), and a dependency-free ASGI `make_app`/`app`. Added resolved `backend`/
+  `parameters`/`data_window` to `run_experiment`'s return (additive). No torch/tf/jax import.
+- [x] **REFACTOR:** `PARAMETER_RANGES` SSOT mirrors the H-3 contract ranges; service stays thin.
+- [x] **Evidence:** `test_h4_live_rerun.py` **18 passed**; mypy clean (`quantlab/` 63 files);
+  `lint-imports` KEPT (framework isolation); mutation `h4-rerun-validation-fail-closed-gate` KILLED.
 
 ### H4-3 — Next.js proxy route + static-replay fallback (REQ-H4-005, FMEA-H4-07)
 

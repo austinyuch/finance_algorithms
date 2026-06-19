@@ -196,7 +196,11 @@ def run_experiment(
     return {
         "status": "computed",
         "artifact_path": str(out_path),
+        "viz_path": str(viz_path),
         "experiment_id": entry.experiment_id,
+        "backend": forecaster.backend,
+        "parameters": params,
+        "data_window": {"start": str(dates[0].date()), "end": str(dates[-1].date())},
         "performance_report": report,
         "leaderboard": leaderboard,
     }
