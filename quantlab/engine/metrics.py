@@ -26,7 +26,9 @@ def compute_metrics(returns: pd.Series, turnover: float, periods_per_year: float
     std = float(r.std(ddof=1)) if n >= 2 else 0.0
     annualized_vol = std * (periods_per_year ** 0.5)
 
-    dd = wealth / wealth.cummax() - 1.0
+    # 0/0 出現在總資產歸零(total loss)且峰值亦為 0 時 → drawdown 未定義,
+    # 誠實值為 -100%(已賠光),不可讓 NaN 漏進 dashboard 的 max_drawdown。
+    dd = (wealth / wealth.cummax() - 1.0).fillna(-1.0)
     max_drawdown = float(dd.min())
     if max_drawdown > 0.0:           # 數值保險(理論上 dd <= 0)
         max_drawdown = 0.0
