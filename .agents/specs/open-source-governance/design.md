@@ -58,10 +58,12 @@ semantics and artifact upload transport are hosted-only evidence.
 | OSG-FM-002 | CI exists but is not required | PR can merge with failing/absent gates | Required checks list | Bind check names into protection/ruleset | T-OSG-005 |
 | OSG-FM-003 | Secret scanner false positive bypass pressure | Contributors disable hook or avoid scans | Tested allowlist patterns | Keep hook tests and CI Gitleaks | T-OSG-002/T-OSG-004 |
 | OSG-FM-004 | Public demo/docs claim more than evidence | Open-source readers see false green | Existing spec review authority | PR checklist points claims back to review evidence | T-OSG-001 |
-| OSG-FM-005 | Legal license chosen accidentally | Unintended reuse terms | No license file currently | Track license as owner decision, do not auto-select | T-OSG-001 |
+| OSG-FM-005 | Legal license scope is ambiguous | Unintended reuse terms or third-party data relicensing | Split software/docs license plus data exclusions | Keep `LICENSE`, `LICENSE-DOCS.md`, and `NOTICE` aligned with README/CONTRIBUTING | T-OSG-001/T-OSG-006 |
 
 ## Boundaries
 
 - No model, data, or dashboard behavior changes.
 - No broad hosted CI substitution for local-first development workflow.
-- License selection remains an owner decision.
+- The selected license model is Apache-2.0 for software, CC BY 4.0 for original
+  docs/portfolio materials, and explicit exclusion for third-party data, market
+  data, trademarks, external media, and private credentials.

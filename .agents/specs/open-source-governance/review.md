@@ -1,6 +1,6 @@
 # Open Source Governance Review
 
-Status: Implemented for branch/CI protection; license decision pending
+Status: Implemented for branch/CI protection and open-source licensing
 
 ## Evidence
 
@@ -20,6 +20,14 @@ Status: Implemented for branch/CI protection; license decision pending
   - `scripts/git-hooks/pre-commit`
   - `scripts/install-git-hooks.sh`
   - `scripts/tests/test_pre_commit_hook.sh`
+- License controls added:
+  - `LICENSE`: Apache License 2.0 for software source code.
+  - `LICENSE-DOCS.md`: CC BY 4.0 for original project documentation and
+    portfolio materials.
+  - `NOTICE`: excludes third-party dependencies, market data, reconstructed
+    historical data, PIT snapshots, trademarks, external media, and private
+    credentials unless a file explicitly says otherwise.
+  - `README.md` and `CONTRIBUTING.md` summarize the split license model.
 - Focused local verification:
   - `bash scripts/tests/test_pre_commit_hook.sh` -> `pass=11 fail=0`.
   - `git diff --check` -> passed.
@@ -28,25 +36,25 @@ Status: Implemented for branch/CI protection; license decision pending
   - `uv run lint-imports` -> 2 contracts kept, 0 broken.
   - Python YAML parse of `.github/workflows/*.yml` -> all three workflow files parsed.
   - `actionlint` was not installed locally, so deep GitHub Actions lint was not run.
+- License closeout verification:
+  - `git diff --check` -> passed.
+  - `uv run pytest -q tests/quantlab/test_governance_guards.py tests/test_local_ci_matrix.py tests/test_dependency_security.py` -> `28 passed`.
+  - `bash scripts/tests/test_pre_commit_hook.sh` -> `pass=11 fail=0`.
 - Hosted branch protection verified after setup:
   - `main`: strict status checks required for `governance`, `python-core`,
     `architecture`, `frontend`, `main-promotion-source`, `gitleaks`,
-    `trivy-fs`, `semgrep`, and `npm-audit`; code-owner review required;
-    stale reviews dismissed; 1 approval required; admin enforcement enabled;
-    conversation resolution required; force-push and deletion disabled.
+    `trivy-fs`, `semgrep`, and `npm-audit`; solo-maintainer mode has no required
+    reviewer; admin enforcement enabled; conversation resolution required;
+    force-push and deletion disabled.
   - `dev`: strict status checks required for `governance`, `python-core`,
     `architecture`, `frontend`, `gitleaks`, `trivy-fs`, `semgrep`, and
-    `npm-audit`; code-owner review required; stale reviews dismissed; 1
-    approval required; admin enforcement enabled; conversation resolution
-    required; force-push and deletion disabled.
+    `npm-audit`; solo-maintainer mode has no required reviewer; admin
+    enforcement enabled; conversation resolution required; force-push and
+    deletion disabled.
   - Repository rulesets remain `[]`; protection is implemented through branch
     protection rather than rulesets.
 
 ## Current Verdict
 
-Protected PR workflow is now configured for `main` and `dev`.
-
-Remaining open-source readiness gap:
-
-1. The repository owner must choose and commit a license before advertising
-   reusable open-source terms.
+Protected PR workflow is configured for `main` and `dev`, and the repository has
+an explicit split open-source licensing model for software and documentation.
