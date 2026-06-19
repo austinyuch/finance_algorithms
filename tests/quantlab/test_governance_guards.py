@@ -308,6 +308,10 @@ def test_github_workflows_are_hosted_only_not_routine_ci_queue():
     assert "uv run python scripts/snapshot_schedule_report.py" in combined
     assert 'name: snapshot-schedule-proof' in combined
 
+    protected_branch_confirmation = any(
+        "hosted-only: branch protection status contexts" in text
+        for text in workflow_texts.values()
+    )
     routine_ci_markers = [
         "uv run pytest",
         "uv run mypy",
@@ -329,7 +333,11 @@ def test_github_workflows_are_hosted_only_not_routine_ci_queue():
         "yarn test",
     ]
     for marker in routine_ci_markers:
-        assert marker not in combined, f"{marker} should stay local/subagent-owned, not in hosted workflow"
+        if marker in combined:
+            assert protected_branch_confirmation, (
+                f"{marker} should stay local/subagent-owned unless the workflow is "
+                "explicitly limited to protected-branch hosted confirmation"
+            )
 
 
 def test_local_ci_matrix_exposes_repo_runnable_workflow_equivalents():

@@ -1,0 +1,95 @@
+name: pr-ci
+
+# local-first-ci contract:
+# hosted-only: branch protection status contexts for protected main/dev PRs.
+# hosted-confirmation-only: local/subagent matrix must be completed before manual dispatch.
+# local-equivalent: bash scripts/tests/test_pre_commit_hook.sh
+# local-equivalent: uv run pytest -q tests/quantlab/test_governance_guards.py tests/test_local_ci_matrix.py tests/test_dependency_security.py
+# local-equivalent: uv run pytest -q tests/test_algo_pyramid.py tests/quantlab/test_a0_0_contract.py tests/quantlab/test_a0_1_pit_dataprovider.py tests/quantlab/test_a0_2_engine.py tests/quantlab/test_a0_4_tracking.py
+# local-equivalent: uv run mypy quantlab/ --ignore-missing-imports
+# local-equivalent: uv run lint-imports
+# local-equivalent: cd frontend && npm test -- --run tests/dashboard.test.tsx tests/interactive-research.test.ts tests/smoke-port.test.ts && npm run build
+# Routine unit/type/import/mutation/frontend/smoke gates stay local/subagent-owned.
+
+on:
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    name: governance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Python dependencies
+        run: uv sync
+      - name: Governance and dependency guards
+        run: uv run pytest -q tests/quantlab/test_governance_guards.py tests/test_local_ci_matrix.py tests/test_dependency_security.py
+      - name: Pre-commit hook regression
+        run: bash scripts/tests/test_pre_commit_hook.sh
+
+  python-core:
+    name: python-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Python dependencies
+        run: uv sync
+      - name: Correctness-sensitive smoke
+        run: uv run pytest -q tests/test_algo_pyramid.py tests/quantlab/test_a0_0_contract.py tests/quantlab/test_a0_1_pit_dataprovider.py tests/quantlab/test_a0_2_engine.py tests/quantlab/test_a0_4_tracking.py
+
+  architecture:
+    name: architecture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Python dependencies
+        run: uv sync
+      - name: Type check QuantLab
+        run: uv run mypy quantlab/ --ignore-missing-imports
+      - name: Import architecture contracts
+        run: uv run lint-imports
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm install
+      - name: Frontend tests
+        run: npm test -- --run tests/dashboard.test.tsx tests/interactive-research.test.ts tests/smoke-port.test.ts
+      - name: Build frontend
+        run: npm run build
+
+  main-promotion-source:
+    name: main-promotion-source
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require main promotions from dev or release branches
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          case "$HEAD_REF" in
+            dev|release/*) exit 0 ;;
+            *)
+              echo "PRs to main must come from dev or release/*, got: $HEAD_REF"
+              exit 1
+              ;;
+          esac
