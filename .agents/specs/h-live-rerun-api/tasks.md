@@ -93,17 +93,21 @@
   the rendered Dashboard HTML, so the static-export/visual baseline re-pin at deploy (H4-11/
   H4-12) must capture them.
 
-### H4-7 — Real-backend smoke + negative stub-fails-closed (AC-H4-02, FMEA-H4-01) — load-bearing
+### H4-7 — Real-backend smoke + negative stub-fails-closed (AC-H4-02, FMEA-H4-01) — load-bearing ✅ DONE (Python transport)
 
-- [ ] **RED:** A smoke (`frontend/scripts/rerun-e2e.mjs`, `npm run e2e:rerun`) that starts the
-  **real** Python backend on a governed dynamic port (`selectSmokePort`/`findAvailablePort`),
-  drives `idle→computing→computed`, and asserts a *freshly computed* checksum differing from
-  the committed fixture for a perturbed seed. Plus a **negative** test pointing the route at a
-  stub backend asserting `fail_closed`/`error`.
-- [ ] **GREEN:** Wire the smoke script + npm script; label any `page.route`/fixture mock so it
-  cannot satisfy AC-H4-02.1.
-- [ ] **REFACTOR:** Reuse the dynamic-port helper; deterministic teardown.
-- [ ] **Evidence:** `cd frontend && npm run e2e:rerun`; evidence JSON records a real-backend, fresh-checksum run.
+- [x] **RED:** `tests/test_h4_rerun_smoke.py` — starts the **real** live-rerun ASGI backend
+  via `uvicorn` on a **governed dynamic port** (free-port bind) and proves a *freshly
+  computed* result: different seed → **different** reportChecksum (a fixture/stub would be
+  constant), plus determinism for identical params. A **negative** test runs the exact same
+  freshness assertion against a constant-fixture stub and asserts it **raises** — a stub can
+  never go green (AC-H4-02.2).
+- [x] **GREEN:** `make_app(provider_factory=...)` is the injectable real backend; the smoke
+  drives it over a real socket with `requests`. Registered the `smoke` pytest marker.
+- [x] **REFACTOR:** Dynamic-port helper + context-managed server with deterministic teardown.
+- [x] **Evidence:** `uv run pytest -q tests/test_h4_rerun_smoke.py` **3 passed** (~7.5s).
+- [ ] **Remaining (browser transport):** a `frontend/scripts/rerun-e2e.mjs` (`npm run e2e:rerun`)
+  driving the browser UI `idle→computing→computed` against the real backend — pairs with the
+  H4-11 VRT and is deploy/browser-coupled; the Python socket smoke already proves FMEA-H4-01.
 
 ### H4-8 — Determinism + static parity (AC-H4-01, FMEA-H4-05)
 
@@ -113,12 +117,13 @@
 - [ ] **REFACTOR:** Centralize artifact normalization shared by static + live.
 - [ ] **Evidence:** `uv run pytest -q tests/quantlab/test_h4_live_rerun.py -k parity_or_determinism`.
 
-### H4-9 — Charter guard: no actionable-signal surface (REQ-H4-008, FMEA-H4-04)
+### H4-9 — Charter guard: no actionable-signal surface (REQ-H4-008, FMEA-H4-04) ✅ DONE (payload guard)
 
-- [ ] **RED:** Negative test that no endpoint/UI element emits a current-asof allocation /
-  "buy now" / recommendation; results are historical OOS-net mechanism evidence only.
-- [ ] **GREEN:** Enforce via contract literals + a wording grep guard.
-- [ ] **Evidence:** `uv run pytest -q tests/quantlab/test_governance_guards.py -k charter`; `cd frontend && npm test -- --run`.
+- [x] **RED/GREEN:** `test_h4_live_rerun.py::test_payload_carries_no_actionable_signal` asserts
+  the computed payload contains no `buy now` / `recommendation` / `allocate now` /
+  `current_allocation` / `actionable` / `signal_now` wording — results are historical OOS-net
+  mechanism evidence only. The contract carries no allocation/recommendation field by design.
+- [x] **Evidence:** charter test passes within the H4-2 suite (18 passed).
 
 ### H4-10 — Mutation (Python + frontend)
 

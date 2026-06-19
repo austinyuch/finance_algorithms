@@ -37,6 +37,9 @@ package = false
 testpaths = ["tests"]
 # repo root on import path so top-level `import quantlab` resolves at collection time
 pythonpath = ["."]
+markers = [
+    "smoke: real-backend / live-transport smoke tests (e.g. H-4 rerun dynamic-port smoke)",
+]
 
 [tool.mypy]
 # 既有 legacy 金字塔模組未加型別;adapter 只呼叫不改它 → mypy 忽略其錯誤
