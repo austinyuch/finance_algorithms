@@ -14,6 +14,7 @@ Last refreshed: 2026-06-18 · Python full suite **435 passed** (2 skipped in def
 | `test_a0_3_parallel` | parallel==sequential, child seeds, env isolation declarations | a0 PAR-001/002/003, AC-A0-06 | 3 pass |
 | `test_a0_4_tracking` | log/get roundtrip, OOS-net leaderboard, unsupported metric fail-closed guard, finite OOS-net metric validation, reproducibility | a0 TRK-001/002/003, AC-A0-07 | 7 pass |
 | `test_a0_5_integration` | full-chain happy/lookahead/reproducible/parallel consistency | a0 AC-A0-01..07 integration | 4 pass |
+| `test_h4_provider_view` | public PIT-provider read view (`symbols`/`event_span`/`price_panel`): copy-safe extent access, usable finite-positive close filter (PBT), and grep guard that no quantlab/scripts file reads `provider._prices` | h-live-rerun-api H4-1, REQ-H4-007, AC-H4-05, FMEA-H4-06 (resolves ISSUE-DDD-PROVIDER-PRIVATE-001) | 9 pass |
 | `test_a_1_screen` | reverse cointegration screen and PIT history | a-tsmc-hedge-slice A-1 | 3 pass |
 | `test_a_2_lstm` | PyTorch LSTM strategy protocol, fallback, reproducibility, leaderboard | a-tsmc-hedge-slice A-2 optional PyTorch lane | Optional lane: passes when Torch is available in the active environment and skips otherwise; root dependency guard keeps Torch out of the default lock |
 | `test_a_3_baselines` | static/random baselines and leaderboard runs | a-tsmc-hedge-slice A-3 | 4 pass |

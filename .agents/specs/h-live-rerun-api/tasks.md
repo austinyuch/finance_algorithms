@@ -8,17 +8,22 @@
 
 ## Task Matrix
 
-### H4-1 — Public PIT-provider view + kill `_prices` reach-ins (REQ-H4-007, AC-H4-05)
+### H4-1 — Public PIT-provider view + kill `_prices` reach-ins (REQ-H4-007, AC-H4-05) ✅ DONE
 
-- [ ] **RED:** Unit/PBT for a public provider read API — `symbols()`, `event_dates(symbols)`,
-  `price_panel(symbols, *, usable_only=True)` — asserting it returns copy-safe
-  `(symbol, event_date, close)` rows, **never** non-finite/non-positive closes (mirrors
-  `_asset_spans`), and a repo grep guard that no `quantlab`/`scripts` file reads `provider._prices`.
-- [ ] **GREEN:** Add the view to `quantlab/data/provider.py`; migrate `real_data_oos._asset_spans`,
-  `multi_cycle_oos`, and `run_dl_experiment._cotemporal_dates` onto it.
-- [ ] **REFACTOR:** Consolidate duplicated cotemporal-date logic onto the accessor; keep the
-  as-of fetch path (`get`/`history`) untouched (FMEA-H4-06).
-- [ ] **Evidence:** `uv run pytest -q tests/quantlab/test_h4_provider_view.py tests/quantlab/test_real_data_oos*.py tests/quantlab/test_multi_cycle_oos.py`; grep guard green; closes `ISSUE-DDD-PROVIDER-PRIVATE-001`.
+- [x] **RED:** `tests/quantlab/test_h4_provider_view.py` — unit/PBT for `symbols()`,
+  `event_span(symbols)`, `price_panel(symbols, *, usable_only)`: copy-safe, **never** returns
+  non-finite/non-positive closes when `usable_only`, plus a grep guard that no
+  `quantlab`/`scripts` file reads `provider._prices` (only the provider's own `self._prices`).
+- [x] **GREEN:** Added the public view to `quantlab/data/provider.py`; migrated
+  `real_data_oos` (`estimate_sampling_frequencies`, `_asset_spans`, `assess_data_sufficiency`,
+  `_window`), `run_dl_experiment` (`_cotemporal_dates` + symbol membership), and
+  `run_vintage_slice` onto it. (`multi_cycle_oos` already routes through `real_data_oos`.)
+- [x] **REFACTOR:** Usable-close filter now lives once in `price_panel(usable_only=True)`;
+  the as-of fetch path (`get`/`history`, `available_date<=asof`) is untouched (FMEA-H4-06).
+  Repointed mutation `a0-chaos-asset-span-usable-close-filter` to the provider; KILLED.
+- [x] **Evidence:** H4 view + all `real_data_oos*` + `multi_cycle_oos` **88 passed**; demo
+  tempstores + governance green; mypy clean (64 files); `lint-imports` KEPT. Grep guard green
+  → **`ISSUE-DDD-PROVIDER-PRIVATE-001` resolved**.
 
 ### H4-2 — Python rerun backend service (REQ-H4-001/002/003)
 

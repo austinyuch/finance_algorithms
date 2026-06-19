@@ -1065,12 +1065,15 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     # closed (drop out of the co-temporal universe) rather than silently enter the
     # multi-cycle comparison at a fabricated weight once the engine drops its legs.
     MutationSpec(
+        # H4-1 moved the usable-close filter into the provider public view; the boundary
+        # is unchanged (sufficiency still drops a NaN-poisoned asset from the universe).
         name="a0-chaos-asset-span-usable-close-filter",
-        path="quantlab/research/real_data_oos.py",
-        original='usable = prices[(close > 0.0) & (close != float("inf"))]',
-        mutated="usable = prices",
+        path="quantlab/data/provider.py",
+        original='df = df[(close > 0.0) & (close != float("inf"))]',
+        mutated="df = df  # mutation: usable-close filter disabled",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_multi_cycle_oos.py::test_chaos_nan_closes_do_not_crash"),
+                      "tests/quantlab/test_multi_cycle_oos.py::test_chaos_nan_closes_do_not_crash",
+                      "tests/quantlab/test_h4_provider_view.py::test_pbt_usable_panel_never_returns_invalid_close"),
     ),
 )
 
