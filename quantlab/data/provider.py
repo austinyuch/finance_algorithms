@@ -39,6 +39,45 @@ class InMemoryPITDataProvider:
             return df[~df["is_approximate"].astype(bool)]
         return df
 
+    # --- public read view (REQ-H4-007): universe/extent selection without as-of fetch ---
+    # These expose the price panel's *extent* (which symbols exist, over what event-date
+    # span) for co-temporal universe/sufficiency analysis, replacing private `_prices`
+    # reach-ins (ISSUE-DDD-PROVIDER-PRIVATE-001). They are NOT an as-of fetch path: PIT
+    # lookahead protection still lives only in `get`/`history` (`available_date <= asof`),
+    # which remain the sole way to read data *at* an as-of (FMEA-H4-06).
+
+    def symbols(self) -> list[str]:
+        """Sorted unique symbols present in the price panel (extent, not as-of)."""
+        if not len(self._prices):
+            return []
+        return sorted(str(s) for s in self._prices["symbol"].unique())
+
+    def event_span(self, symbols: Sequence[str] | None = None) -> tuple[pd.Timestamp | None, pd.Timestamp | None]:
+        """Overall (earliest, latest) event_date across the panel (or a symbol subset)."""
+        df = self._prices
+        if symbols is not None:
+            df = df[df["symbol"].isin(list(symbols))]
+        if not len(df):
+            return (None, None)
+        return (df["event_date"].min(), df["event_date"].max())
+
+    def price_panel(self, symbols: Sequence[str] | None = None, *,
+                    usable_only: bool = False) -> pd.DataFrame:
+        """Copy-safe price panel for universe/extent analysis (NOT an as-of fetch).
+
+        ``usable_only`` drops rows whose ``close`` is non-finite (NaN/±inf) or
+        non-positive — invalid market data, not a tradable price — the same boundary as
+        ``VectorizedEngine._close`` (CR-A0-CHAOS-001). Returns a defensive copy so callers
+        cannot mutate provider state.
+        """
+        df = self._prices
+        if symbols is not None:
+            df = df[df["symbol"].isin(list(symbols))]
+        if usable_only and "close" in df.columns and len(df):
+            close = df["close"]
+            df = df[(close > 0.0) & (close != float("inf"))]
+        return df.copy()
+
     def get(self, asof, fields: Sequence[str], symbols: Sequence[str] | None = None) -> pd.DataFrame:
         asof = pd.Timestamp(asof)
         cols = list(fields) + ["event_date", "available_date"]

@@ -159,7 +159,7 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; public hosting is now `proven` / `matched` for deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` after the 2026-06-18 `main` deploy (`docs/public-hosting-probe.json`)
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`, `.agents/specs/f-public-static-showcase/review.md`, `docs/deployment-manifest.json`
 > - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
-> - Resolved: visual diff is repo-baseline pixel-backed (`1077 / 1,296,000`
+> - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
 >   mismatched pixels at threshold `0.001`) and the export readiness panel now
 >   reports `visualRegression=proven` (CR-FPS-009). Public-hosting probe now
 >   observes HTTP 200 plus manifest-contract metadata with a matched deployed hash
@@ -435,7 +435,7 @@ pixels.
 >   `.agents/specs/h-interactive-research-ui/requirements.md`
 > - Captured: per `h-interactive-research-ui/review.md` (2026-06-18) — frontend 52
 >   tests pass, coverage 84.12%, `npm run e2e:interactive` passed (real Chromium
->   `computed`→`fail_closed`, 0-pixel VRT), browser visual diff `1077 / 1,296,000`
+>   `computed`→`fail_closed`, 0-pixel VRT), browser visual diff `0 / 1,296,000`
 >   under threshold `0.001`, H-3 mutations `frontend-h3-interactive-claim-boundary`
 >   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
 >   killed. Public Pages parity is now `proven` — after the dev squash-merge to
@@ -519,7 +519,7 @@ caption), so there is no remaining visual residual.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after each dashboard `dataHash` refresh, branch-local parity is `configured_not_observed` until Pages serves it, then re-proven on deploy — currently **`proven`** for the H-3 `dataHash c33da57d…` after the 2026-06-18 `main` deploy.
-- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `1077 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
+- **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `0 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
 

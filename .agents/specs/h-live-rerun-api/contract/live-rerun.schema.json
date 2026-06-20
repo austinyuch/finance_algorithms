@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantlab.local/specs/h-live-rerun-api/live-rerun.schema.json",
+  "title": "HLiveRerun",
+  "description": "Request/response contract for the H-4 live backend rerun API. The computed response reuses the H-3 InteractiveResearchPayload block with mode=live_compute. Honesty literals (no_alpha_claim, out_of_sample_net_only, visible baseline, approximate warning) are enforced identically to the static path.",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameters"],
+      "properties": {
+        "parameters": { "$ref": "#/$defs/parameters" }
+      }
+    },
+    "response": {
+      "oneOf": [
+        { "$ref": "#/$defs/computedResponse" },
+        { "$ref": "#/$defs/nonComputedResponse" }
+      ]
+    },
+    "computedResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "status",
+        "lifecycle",
+        "computeSource",
+        "claimBoundary",
+        "metricAuthority",
+        "parameters",
+        "resolvedBackend",
+        "dataLineage",
+        "artifact",
+        "rows",
+        "warnings"
+      ],
+      "properties": {
+        "mode": { "const": "live_compute" },
+        "status": { "const": "computed" },
+        "lifecycle": { "const": "computed" },
+        "computeSource": { "const": "live_backend" },
+        "claimBoundary": { "const": "no_alpha_claim" },
+        "metricAuthority": { "const": "out_of_sample_net_only" },
+        "parameters": { "$ref": "#/$defs/parameters" },
+        "resolvedBackend": { "$ref": "#/$defs/resolvedBackend" },
+        "dataLineage": { "$ref": "#/$defs/dataLineage" },
+        "artifact": { "$ref": "#/$defs/artifact" },
+        "rows": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/resultRow" }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "nonComputedResponse": {
+      "description": "fail_closed (invalid params / insufficient data) or error (backend unreachable/timeout). Never carries rows.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "status", "lifecycle", "computeSource", "claimBoundary", "message"],
+      "properties": {
+        "mode": { "enum": ["live_compute", "static_replay"] },
+        "status": { "enum": ["fail_closed", "error"] },
+        "lifecycle": { "enum": ["fail_closed", "error"] },
+        "computeSource": { "enum": ["live_backend", "static_fallback", "none"] },
+        "claimBoundary": { "const": "no_alpha_claim" },
+        "message": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "resolvedBackend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "resolved", "fallbackReason"],
+      "properties": {
+        "requested": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "resolved": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "fallbackReason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "dataLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "dataWindow", "approximateAvailability", "strictPitExcluded", "warning"],
+      "properties": {
+        "source": { "const": "cr_b21_approximate_backfill" },
+        "dataWindow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "end": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          }
+        },
+        "approximateAvailability": { "const": true },
+        "strictPitExcluded": { "const": true },
+        "warning": { "const": "research_mode_approximate_availability" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experimentId", "reportChecksum", "artifactPath", "vizPath"],
+      "properties": {
+        "experimentId": { "type": "string", "minLength": 8 },
+        "reportChecksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "artifactPath": { "type": "string", "minLength": 1 },
+        "vizPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "hiddenUnits", "lookback", "epochs", "seed", "rebalance", "symbols"],
+      "properties": {
+        "backend": { "enum": ["reference", "pytorch", "jax", "tensorflow"] },
+        "hiddenUnits": { "type": "integer", "minimum": 1 },
+        "lookback": { "type": "integer", "minimum": 1 },
+        "epochs": { "type": "integer", "minimum": 1 },
+        "seed": { "type": "integer", "minimum": 0 },
+        "rebalance": { "enum": ["monthly", "quarterly"] },
+        "symbols": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 2,
+          "uniqueItems": true
+        }
+      }
+    },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "number" }
+      }
+    },
+    "resultRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategyName",
+        "isBaseline",
+        "oosNetSharpe",
+        "oosNetCagr",
+        "maxDrawdown",
+        "equityCurve",
+        "drawdown",
+        "returnDistribution",
+        "learningCurve"
+      ],
+      "properties": {
+        "strategyName": { "type": "string", "minLength": 1 },
+        "isBaseline": { "type": "boolean" },
+        "oosNetSharpe": { "type": "number" },
+        "oosNetCagr": { "type": "number" },
+        "maxDrawdown": { "type": "number" },
+        "equityCurve": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2 },
+        "drawdown": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2 },
+        "returnDistribution": { "type": "array", "items": { "type": "number" }, "minItems": 3 },
+        "learningCurve": { "type": "array", "items": { "$ref": "#/$defs/point" } }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    { "$ref": "#/$defs/response" }
+  ]
+}

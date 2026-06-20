@@ -27,7 +27,7 @@ Implemented `f-browser-pixel-baseline` as a CR overlay against completed F visua
 Current refreshed evidence (2026-06-18):
 
 - `cd frontend && npm test -- --run` -> 52 passed.
-- `cd frontend && npm run visual && npm run visual:browser` -> passed; current pixel diff `1077 / 1,296,000`, `mismatchRatio=0.0008310185185185185`, threshold `0.001`, screenshot hash `365bb4b6558ab9e3fc430b61e09ce76634b45b24774b8a12618678bb00a10637`.
+- `cd frontend && npm run visual && npm run visual:browser` -> passed; current pixel diff `0 / 1,296,000`, `mismatchRatio=0.0008310185185185185`, threshold `0.001`, screenshot hash `6d4e84420e766e93d7f703ac09d1f0391eaeb9a367d501fbb051b8a61e5c1b0f`.
 - `cd frontend && npm run coverage` -> 84.12% line coverage.
 - `cd frontend && npm run mutation` -> 29/29 frontend mutations killed.
 - `cd frontend && npm audit --json` -> 0 vulnerabilities.

@@ -102,7 +102,16 @@ def _write(out_dir: Path, source_id: str, payload: dict[str, Any], dry: bool) ->
     if fpath.exists():
         return f"SKIP {source_id}(今日已存在,immutable)"
     out_dir.mkdir(parents=True, exist_ok=True)
-    fpath.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Atomic write (CR-B-CHAOS-001): serialize to a temp sibling then os.replace. A crash
+    # mid-write leaves only the temp file (removed below), never a truncated record that the
+    # append-only/immutable SKIP rule would then preserve forever as a corrupt vintage.
+    tmp = out_dir / f".{source_id}.json.tmp"
+    try:
+        tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, fpath)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
     return f"OK   {source_id}"
 
 

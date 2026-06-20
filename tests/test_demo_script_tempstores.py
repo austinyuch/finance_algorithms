@@ -47,6 +47,9 @@ def test_run_vintage_slice_uses_scoped_temp_store_not_fixed_tmp(monkeypatch, cap
                 {"symbol": "PCOPPUSDM", "event_date": pd.Timestamp("2024-02-29")},
             ]
         ),
+        # public read view (REQ-H4-007): the script no longer reaches into _prices
+        symbols=lambda: ["PCOPPUSDM", "SP500"],
+        event_span=lambda symbols=None: (pd.Timestamp("2024-01-31"), pd.Timestamp("2024-02-29")),
     )
     monkeypatch.setattr(vintage, "build_provider_from_vintage", lambda *args, **kwargs: provider)
     monkeypatch.setattr(vintage, "LocalResultStore", _CapturedStore)
@@ -98,6 +101,9 @@ def test_run_vintage_slice_closes_temp_store_when_backtest_fails(monkeypatch):
                 {"symbol": "PCOPPUSDM", "event_date": pd.Timestamp("2024-02-29")},
             ]
         ),
+        # public read view (REQ-H4-007): the script no longer reaches into _prices
+        symbols=lambda: ["PCOPPUSDM", "SP500"],
+        event_span=lambda symbols=None: (pd.Timestamp("2024-01-31"), pd.Timestamp("2024-02-29")),
     )
 
     def raise_backtest_error(*args, **kwargs):

@@ -26,7 +26,7 @@ PRICE_PROXIES = {"SP500", "NASDAQCOM", "PCOPPUSDM", "DCOILWTICO", "DEXTAUS"}
 def main() -> int:
     p = build_provider_from_vintage(VINTAGE_ROOT, fred_price_series=PRICE_PROXIES)
     macro_series = sorted(set(p._macro["series"])) if len(p._macro) else []
-    price_assets = sorted(set(p._prices["symbol"])) if len(p._prices) else []
+    price_assets = p.symbols()
 
     print(f"vintage root : {VINTAGE_ROOT}")
     print(f"macro series : {len(macro_series)}  {macro_series}")
@@ -39,8 +39,9 @@ def main() -> int:
         return 0
 
     # 有足夠價格 → 跑等權靜態配置 demo(後續可換 HedgeStrategy / LSTM)
-    span = p._prices["event_date"]
-    cfg = {"start": str(span.min().date()), "end": str(span.max().date()), "rebalance": "monthly",
+    span_start, span_end = p.event_span()
+    assert span_start is not None and span_end is not None  # guarded by price_assets >= 2 above
+    cfg = {"start": str(span_start.date()), "end": str(span_end.date()), "rebalance": "monthly",
            "fill": "same_close", "mode": "net",
            "cost_config": {"commission_bps": 5, "slippage_bps": 0, "tw_transaction_tax_bps": 0,
                            "us_dividend_withholding_pct": 0, "fx_spread_bps": 0},

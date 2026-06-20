@@ -1035,6 +1035,55 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_multi_cycle_oos.py::test_provenance_records_universe_window_and_family_status"),
     ),
+    # CR-A0-CHAOS-001 + CR-B-CHAOS-001 invalid-market-data / snapshot-resilience guards.
+    MutationSpec(
+        name="a0-chaos-close-finite-positive-guard",
+        path="quantlab/engine/vectorized.py",
+        original="if not math.isfinite(value) or value <= 0.0:",
+        mutated="if False and (not math.isfinite(value) or value <= 0.0):",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_a0_2_engine_chaos.py::test_chaos_all_nan_close_does_not_fabricate_metrics",
+                      "tests/quantlab/test_a0_2_engine_chaos.py::test_chaos_negative_close_treated_as_missing"),
+    ),
+    MutationSpec(
+        name="a0-chaos-total-loss-drawdown-fillna",
+        path="quantlab/engine/metrics.py",
+        original="dd = (wealth / wealth.cummax() - 1.0).fillna(-1.0)",
+        mutated="dd = (wealth / wealth.cummax() - 1.0).fillna(0.0)",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_a0_2_engine_chaos.py::test_chaos_total_loss_path_metrics_bounded"),
+    ),
+    MutationSpec(
+        name="b-chaos-snapshot-atomic-write",
+        path="scripts/daily_snapshot.py",
+        original='tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")\n        os.replace(tmp, fpath)',
+        mutated='fpath.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")\n        pass',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/test_daily_snapshot_chaos.py::test_write_is_atomic_no_partial_or_temp_on_failure"),
+    ),
+    # CR-A0-CHAOS-001 downstream: a NaN/garbage-poisoned asset must fail sufficiency
+    # closed (drop out of the co-temporal universe) rather than silently enter the
+    # multi-cycle comparison at a fabricated weight once the engine drops its legs.
+    MutationSpec(
+        # H4-2: invalid rerun parameters must fail closed before any computation.
+        name="h4-rerun-validation-fail-closed-gate",
+        path="quantlab/showcase/rerun_service.py",
+        original='    if errors:\n        return _fail_closed(parameters, "; ".join(errors), reason="invalid_parameters")',
+        mutated='    if False and errors:\n        return _fail_closed(parameters, "; ".join(errors), reason="invalid_parameters")',
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_h4_live_rerun.py::test_run_rerun_invalid_params_fail_closed_no_rows"),
+    ),
+    MutationSpec(
+        # H4-1 moved the usable-close filter into the provider public view; the boundary
+        # is unchanged (sufficiency still drops a NaN-poisoned asset from the universe).
+        name="a0-chaos-asset-span-usable-close-filter",
+        path="quantlab/data/provider.py",
+        original='df = df[(close > 0.0) & (close != float("inf"))]',
+        mutated="df = df  # mutation: usable-close filter disabled",
+        test_command=("uv", "run", "pytest", "-q",
+                      "tests/quantlab/test_multi_cycle_oos.py::test_chaos_nan_closes_do_not_crash",
+                      "tests/quantlab/test_h4_provider_view.py::test_pbt_usable_panel_never_returns_invalid_close"),
+    ),
 )
 
 
@@ -1074,6 +1123,15 @@ def run_mutation(root: Path, spec: MutationSpec) -> bool:
     purge_python_bytecode(root)
     try:
         result = subprocess.run(spec.test_command, cwd=root)
+        # pytest exit 5 == "no tests collected": a stale/renamed selector matches nothing,
+        # so the mutation is NOT actually exercised. The old `returncode != 0` heuristic
+        # miscounted this as KILLED (a false-green that let mutation-anchor rot hide —
+        # see ISSUE-MUT-RUNNER-FALSEGREEN-001 / ISSUE-MUT-GATE-ROT-001). Fail closed.
+        if result.returncode == 5:
+            raise ValueError(
+                f"{spec.name}: test command collected 0 tests (stale selector?) — "
+                f"cannot validate this mutation: {' '.join(spec.test_command)}"
+            )
         killed = result.returncode != 0
         status = "KILLED" if killed else "SURVIVED"
         print(f"{spec.name}: {status}")

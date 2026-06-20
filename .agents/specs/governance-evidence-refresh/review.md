@@ -27,7 +27,7 @@
 - `uv run lint-imports` -> KEPT.
 - `cd frontend && npm test -- --run` -> 52 passed.
 - `cd frontend && npm run build && npm run smoke && npm run visual && npm run visual:browser` -> PASS.
-- Browser visual diff -> `1077 / 1,296,000` mismatched pixels, threshold `0.001`.
+- Browser visual diff -> `0 / 1,296,000` mismatched pixels, threshold `0.001`.
 
 ## Acceptance Status
 

@@ -38,12 +38,12 @@ def exit_code_for(result: Mapping[str, Any]) -> int:
 
 
 def _cotemporal_dates(provider: Any, symbols: Sequence[str]) -> list[pd.Timestamp]:
-    prices = provider._prices
-    present = set(prices["symbol"].unique())
+    panel = provider.price_panel()
+    present = set(provider.symbols())
     requested = [s for s in symbols if s in present]
     if len(requested) < 2:
         return []
-    date_sets = [set(prices.loc[prices["symbol"] == s, "event_date"]) for s in requested]
+    date_sets = [set(panel.loc[panel["symbol"] == s, "event_date"]) for s in requested]
     common = sorted(set.intersection(*date_sets))
     return [pd.Timestamp(d) for d in common]
 
@@ -119,7 +119,8 @@ def run_experiment(
     """Run one parameterized experiment; fail closed on insufficient co-temporal data."""
     out_path, viz_path, registry_path = Path(out_path), Path(viz_path), Path(registry_path)
     dates = _cotemporal_dates(provider, symbols)
-    requested = sorted({s for s in symbols if any(provider._prices["symbol"] == s)})
+    present = set(provider.symbols())
+    requested = sorted({s for s in symbols if s in present})
 
     if len(requested) < 2 or len(dates) < _MIN_COTEMPORAL_MONTHS:
         return {
@@ -195,7 +196,11 @@ def run_experiment(
     return {
         "status": "computed",
         "artifact_path": str(out_path),
+        "viz_path": str(viz_path),
         "experiment_id": entry.experiment_id,
+        "backend": forecaster.backend,
+        "parameters": params,
+        "data_window": {"start": str(dates[0].date()), "end": str(dates[-1].date())},
         "performance_report": report,
         "leaderboard": leaderboard,
     }

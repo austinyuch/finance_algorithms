@@ -92,7 +92,7 @@ def _median_spacing_days(events: Any) -> float:
 
 def estimate_sampling_frequencies(provider: Any) -> dict[str, SamplingFrequency]:
     """Per-asset native sampling frequency from the PIT price panel's event_dates."""
-    prices = provider._prices
+    prices = provider.price_panel()
     out: dict[str, SamplingFrequency] = {}
     if not len(prices):
         return out
@@ -126,12 +126,24 @@ class DataSufficiency:
 
 
 def _asset_spans(provider: Any) -> dict[str, tuple[Any, Any]]:
-    """Per-asset (earliest, latest) event_date from the PIT price panel."""
-    prices = provider._prices
+    """Per-asset (earliest, latest) event_date over rows with *usable* closes.
+
+    A row whose ``close`` is non-finite (NaN/±inf) or non-positive is invalid
+    market data, not a tradable price — the same boundary the A0 engine enforces
+    in ``VectorizedEngine._close`` (CR-A0-CHAOS-001). Spans (and therefore the
+    co-temporal universe) are computed from usable rows only, so an asset with no
+    usable closes contributes no span and drops out of the universe: a
+    NaN/garbage-poisoned asset fails sufficiency *closed* instead of silently
+    entering the comparison at a fabricated weight while the engine drops its legs.
+    """
+    # usable (finite, positive) closes only — the provider applies the same boundary as
+    # VectorizedEngine._close (CR-A0-CHAOS-001), so a NaN/garbage-poisoned asset has no
+    # span and drops out of the co-temporal universe (fails sufficiency closed).
+    usable = provider.price_panel(usable_only=True)
     spans: dict[str, tuple[Any, Any]] = {}
-    if not len(prices):
+    if not len(usable):
         return spans
-    for sym, grp in prices.groupby("symbol"):
+    for sym, grp in usable.groupby("symbol"):
         events = grp["event_date"]
         spans[str(sym)] = (events.min(), events.max())
     return spans
@@ -203,8 +215,7 @@ def assess_data_sufficiency(
     spans = _asset_spans(provider)
     assets = tuple(sorted(spans))
     if assets:
-        prices = provider._prices
-        start, end = prices["event_date"].min(), prices["event_date"].max()
+        start, end = provider.event_span()
         span_months = round((end - start).days / 30.4375, 4)
         start_s, end_s = str(start.date()), str(end.date())
     else:
@@ -264,8 +275,8 @@ def _oos_net_sharpe(result: Mapping[str, Any]) -> float:
 def _window(provider: Any, config: Mapping[str, Any]) -> tuple[str, str]:
     if config.get("start") and config.get("end"):
         return str(config["start"]), str(config["end"])
-    span = provider._prices["event_date"]
-    return str(span.min().date()), str(span.max().date())
+    start, end = provider.event_span()
+    return str(start.date()), str(end.date())
 
 
 def build_real_data_oos_report(
