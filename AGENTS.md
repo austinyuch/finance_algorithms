@@ -71,6 +71,17 @@ plus refreshed gate evidence. Keep readiness claims copied from
   change → `fail_closed`, 0-pixel diff vs
   `frontend/visual-baselines/interactive-research-failclosed.png`); readiness is
   copied from `.agents/specs/h-interactive-research-ui/review.md`.
+- **Deploy-coupling / count-refresh caveat (manual & review):** the committed
+  `docs/manual/**` + `docs/review/index.html` gate counts, the `docs/showcase.json`
+  payload, its `dataHash`, and the public-hosting proof are a single **deploy-coupled
+  snapshot** — refresh them only as part of a real GitHub Pages deploy, never as a
+  standalone "make the published number current" edit (it shifts the `dataHash`, flips
+  hosting to `configured_not_observed` until a post-deploy live re-probe, and the Copilot
+  PR reviewer + bilingual surface make it non-converging — see each guide's
+  "Deploy-coupling & count-refresh policy" section and the abandoned PR #131 in
+  `.agents/specs/NEXT_STEPS.md`). The **current validated** numbers live in the governance
+  SoT (`quantlab/TESTS.md`, `.agents/specs/{SPECS,RTM,NEXT_STEPS}.md`, `docs/FEATURES.md`);
+  the manual/review HTML reflect the last-deployed snapshot.
 - **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
   [`docs/EVIDENCE_METADATA_CONTRACT.md`](docs/EVIDENCE_METADATA_CONTRACT.md),
   [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](docs/DEMO_RISK_WARNING_TAXONOMY.md).
