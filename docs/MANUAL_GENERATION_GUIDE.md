@@ -215,3 +215,28 @@ require **no** port allocation and are the default evidence path.
    (repeat for zh-tw). Snap chromium is confined — write the screenshot **inside the
    repo** (`out/…`), not `/tmp`. Record the result + any visual residual in the
    "Visual gap inventory" section.
+
+## 8. Deploy-coupling & count-refresh policy (read before bumping numbers)
+
+The committed manual HTML/MD are a **deploy-coupled snapshot**: their gate counts
+(pytest full-suite, Python mutation, frontend), the `docs/showcase.json` payload, its
+`dataHash`, and the public-hosting proof move **together**, and only at an actual GitHub
+Pages deploy. Do **not** bump them as a standalone "make the published number current" edit:
+
+- Regenerating `docs/showcase.json` changes `dataHash = sha256(JSON.stringify(dashboard))`
+  (the evidence list is hashed), which flips `docs/deployment-manifest.json` /
+  `docs/public-hosting-probe.json` to `configured_not_observed` / `mismatched` until `main`
+  redeploys and a live re-probe (`scripts/refresh_public_hosting_proof.py --live`) observes
+  the new hash — an intrinsically **async, post-deploy** step.
+- A standalone count bump also rewrites the same number across EN+ZH × md+html plus the
+  guides, and the repo's Copilot PR reviewer (`required_conversation_resolution` on `main`)
+  re-reviews each push — empirically **non-converging** (the 2026-06-20 count-payload
+  attempt, PR #131, was abandoned for exactly this; see `.agents/specs/NEXT_STEPS.md`).
+
+**Authority for current numbers:** the governance SoT — `quantlab/TESTS.md`
+(`Python full suite **N passed**`, `Python mutation spot checks: N/N`),
+`.agents/specs/{SPECS,RTM,NEXT_STEPS}.md`, and `docs/FEATURES.md`. The manual HTML reflects
+the **last-deployed** snapshot; a documented delta (e.g. governance mutation count ahead of
+the deployed-snapshot payload) is expected, non-breaking, and reconciled at the next deploy
+— never by a standalone doc edit. Honest interim hosting state is `configured_not_observed`;
+never hand-write `proven`.
