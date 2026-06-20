@@ -108,7 +108,11 @@ honestly to the `reference` backend when torch is absent. Slice **H-3**
 (`h-interactive-research-ui`) adds an interactive parameter UI over those H artifacts on the
 showcase dashboard — a deterministic `static_replay` model-vs-baseline leaderboard with
 OOS-net-only ranking, approximate-data warnings, and fail-closed behavior on unsupported
-parameters or stale checksums (no live backend rerun yet). Frameworks stay behind
+parameters or stale checksums. Slice **H-4** (`h-live-rerun-api`) adds a real Python ASGI
+live-rerun backend (`live_compute` mode) over that UI — validated-parameter recompute via
+`run_experiment`, an honest static-replay fallback, a 5-state async lifecycle, and a charter
+guard against any actionable-signal surface (Implemented repo-side · Review PASSED;
+deploy-pending in the hosted demo). Frameworks stay behind
 `quantlab/models/dl/` (import-linter enforced); torch is an optional lane kept out of the
 default lock; everything is `no_alpha_claim`.
 
@@ -168,6 +172,6 @@ The implemented QuantLab foundation includes:
 - Epic E MLOps-lite: experiment registry, config catalog, checksum snapshot durability, registry→dashboard bridge, and a Tier3 readiness gate (local smoke evidence; production-tier proof fails closed without externally-proven serving/retraining/drift URIs).
 - Epic F showcase dashboard: ShowcaseReadAPI + Next.js static export, browser-visual diff, and a public-hosting probe — a canonical local result-store scenario (`local_demo_only`), not a live backend service.
 - Epic G alt-data slices: source-contract-first local CSV loader, two optional default-disabled slices.
-- Epic H deep-learning research lab: framework-free reference MLP forecaster (H-1), a real PyTorch training path behind a lazy backend boundary (H-2), and an interactive parameter UI over the H artifacts on the dashboard — deterministic `static_replay`, OOS-net-only ranking, fail-closed on unsupported parameters or stale checksums (H-3).
+- Epic H deep-learning research lab: framework-free reference MLP forecaster (H-1), a real PyTorch training path behind a lazy backend boundary (H-2), and an interactive parameter UI over the H artifacts on the dashboard — deterministic `static_replay`, OOS-net-only ranking, fail-closed on unsupported parameters or stale checksums (H-3), and a real Python ASGI live-rerun backend (`live_compute`) over that UI (H-4, repo-side · Review PASSED; deploy-pending).
 
 Every slice declares `no_alpha_claim`. See `.agents/specs/SPECS.md` and `.agents/specs/NEXT_STEPS.md` before starting new feature work.

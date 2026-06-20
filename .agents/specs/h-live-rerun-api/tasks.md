@@ -146,9 +146,17 @@
 - [x] `review.md` authored (Implemented · Review PASSED for the repo-side slice; residuals
   documented). `quantlab/TESTS.md` rows added; `ISSUE-DDD-PROVIDER-PRIVATE-001` resolved;
   `SPECS.md`/`NEXT_STEPS.md`/`ISSUE_LOG.md` updated; two new tech-debt/known-issue rows recorded.
+- [x] **Traceability propagation (repo-side, 2026-06-20 doc-reconcile pass).** Added the H-4
+  rows/notes to the non-count-coupled stakeholder surfaces — `RTM.md` (new H-4 traceability
+  row, **PASSED repo-side**), `docs/FEATURES.md` (new feature #12 + de-staled the H-1/H-3
+  "live rerun deferred" boundary notes), and `README.md` (Epic H paragraph + bullet) — each
+  marked Implemented repo-side · Review PASSED, **deploy-pending in the hosted demo**. The
+  manual/review HTML carry a footer deploy-pending note (PR #132); their body content stays
+  deployed-snapshot per the deploy-coupling policy.
 - [ ] **Deploy-coupled bump (bundled with `dev`→`main` + Pages deploy, mirrors CR-RDO-005):**
   static export/`dataHash`/visual re-pin (incl. the new live UI controls), pytest + Python/
-  frontend mutation count surfaces, `docs/FEATURES.md`, `RTM.md`, and a fresh public probe.
+  frontend mutation count surfaces, the manual/review HTML body H-4 content, and a fresh
+  public probe. (`docs/FEATURES.md` + `RTM.md` traceability rows already landed repo-side, above.)
 - [x] **Evidence (repo-side):** full Python suite (see closeout run), governance 25 green,
   mypy `quantlab/` clean, `lint-imports` KEPT, frontend **67 passed** (only the pre-existing
   `ISSUE-VRT-EXPORT-STALE-DEV-001` red), real-backend smoke 3 passed.
