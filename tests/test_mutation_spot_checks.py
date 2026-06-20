@@ -171,32 +171,32 @@ def test_public_hosting_mutations_share_proof_guard_and_stable_anchors():
         (
             "public-hosting-manifest-status-overclaim",
             "docs/deployment-manifest.json",
-            '"status": "configured_not_observed"',
             '"status": "proven"',
+            '"status": "configured_not_observed"',
         ),
         (
             "public-hosting-probe-status-overclaim",
             "docs/public-hosting-probe.json",
-            '"status": "configured_not_observed"',
             '"status": "proven"',
+            '"status": "configured_not_observed"',
         ),
         (
             "review-public-hosting-probe-status-overclaim",
             "docs/review/assets/public-hosting-probe.json",
-            '"status": "configured_not_observed"',
             '"status": "proven"',
+            '"status": "configured_not_observed"',
         ),
         (
             "public-hosting-manifest-hash-overclaim",
             "docs/deployment-manifest.json",
-            '"hashStatus": "mismatched"',
             '"hashStatus": "matched"',
+            '"hashStatus": "mismatched"',
         ),
         (
             "public-hosting-probe-hash-overclaim",
             "docs/public-hosting-probe.json",
-            '"hashStatus": "mismatched"',
             '"hashStatus": "matched"',
+            '"hashStatus": "mismatched"',
         ),
         (
             "public-hosting-probe-expected-hash-drift",
@@ -260,6 +260,41 @@ def test_run_mutation_returns_false_when_test_command_passes_and_restores(tmp_pa
 
     assert run_mutation(tmp_path, spec) is False
     assert target.read_text(encoding="utf-8") == "return left != right"
+
+
+def test_run_mutation_fails_closed_when_test_command_collects_zero(tmp_path):
+    """A stale/renamed selector (pytest exit 5 = no tests collected) must NOT be
+    counted as KILLED. Regression guard for ISSUE-MUT-RUNNER-FALSEGREEN-001."""
+    from scripts.run_mutation_spot_checks import MutationSpec, run_mutation
+
+    target = tmp_path / "sample.py"
+    target.write_text("return left != right", encoding="utf-8")
+    spec = MutationSpec(
+        name="demo",
+        path="sample.py",
+        original="return left != right",
+        mutated="return left == right",
+        test_command=(sys.executable, "-c", "raise SystemExit(5)"),  # pytest "no tests collected"
+    )
+
+    with pytest.raises(ValueError, match="collected 0 tests"):
+        run_mutation(tmp_path, spec)
+    # the original file is still restored even on the fail-closed path
+    assert target.read_text(encoding="utf-8") == "return left != right"
+
+
+def test_selected_specs_exclude_drops_named_mutations():
+    """--exclude removes named mutations (e.g. the torch-UAT-only ones) from the run."""
+    from scripts.run_mutation_spot_checks import MUTATIONS, selected_specs
+
+    torch = ["h2-torch-real-training", "h2-torch-reference-parity-seed"]
+    full = {spec.name for spec in selected_specs([])}
+    pruned = {spec.name for spec in selected_specs([], torch)}
+    assert full - pruned == set(torch)
+    assert len(pruned) == len(MUTATIONS) - len(torch)
+    # excluding an unknown name fails closed
+    with pytest.raises(ValueError, match="unknown excluded"):
+        selected_specs([], ["no-such-mutation"])
 
 
 def test_main_list_prints_mutation_names(capsys):

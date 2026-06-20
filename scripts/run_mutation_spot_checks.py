@@ -83,32 +83,32 @@ def _public_hosting_proof_mutations() -> tuple[MutationSpec, ...]:
         _public_hosting_proof_mutation(
             name="public-hosting-manifest-status-overclaim",
             path="docs/deployment-manifest.json",
-            original='"status": "configured_not_observed"',
-            mutated='"status": "proven"',
+            original='"status": "proven"',
+            mutated='"status": "configured_not_observed"',
         ),
         _public_hosting_proof_mutation(
             name="public-hosting-probe-status-overclaim",
             path="docs/public-hosting-probe.json",
-            original='"status": "configured_not_observed"',
-            mutated='"status": "proven"',
+            original='"status": "proven"',
+            mutated='"status": "configured_not_observed"',
         ),
         _public_hosting_proof_mutation(
             name="review-public-hosting-probe-status-overclaim",
             path="docs/review/assets/public-hosting-probe.json",
-            original='"status": "configured_not_observed"',
-            mutated='"status": "proven"',
+            original='"status": "proven"',
+            mutated='"status": "configured_not_observed"',
         ),
         _public_hosting_proof_mutation(
             name="public-hosting-manifest-hash-overclaim",
             path="docs/deployment-manifest.json",
-            original='"hashStatus": "mismatched"',
-            mutated='"hashStatus": "matched"',
+            original='"hashStatus": "matched"',
+            mutated='"hashStatus": "mismatched"',
         ),
         _public_hosting_proof_mutation(
             name="public-hosting-probe-hash-overclaim",
             path="docs/public-hosting-probe.json",
-            original='"hashStatus": "mismatched"',
-            mutated='"hashStatus": "matched"',
+            original='"hashStatus": "matched"',
+            mutated='"hashStatus": "mismatched"',
         ),
         _public_hosting_proof_mutation(
             name="public-hosting-probe-expected-hash-drift",
@@ -272,7 +272,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original="valid = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]",
         mutated="valid = [(ts, close) for ts, close in zip(timestamps, closes)]",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/test_daily_snapshot.py::test_pbt_yahoo_latest_event_date_matches_last_valid_close"),
+                      "tests/test_daily_snapshot.py::test_pbt_yahoo_event_date_uses_generated_close_sequence"),
     ),
     MutationSpec(
         name="showcase-claim-boundary",
@@ -432,7 +432,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original='"manifest_digest": _digest_payload(dict(manifest)),',
         mutated='"manifest_digest": "",',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
         name="e-tier3-gate-production-validator",
@@ -440,7 +440,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original="validate_production_serving_evidence(value)",
         mutated="None  # production serving validator bypassed by mutation",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_gate_rejects_spoofed_production_serving_map"),
+                      "tests/quantlab/test_e_production_evidence.py::test_tier3_gate_rejects_spoofed_production_serving_map"),
     ),
     MutationSpec(
         name="e-tier3-manifest-artifact-uri-gate",
@@ -448,15 +448,15 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original='if not missing and not _is_external_artifact_uri(str(manifest.get("artifact_uri") or "")):',
         mutated='if False and not missing and not _is_external_artifact_uri(str(manifest.get("artifact_uri") or "")):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_requires_external_manifest_artifact"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_triplet_requires_external_manifest_artifact"),
     ),
     MutationSpec(
         name="e-production-artifact-scheme-allowlist-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='and parsed.scheme in _EXTERNAL_ARTIFACT_URI_SCHEMES\n        and parsed.netloc',
         mutated='and parsed.scheme\n        and parsed.netloc',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_retraining_artifact_uri_requires_external_authority"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_retraining_artifact_uri_requires_external_authority"),
     ),
     MutationSpec(
         name="e-tier3-experiment-binding-gate",
@@ -464,7 +464,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original='if not missing and not _is_bound_to_manifest_experiment(manifest, evidence):',
         mutated='if False and not missing and not _is_bound_to_manifest_experiment(manifest, evidence):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_tier3_gate_rejects_production_evidence_for_different_experiment"),
+                      "tests/quantlab/test_e_production_evidence.py::test_tier3_gate_rejects_production_evidence_for_different_experiment"),
     ),
     MutationSpec(
         name="e-tier3-production-tier-gate",
@@ -472,7 +472,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
         original="    return True\n\n\ndef _is_bound_to_manifest_experiment(",
         mutated="    return False\n\n\ndef _is_bound_to_manifest_experiment(",
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
         name="e-serving-smoke-health-gate",
@@ -500,67 +500,67 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     ),
     MutationSpec(
         name="e-production-serving-endpoint-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(normalized):',
         mutated='if parsed.scheme == "https" and parsed.netloc and not _is_local_identity(normalized):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
         name="e-production-retraining-status-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if str(payload.get("status") or "").lower() != "completed":',
         mutated='if str(payload.get("status") or "").lower() == "completed":',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_triplet_satisfies_tier3_gate"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_triplet_satisfies_tier3_gate"),
     ),
     MutationSpec(
         name="e-production-external-proof-uri-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id):',
         mutated='if False and (parsed.scheme != "https" or not parsed.netloc or _is_local_identity(proof_id)):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_external_proof_id_requires_https_url"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_external_proof_id_requires_https_url"),
     ),
     MutationSpec(
         name="e-production-observed-at-utc-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(None):',
         mutated='if False and (parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(None)):',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_evidence_requires_utc_observed_at"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_evidence_requires_utc_observed_at"),
     ),
     MutationSpec(
         name="e-production-external-identity-uri-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='or parsed.scheme not in _EXTERNAL_IDENTITY_URI_SCHEMES\n        or not parsed.netloc',
         mutated='or not parsed.scheme\n        or not parsed.netloc',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_external_identities_require_uri_authority"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_external_identities_require_uri_authority"),
     ),
     MutationSpec(
         name="e-production-retraining-artifact-uri-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if not _is_external_artifact_uri(artifact_uri):\n        raise ValueError("production retraining evidence requires external artifact_uri")',
         mutated='if not artifact_uri:\n        raise ValueError("production retraining evidence requires artifact_uri")',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_retraining_artifact_uri_requires_external_authority"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_retraining_artifact_uri_requires_external_authority"),
     ),
     MutationSpec(
         name="e-production-drift-threshold-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='threshold = _require_positive_threshold(payload.get("threshold"), "production drift monitoring evidence")',
         mutated='threshold = float(payload.get("threshold", 0.0))',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_pbt_production_drift_monitoring_requires_positive_threshold"),
+                      "tests/quantlab/test_e_production_evidence.py::test_pbt_production_drift_monitoring_requires_positive_threshold"),
     ),
     MutationSpec(
         name="e-production-digest-format-gate",
-        path="quantlab/mlops/experiment_registry.py",
+        path="quantlab/mlops/production_evidence.py",
         original='if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest.lower()):',
         mutated='if not digest:',
         test_command=("uv", "run", "pytest", "-q",
-                      "tests/quantlab/test_e_1_experiment_registry.py::test_production_evidence_validators_reject_handwritten_short_digests"),
+                      "tests/quantlab/test_e_production_evidence.py::test_production_evidence_validators_reject_handwritten_short_digests"),
     ),
     MutationSpec(
         name="e-tier3-cli-serving-validator",
@@ -765,7 +765,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-mutation-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="current suite is governed by the latest evidence row above (**118/118 configured/killed**, including the H deep-learning research lab OOS-net-ranking / no-alpha-claim / honest-backend-fallback guards, CR-RDO-005 multi-cycle multi-asset OOS-net guards, CR-B21 historical-backfill honesty-boundary guard, CR-RDO-004 real-data OOS sampling-frequency guard, CR-A0 event replay, and cross-spec governance mutations)",
+        original="current suite is governed by the latest evidence row above (**123/123 configured/killed**, including the H deep-learning research lab OOS-net-ranking / no-alpha-claim / honest-backend-fallback guards, CR-RDO-005 multi-cycle multi-asset OOS-net guards, CR-B21 historical-backfill honesty-boundary guard, CR-RDO-004 real-data OOS sampling-frequency guard, CR-A0 event replay, and cross-spec governance mutations)",
         mutated="current suite kills 6/6 configured mutations",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -773,8 +773,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-python-count-regression",
         path=".agents/specs/RTM.md",
-        original="current registries use 424 suite evidence",
-        mutated="current registries use 275 suite evidence",
+        original="current registries use default-root **435 passed, 2 skipped** evidence",
+        mutated="current registries use default-root **275 passed, 2 skipped** evidence",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
     ),
@@ -789,7 +789,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-stale-import-linter-count-regression",
         path=".agents/specs/NEXT_STEPS.md",
-        original="`uv run lint-imports` → KEPT over 87 files / 237 dependencies",
+        original="`uv run lint-imports` → KEPT over 88 files / 242 dependencies",
         mutated="`uv run lint-imports` → KEPT over 75 files / 186 dependencies",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_governance_surfaces_do_not_publish_stale_gate_counts"),
@@ -942,7 +942,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="governance-test-registry-count-drift",
         path=".agents/specs/TESTS.md",
-        original="Python F 19 passed",
+        original="Python F 28 passed",
         mutated="Python F 11 passed",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_quantlab_test_registry_governance_rows_match_current_test_inventory"),
@@ -950,8 +950,8 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="mutation-test-registry-count-drift",
         path="quantlab/TESTS.md",
-        original="test_mutation_spot_checks` | mutation runner apply/restore PBT, ambiguity rejection, killed/survived behavior, bytecode purge, CLI smoke, machine-readable JSON report summary, A0 event replay mutation listing, root Torch dependency, scheduled observer, E production-tier gate, E production probe, and E readiness CLI mutation listing | A0 mutation automation + CR-A0 event replay + B/F/G mutation registry + ops-visual-drift-artifacts + a-torch-default-dependency-isolation + b-scheduled-run-observer + e-tier3-production-evidence-gate + e-tier3-production-probes + e-tier3-readiness-proof-cli | 10 pass |",
-        mutated="test_mutation_spot_checks` | mutation runner apply/restore PBT, ambiguity rejection, killed/survived behavior, bytecode purge, CLI smoke, machine-readable JSON report summary, A0 event replay mutation listing, root Torch dependency, scheduled observer, E production-tier gate, E production probe, and E readiness CLI mutation listing | A0 mutation automation + CR-A0 event replay + B/F/G mutation registry + ops-visual-drift-artifacts + a-torch-default-dependency-isolation + b-scheduled-run-observer + e-tier3-production-evidence-gate + e-tier3-production-probes + e-tier3-readiness-proof-cli | 9 pass |",
+        original="--exclude) | 13 pass |",
+        mutated="--exclude) | 12 pass |",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_quantlab_test_registry_governance_rows_match_current_test_inventory"),
     ),
@@ -966,7 +966,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-frontend-count-shorthand-regression",
         path="docs/review/index.html",
-        original="<b>46</b><span>frontend tests passing</span>",
+        original="<b>52</b><span>frontend tests passing</span>",
         mutated="<b>29</b><span>frontend tests passing</span>",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
@@ -974,7 +974,7 @@ MUTATIONS: tuple[MutationSpec, ...] = (
     MutationSpec(
         name="review-frontend-coverage-artifact-drift",
         path="docs/review/assets/gate-frontend-coverage.txt",
-        original="F Next.js line coverage 90.00%",
+        original="F Next.js line coverage 84.12%",
         mutated="F Next.js line coverage 88.00%",
         test_command=("uv", "run", "pytest", "-q",
                       "tests/quantlab/test_governance_guards.py::test_current_review_gate_transcripts_match_published_evidence"),
@@ -1107,14 +1107,21 @@ def purge_python_bytecode(root: Path) -> None:
         shutil.rmtree(cache_dir, ignore_errors=True)
 
 
-def selected_specs(names: Sequence[str]) -> list[MutationSpec]:
+def selected_specs(names: Sequence[str], excludes: Sequence[str] = ()) -> list[MutationSpec]:
     if not names:
-        return list(MUTATIONS)
-    wanted = set(names)
-    found = [spec for spec in MUTATIONS if spec.name in wanted]
-    missing = wanted - {spec.name for spec in found}
-    if missing:
-        raise ValueError(f"unknown mutation(s): {', '.join(sorted(missing))}")
+        found = list(MUTATIONS)
+    else:
+        wanted = set(names)
+        found = [spec for spec in MUTATIONS if spec.name in wanted]
+        missing = wanted - {spec.name for spec in found}
+        if missing:
+            raise ValueError(f"unknown mutation(s): {', '.join(sorted(missing))}")
+    if excludes:
+        excluded = set(excludes)
+        unknown = excluded - {spec.name for spec in MUTATIONS}
+        if unknown:
+            raise ValueError(f"unknown excluded mutation(s): {', '.join(sorted(unknown))}")
+        found = [spec for spec in found if spec.name not in excluded]
     return found
 
 
@@ -1168,6 +1175,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="list available mutation names")
     parser.add_argument("--only", action="append", default=[], help="run one mutation by name; repeatable")
+    parser.add_argument("--exclude", action="append", default=[],
+                        help="skip a mutation by name (e.g. torch-UAT-only); repeatable")
     parser.add_argument("--report-json", type=Path, help="write machine-readable mutation summary JSON")
     args = parser.parse_args(argv)
 
@@ -1177,7 +1186,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     root = Path(__file__).resolve().parents[1]
-    specs = selected_specs(args.only)
+    specs = selected_specs(args.only, args.exclude)
     results = [run_mutation(root, spec) for spec in specs]
     if args.report_json:
         write_report(args.report_json, build_report(specs, results))
