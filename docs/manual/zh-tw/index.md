@@ -153,7 +153,7 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 > - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；public hosting 現為 `proven` / `matched`，deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`，在 2026-06-18 `main` 部署之後（`docs/public-hosting-probe.json`）
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`、`.agents/specs/f-public-static-showcase/review.md`、`docs/deployment-manifest.json`
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
-> - 已解決：visual diff 為 repo-baseline pixel-backed（`1077 / 1,296,000`
+> - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
 >   mismatched pixels，threshold `0.001`），export readiness 面板現回報
 >   `visualRegression=proven`（CR-FPS-009）。Public-hosting probe 現觀測到 HTTP 200
 >   與 manifest-contract metadata，且 deployed hash 相符
@@ -409,7 +409,7 @@ commit 的 VRT baseline `frontend/visual-baselines/interactive-research-failclos
 >   `.agents/specs/h-interactive-research-ui/requirements.md`
 > - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 52 tests
 >   pass、coverage 84.12%、`npm run e2e:interactive` 通過（真實 Chromium
->   `computed`→`fail_closed`、0-pixel VRT）、browser visual diff `1077 / 1,296,000`
+>   `computed`→`fail_closed`、0-pixel VRT）、browser visual diff `0 / 1,296,000`
 >   低於 threshold `0.001`，H-3 mutations `frontend-h3-interactive-claim-boundary`
 >   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
 >   皆 killed。Public Pages parity 現為 `proven` — dev squash-merge 進 `main`（`49a4510`）後
@@ -486,7 +486,7 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；每次 dashboard `dataHash` 刷新後 branch-local parity 為 `configured_not_observed`，直到 Pages 服務後於部署時重新證明 — 目前對 H-3 `dataHash c33da57d…` 在 2026-06-18 `main` 部署後為 **`proven`**。
-- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`1077 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
+- **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`0 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
 
