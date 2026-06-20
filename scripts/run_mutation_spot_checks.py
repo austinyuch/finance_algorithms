@@ -1123,6 +1123,15 @@ def run_mutation(root: Path, spec: MutationSpec) -> bool:
     purge_python_bytecode(root)
     try:
         result = subprocess.run(spec.test_command, cwd=root)
+        # pytest exit 5 == "no tests collected": a stale/renamed selector matches nothing,
+        # so the mutation is NOT actually exercised. The old `returncode != 0` heuristic
+        # miscounted this as KILLED (a false-green that let mutation-anchor rot hide —
+        # see ISSUE-MUT-RUNNER-FALSEGREEN-001 / ISSUE-MUT-GATE-ROT-001). Fail closed.
+        if result.returncode == 5:
+            raise ValueError(
+                f"{spec.name}: test command collected 0 tests (stale selector?) — "
+                f"cannot validate this mutation: {' '.join(spec.test_command)}"
+            )
         killed = result.returncode != 0
         status = "KILLED" if killed else "SURVIVED"
         print(f"{spec.name}: {status}")
