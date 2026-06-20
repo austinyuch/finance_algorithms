@@ -71,7 +71,7 @@
   <section class="card" id="start">
     <h2>快速開始 / Starter Assets</h2>
     <pre>uv sync                      <span style="color:#7d90b0"># Python 3.13 依賴</span>
-uv run pytest -q             <span style="color:#7d90b0"># 預期 435 passed, 2 skipped</span>
+uv run pytest -q             <span style="color:#7d90b0"># 預期 486 passed</span>
 cd frontend &amp;&amp; npm install   <span style="color:#7d90b0"># Next.js 依賴</span></pre>
     <p>已 commit 的 seed／樣本資料：</p>
     <ul>
@@ -279,7 +279,7 @@ data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
       <li><b>Public hosting 在 H-3 部署後已重新證明：</b>dev lane squash-merge 進 <code>main</code>（<code>49a4510</code>），Pages 建置後 live probe 相符 deployed==expected <code>dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…</code>（<code>status=proven</code> / <code>matched</code>，觀測於 <code>2026-06-18T07:47Z</code>；committed proof 經 <code>scripts/refresh_public_hosting_proof.py --live</code> 刷新）。較舊的 <code>e5794260…</code> / <code>0f170441…</code> hosting proof 只保留為 historical point-in-time evidence；dashboard payload 的 <code>publicHosting</code> self-claim 依設計維持 <code>not_proven</code>。</li>
       <li><b>Hosting-freshness time-bomb 已移除（CR-FPS-011）：</b>freshness 以注入的 <code>asof</code> 做 deterministic 分類；過期的已 commit 證據降級為 <code>configured_not_observed</code>，而非在 re-prove ~24h 後讓 build/suite crash。</li>
     </ul>
-    <p><b>更早已解決（2026-06-11 → 2026-06-13）：</b>預設 root 測試目前 <b>435 passed, 2 skipped</b>；<b>430 passed</b> 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped source set 上 clean；mutation spot checks 維持 118/118 configured/killed，涵蓋 CR-RDO-004 sampling-frequency、governance stale-evidence、public-hosting drift、payload-sync、import-linter drift、E production evidence、source-quorum、proof replay 與 Stooq fail-closed guards；frontend mutation 29/29 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity。Browser visual、pixel diff、source-quorum 與 Stooq restoration proof 仍已記錄；public-hosting parity 現為 <code>proven</code> / <code>matched</code>，對 H-3 <code>dataHash c33da57d…</code> 在 2026-06-18 <code>main</code> 部署後。</p>
+    <p><b>更早已解決（2026-06-11 → 2026-06-13）：</b>預設 root 測試目前 <b>486 passed</b>；<b>430 passed</b> 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped source set 上 clean；mutation spot checks 維持 118/118 configured/killed，涵蓋 CR-RDO-004 sampling-frequency、governance stale-evidence、public-hosting drift、payload-sync、import-linter drift、E production evidence、source-quorum、proof replay 與 Stooq fail-closed guards；frontend mutation 29/29 killed，包含 <code>frontend-smoke-html-api-parity-regression</code>，因此 local smoke 會檢查 HTML/API payload parity。Browser visual、pixel diff、source-quorum 與 Stooq restoration proof 仍已記錄；public-hosting parity 現為 <code>proven</code> / <code>matched</code>，對 H-3 <code>dataHash c33da57d…</code> 在 2026-06-18 <code>main</code> 部署後。</p>
     <table>
       <tr><th>未解決視覺缺口</th><th>嚴重度</th><th>來源</th></tr>
       <tr><td>尚無 CI-managed visual baseline history（目前為 repo baseline）</td><td>Low</td><td>f-browser-pixel-baseline/review.md</td></tr>

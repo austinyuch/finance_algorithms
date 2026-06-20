@@ -26,7 +26,7 @@
 
 ```bash
 uv sync                      # install Python 3.13 deps
-uv run pytest -q             # sanity: expect 435 passed, 2 skipped
+uv run pytest -q             # sanity: expect 486 passed
 cd frontend && npm install   # frontend deps (Next.js)
 ```
 
@@ -515,7 +515,7 @@ caption), so there is no remaining visual residual.
 
 **Gaps resolved earlier (2026-06-11 → 2026-06-13):**
 
-- Default-root test suite is now **435 passed, 2 skipped**; the **430 passed** count remains only the H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped `quantlab/` source set, and mutation spot checks remain **118/118 configured/killed**, including the CR-RDO-004 sampling-frequency guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS public-hosting drift guards, stakeholder and app payload copy drift, import-linter count/formalization drift, governance registry row-count drift, E production evidence gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **29/29 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
+- Default-root test suite is now **486 passed**; the **430 passed** count remains only the H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped `quantlab/` source set, and mutation spot checks remain **118/118 configured/killed**, including the CR-RDO-004 sampling-frequency guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS public-hosting drift guards, stakeholder and app payload copy drift, import-linter count/formalization drift, governance registry row-count drift, E production evidence gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **29/29 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
 - **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after each dashboard `dataHash` refresh, branch-local parity is `configured_not_observed` until Pages serves it, then re-proven on deploy — currently **`proven`** for the H-3 `dataHash c33da57d…` after the 2026-06-18 `main` deploy.

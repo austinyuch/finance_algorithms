@@ -1,8 +1,18 @@
-........................................................................ [ 16%]
-........................................................................ [ 33%]
-........................................................................ [ 49%]
-........................................................................ [ 66%]
-........................................................................ [ 82%]
-........................................................................ [ 99%]
-..                                                                       [100%]
-435 passed, 2 skipped in 239.46s (0:03:59)
+........................................................................ [ 14%]
+........................................................................ [ 29%]
+........................................................................ [ 44%]
+........................................................................ [ 59%]
+........................................................................ [ 74%]
+........................................................................ [ 88%]
+......................................................                   [100%]
+=============================== warnings summary ===============================
+tests/test_h4_rerun_smoke.py::test_real_backend_smoke_returns_fresh_compute
+  /home/ac/projects/finance_algorithms/.venv/lib/python3.13/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+tests/test_h4_rerun_smoke.py::test_real_backend_smoke_returns_fresh_compute
+  /home/ac/projects/finance_algorithms/.venv/lib/python3.13/site-packages/uvicorn/protocols/websockets/websockets_impl.py:17: DeprecationWarning: websockets.server.WebSocketServerProtocol is deprecated
+    from websockets.server import WebSocketServerProtocol
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+486 passed, 2 warnings in 275.53s (0:04:35)

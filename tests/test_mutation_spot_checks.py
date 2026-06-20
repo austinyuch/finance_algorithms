@@ -171,32 +171,32 @@ def test_public_hosting_mutations_share_proof_guard_and_stable_anchors():
         (
             "public-hosting-manifest-status-overclaim",
             "docs/deployment-manifest.json",
-            '"status": "proven"',
             '"status": "configured_not_observed"',
+            '"status": "proven"',
         ),
         (
             "public-hosting-probe-status-overclaim",
             "docs/public-hosting-probe.json",
-            '"status": "proven"',
             '"status": "configured_not_observed"',
+            '"status": "proven"',
         ),
         (
             "review-public-hosting-probe-status-overclaim",
             "docs/review/assets/public-hosting-probe.json",
-            '"status": "proven"',
             '"status": "configured_not_observed"',
+            '"status": "proven"',
         ),
         (
             "public-hosting-manifest-hash-overclaim",
             "docs/deployment-manifest.json",
-            '"hashStatus": "matched"',
             '"hashStatus": "mismatched"',
+            '"hashStatus": "matched"',
         ),
         (
             "public-hosting-probe-hash-overclaim",
             "docs/public-hosting-probe.json",
-            '"hashStatus": "matched"',
             '"hashStatus": "mismatched"',
+            '"hashStatus": "matched"',
         ),
         (
             "public-hosting-probe-expected-hash-drift",
