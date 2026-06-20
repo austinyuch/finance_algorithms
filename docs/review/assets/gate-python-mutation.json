@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "total": 118,
-  "killed": 118,
+  "total": 123,
+  "killed": 123,
   "survived": 0,
   "mutations": [
     {
@@ -474,6 +474,26 @@
     },
     {
       "name": "multi-cycle-oos-approximate-mode-marker",
+      "status": "killed"
+    },
+    {
+      "name": "a0-chaos-close-finite-positive-guard",
+      "status": "killed"
+    },
+    {
+      "name": "a0-chaos-total-loss-drawdown-fillna",
+      "status": "killed"
+    },
+    {
+      "name": "b-chaos-snapshot-atomic-write",
+      "status": "killed"
+    },
+    {
+      "name": "h4-rerun-validation-fail-closed-gate",
+      "status": "killed"
+    },
+    {
+      "name": "a0-chaos-asset-span-usable-close-filter",
       "status": "killed"
     }
   ]

@@ -424,6 +424,15 @@ def test_canonical_showcase_artifact_rejects_failed_browser_visual_evidence(tmp_
     with pytest.raises(ValueError, match="browser visual diff evidence is not passed"):
         build_canonical_dashboard_artifact(tmp_path / "work", evidence_root=evidence_root)
 
+    # a wrong artifactKind must be rejected (mutation guard: f-showcase-visual-diff-contract-gate)
+    wrong_kind_root = tmp_path / "wrong-kind-evidence"
+    _write_current_evidence_root(wrong_kind_root)
+    wrong_kind = json.loads((wrong_kind_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
+    wrong_kind["artifactKind"] = "not_browser_visual_diff"
+    (wrong_kind_root / "docs/browser-visual-diff.json").write_text(json.dumps(wrong_kind), encoding="utf-8")
+    with pytest.raises(ValueError, match="browser visual diff evidence kind is unsupported"):
+        build_canonical_dashboard_artifact(tmp_path / "wrong-kind-work", evidence_root=wrong_kind_root)
+
     missing_field_root = tmp_path / "missing-field-evidence"
     _write_current_evidence_root(missing_field_root)
     visual_diff = json.loads((missing_field_root / "docs/browser-visual-diff.json").read_text(encoding="utf-8"))
