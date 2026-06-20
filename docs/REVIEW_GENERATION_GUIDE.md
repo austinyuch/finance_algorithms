@@ -117,8 +117,9 @@ StaticWeights baseline — `no_alpha_claim`) plus the self-contained performance
 report SVG copied to `docs/review/assets/dl-experiment-torch.svg`. Regenerate via
 `scripts/run_dl_experiment.py --backend pytorch` (needs the optional torch lane).
 Honesty cap: deep history is the CR-B21 approximate backfill (NOT true PIT);
-public hosting stays `configured_not_observed` until Pages serves the new
-`dataHash` after a `main` deploy.
+public hosting is `proven` / `matched` for the deployed `dataHash` after the
+2026-06-18 `main` deploy (a later payload regen re-enters `configured_not_observed`
+until the next deploy re-proves; dashboard self-claim stays `not_proven` by contract).
 
 ### Epic H slice H-3 — interactive research UI
 
@@ -137,8 +138,8 @@ frontend mutations (`frontend-h3-interactive-claim-boundary`,
 `frontend-h3-e2e-failclosed-status-gate`). Honesty cap: `static_replay` over
 existing H artifacts only — OOS-net-only ranking with a visible baseline,
 `no_alpha_claim`, no live backend rerun, JAX/TF real training, GPU/native models,
-or production Tier3; public hosting stays `configured_not_observed` for expected
-`dataHash c33da57d…` until Pages serves the refreshed artifact.
+or production Tier3; public hosting is `proven` / `matched` for `dataHash c33da57d…`
+after the 2026-06-18 `main` deploy (dashboard self-claim stays `not_proven` by contract).
 
 ## Deploy-coupling & count-refresh policy (read before bumping numbers)
 
@@ -161,6 +162,8 @@ Pages deploy. Do **not** bump them as a standalone "make the published number cu
 `.agents/specs/{SPECS,RTM,NEXT_STEPS}.md`, and `docs/FEATURES.md`. The review HTML reflects
 the **last-deployed** snapshot; a documented delta (e.g. governance mutation count ahead of
 the deployed-snapshot payload) is expected, non-breaking, and reconciled at the next deploy.
-Honest interim hosting state is `configured_not_observed`; never hand-write `proven`. The
+Honest interim hosting state — while a regenerated payload is committed but not yet
+redeployed — is `configured_not_observed`; never hand-write `proven` (copy it from the
+live-probe JSON `docs/public-hosting-probe.json`). The
 `review.md` per-spec verdict remains the readiness authority — copy verdicts from it, never
 derive readiness from gate counts.

@@ -134,9 +134,10 @@ allocation. The committed dashboard screenshot in `docs/manual/assets/` is
 `dashboard-browser-visual.png`; the embedded static export is
 `dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
 
-Public hosting is currently `configured_not_observed` for expected
-`dataHash a3a487e1…` while Pages serves `e5794260…`; older `proven`
-observations remain point-in-time historical evidence only. The dashboard payload's
+Public hosting is `proven` / `matched` for deployed==expected
+`dataHash c33da57d…` after the 2026-06-18 `main` deploy (live-probed
+2026-06-18T07:47Z; a later payload regen re-enters `configured_not_observed`
+until the next deploy re-proves). The dashboard payload's
 own `publicHosting` self-claim stays `not_proven` by design — a static artifact
 cannot self-claim its deployment. Freshness is deterministic
 (CR-FPS-011): stale committed evidence downgrades to `configured_not_observed`
@@ -238,5 +239,6 @@ Pages deploy. Do **not** bump them as a standalone "make the published number cu
 `.agents/specs/{SPECS,RTM,NEXT_STEPS}.md`, and `docs/FEATURES.md`. The manual HTML reflects
 the **last-deployed** snapshot; a documented delta (e.g. governance mutation count ahead of
 the deployed-snapshot payload) is expected, non-breaking, and reconciled at the next deploy
-— never by a standalone doc edit. Honest interim hosting state is `configured_not_observed`;
-never hand-write `proven`.
+— never by a standalone doc edit. Honest interim hosting state — while a regenerated payload
+is committed but not yet redeployed — is `configured_not_observed`; never hand-write `proven`
+(copy it from the live-probe JSON `docs/public-hosting-probe.json`).
