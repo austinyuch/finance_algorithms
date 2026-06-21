@@ -137,11 +137,11 @@
 
 ### H4-11 — VRT for new lifecycle states (FMEA-H4-02) — deploy/browser-coupled
 
-- [ ] **Deferred (deploy/browser).** The Python socket smoke (H4-7) already proves FMEA-H4-01.
-  Browser VRT baselines for `computing`/`error` + the new live controls require the static
-  export + visual baseline re-pin (`ISSUE-VRT-EXPORT-STALE-DEV-001`), bundled with the deploy.
+- [x] **DONE (deployed 2026-06-21).** The Python socket smoke (H4-7) proved FMEA-H4-01 repo-side;
+  the static export + visual baseline re-pin (`ISSUE-VRT-EXPORT-STALE-DEV-001`, now resolved) and
+  browser VRT landed with the `main` Pages deploy at `dataHash 6c18e572…`.
 
-### H4-12 — Governance, review, and local-first closeout — repo-side ✅ DONE; deploy bump pending
+### H4-12 — Governance, review, and local-first closeout — ✅ DONE (deployed 2026-06-21)
 
 - [x] `review.md` authored (Implemented · Review PASSED for the repo-side slice; residuals
   documented). `quantlab/TESTS.md` rows added; `ISSUE-DDD-PROVIDER-PRIVATE-001` resolved;
@@ -150,13 +150,12 @@
   rows/notes to the non-count-coupled stakeholder surfaces — `RTM.md` (new H-4 traceability
   row, **PASSED repo-side**), `docs/FEATURES.md` (new feature #12 + de-staled the H-1/H-3
   "live rerun deferred" boundary notes), and `README.md` (Epic H paragraph + bullet) — each
-  marked Implemented repo-side · Review PASSED, **deploy-pending in the hosted demo**. The
-  manual/review HTML carry a footer deploy-pending note (PR #132); their body content stays
-  deployed-snapshot per the deploy-coupling policy.
-- [ ] **Deploy-coupled bump (bundled with `dev`→`main` + Pages deploy, mirrors CR-RDO-005):**
-  static export/`dataHash`/visual re-pin (incl. the new live UI controls), pytest + Python/
-  frontend mutation count surfaces, the manual/review HTML body H-4 content, and a fresh
-  public probe. (`docs/FEATURES.md` + `RTM.md` traceability rows already landed repo-side, above.)
+  marked Implemented · Review PASSED, **deployed to the hosted demo on 2026-06-21** (PRs #135/#136). The
+  manual/review HTML footers and bodies are reconciled to the deployed snapshot per the deploy-coupling policy.
+- [x] **Deploy-coupled bump — DONE (2026-06-21, PRs #135/#136):** static export/`dataHash` re-pin to
+  `6c18e572…`, visual baseline + browser VRT re-pin, pytest **478** + Python mutation **123/123** +
+  frontend **70** count surfaces, manual/review HTML reconciled, and a fresh `--live` public probe
+  (`proven`/`matched`). See [[deploy-coupled-payload-runbook]].
 - [x] **Evidence (repo-side):** full Python suite (see closeout run), governance 25 green,
   mypy `quantlab/` clean, `lint-imports` KEPT, frontend **67 passed** (only the pre-existing
   `ISSUE-VRT-EXPORT-STALE-DEV-001` red), real-backend smoke 3 passed.

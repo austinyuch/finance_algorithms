@@ -81,7 +81,7 @@ plus refreshed gate evidence. Keep readiness claims copied from
   "Deploy-coupling & count-refresh policy" section and the abandoned PR #131 in
   `.agents/specs/NEXT_STEPS.md`). The **current validated** numbers live in the governance
   SoT (`quantlab/TESTS.md`, `.agents/specs/{SPECS,RTM,NEXT_STEPS}.md`, `docs/FEATURES.md`);
-  the manual/review HTML reflect the last-deployed snapshot.
+  the manual/review HTML reflect the last-deployed snapshot. **Worked example (2026-06-21):** the H-4 deploy (PRs #135 payload+counts, #136 re-prove) advanced the snapshot to pytest **478** / frontend **70** / Python mutation **123** at `dataHash 6c18e572…` (public hosting `proven`/`matched`) — the step-by-step is in the agent memory `deploy-coupled-payload-runbook`.
 - **Shared contracts** — [`docs/FEATURES.md`](docs/FEATURES.md),
   [`docs/EVIDENCE_METADATA_CONTRACT.md`](docs/EVIDENCE_METADATA_CONTRACT.md),
   [`docs/DEMO_RISK_WARNING_TAXONOMY.md`](docs/DEMO_RISK_WARNING_TAXONOMY.md).
