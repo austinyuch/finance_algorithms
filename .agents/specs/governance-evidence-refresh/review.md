@@ -25,7 +25,7 @@
 - `uv run python scripts/run_mutation_spot_checks.py` -> 118/118 configured/killed.
 - `uv run mypy quantlab/ --ignore-missing-imports` -> success over the scoped QuantLab source set.
 - `uv run lint-imports` -> KEPT.
-- `cd frontend && npm test -- --run` -> 52 passed.
+- `cd frontend && npm test -- --run` -> 70 passed.
 - `cd frontend && npm run build && npm run smoke && npm run visual && npm run visual:browser` -> PASS.
 - Browser visual diff -> `0 / 1,296,000` mismatched pixels, threshold `0.001`.
 

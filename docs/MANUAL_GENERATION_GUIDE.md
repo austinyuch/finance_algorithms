@@ -103,10 +103,10 @@ Reason` on the asset block.
 Authoritative gates (recorded in the manual evidence panel):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py       # 435 passed (2026-06-18)
+uv run python scripts/capture_pytest_gate.py       # 478 passed (2026-06-18)
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean, 69 files
 uv run lint-imports                                # engine/data KEPT, 88 files / 242 dependencies
-(cd frontend && npm test && npm audit --omit=dev)  # 52 passed, 0 vulnerabilities
+(cd frontend && npm test && npm audit --omit=dev)  # 70 passed, 0 vulnerabilities
 ```
 
 ## 4. Evidence capture (Web UI lane — secondary)
@@ -134,10 +134,11 @@ allocation. The committed dashboard screenshot in `docs/manual/assets/` is
 `dashboard-browser-visual.png`; the embedded static export is
 `dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
 
-Public hosting is `proven` / `matched` for deployed==expected
-`dataHash c33da57d…` after the 2026-06-18 `main` deploy (live-probed
-2026-06-18T07:47Z; a later payload regen re-enters `configured_not_observed`
-until the next deploy re-proves). The dashboard payload's
+Public hosting for the committed payload (`dataHash 6c18e572…`) is
+`configured_not_observed` / `mismatched` (deploy-pending) — live-probed
+2026-06-20 against Pages, which still serves the prior `c33da57d…`; it re-proves
+to `proven` / `matched` after this lands and `main`→Pages redeploys
+(`scripts/refresh_public_hosting_proof.py --live`). The dashboard payload's
 own `publicHosting` self-claim stays `not_proven` by design — a static artifact
 cannot self-claim its deployment. Freshness is deterministic
 (CR-FPS-011): stale committed evidence downgrades to `configured_not_observed`

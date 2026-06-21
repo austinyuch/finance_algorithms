@@ -25,7 +25,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 435 passed, 2 skipped
+uv run pytest -q             # 健檢：預期 478 passed, 2 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -150,14 +150,14 @@ Regime**（risk_on，conf 0.60；GROWTH 62% / STEADY 38%）、**Rebalance**（3 
 視覺精緻度。Live `npm run dev` 才會套用 `app/globals.css`。
 
 > - Evidence Source: `live_screenshot`（chromium-headless）+ `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；public hosting 現為 `proven` / `matched`，deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`，在 2026-06-18 `main` 部署之後（`docs/public-hosting-probe.json`）
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL`（`f-demo-hardening/review.md`）；browser visual `PASSED`；已提交 payload（`dataHash 6c18e572…`）的 public hosting 為 `configured_not_observed` / `mismatched`（待部署）——已於 2026-06-20 對 Pages live-probe，線上仍服務先前的 `c33da57d…`；待本次合併且 `main`→Pages 重新部署後會重新證明為 `proven` / `matched`（`docs/public-hosting-probe.json`）
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`、`.agents/specs/f-public-static-showcase/review.md`、`docs/deployment-manifest.json`
 > - Dashboard 資料由本地 `LocalResultStore` / `ExperimentRegistry` scenario 生成（`no_alpha_claim`、`local_demo_only`），不是 live backend service。
 > - 已解決：visual diff 為 repo-baseline pixel-backed（`0 / 1,296,000`
 >   mismatched pixels，threshold `0.001`），export readiness 面板現回報
 >   `visualRegression=proven`（CR-FPS-009）。Public-hosting probe 現觀測到 HTTP 200
->   與 manifest-contract metadata，且 deployed hash 相符
->   （`status=proven`、deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`，在 2026-06-18 `main` 部署之後）；freshness 現為 deterministic，過期證據會降級
+>   與 manifest-contract metadata，但 deployed hash 不相符
+>   （`status=configured_not_observed`、expected `dataHash 6c18e5720c69ce322388e96a60097cd17b79b891b2cb824071f3cb542f879279…`、deployed 仍為先前的 `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` — 已於 2026-06-20 live-probe，待 `main`→Pages 重新部署）；freshness 現為 deterministic，過期證據會降級
 >   而非 crash（CR-FPS-011）。Dashboard payload 自身的 `publicHosting` self-claim
 >   依設計**維持 `not_proven`** — static artifact 不能自我宣稱其部署；`proven` 狀態
 >   僅存在於觀測到的 probe/manifest，且為 point-in-time。
@@ -407,14 +407,15 @@ commit 的 VRT baseline `frontend/visual-baselines/interactive-research-failclos
 >   PASSED（repo-side/local static-replay）》（`h-interactive-research-ui/review.md`）
 > - Source Ref：`.agents/specs/h-interactive-research-ui/review.md`、
 >   `.agents/specs/h-interactive-research-ui/requirements.md`
-> - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 52 tests
+> - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 70 tests
 >   pass、coverage 84.12%、`npm run e2e:interactive` 通過（真實 Chromium
 >   `computed`→`fail_closed`、0-pixel VRT）、browser visual diff `0 / 1,296,000`
 >   低於 threshold `0.001`，H-3 mutations `frontend-h3-interactive-claim-boundary`
 >   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
->   皆 killed。Public Pages parity 現為 `proven` — dev squash-merge 進 `main`（`49a4510`）後
->   Pages 服務該 artifact，probe 相符 deployed==expected `dataHash c33da57d…`（觀測於
->   `2026-06-18T07:47Z`）；儀表板 self-claim 依設計維持 `not_proven`。
+>   皆 killed。已提交 payload（`dataHash 6c18e572…`）的 public hosting 為
+>   `configured_not_observed` / `mismatched`（待部署）——已於 2026-06-20 對 Pages
+>   live-probe，線上仍服務先前的 `c33da57d…`；待本次合併且 `main`→Pages 重新部署後
+>   會重新證明為 `proven` / `matched`；儀表板 self-claim 依設計維持 `not_proven`。
 > - `MOCK_DOMINANT_EVIDENCE` — 對既有 H artifacts 的 `static_replay`（無 live
 >   backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3）；
 >   `no_alpha_claim`。
@@ -468,12 +469,13 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
   tolerant pixel-diff threshold gate 不變。
 - **Dashboard visual readiness 已 wire-through（CR-FPS-009）。** Export 的 readiness
   面板現由 repo-side browser visual diff 證據回報 `visualRegression=proven`（先前未接線）。
-- **Public hosting 在 H-3 部署後已重新證明。**
-  dev lane squash-merge 進 `main`（`49a4510`），GitHub Pages 建置後 live probe 相符
-  deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`
-  （`status=proven` / `matched`，`docs/deployment-manifest.json`、
-  `docs/public-hosting-probe.json`，觀測於 `2026-06-18T07:47Z`；committed proof 經
-  `scripts/refresh_public_hosting_proof.py --live` 刷新）。較舊的
+- **Public hosting 在最新 payload 重生後為待部署。**
+  已提交 payload（`dataHash 6c18e5720c69ce322388e96a60097cd17b79b891b2cb824071f3cb542f879279…`）的
+  public hosting 為 `configured_not_observed` / `mismatched`（`docs/deployment-manifest.json`、
+  `docs/public-hosting-probe.json`，觀測於 `2026-06-20T16:58Z`）——已對 Pages live-probe，
+  線上仍服務先前的 `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`；
+  待本次合併且 `main`→Pages 重新部署後，會以
+  `scripts/refresh_public_hosting_proof.py --live` 重新證明為 `proven` / `matched`。較舊的
   `e5794260…` / `0f170441…` hosting proof 只保留為 historical point-in-time evidence；
   dashboard payload 自身的 `publicHosting` self-claim 依設計仍為 `not_proven`。
 - **Hosting-freshness time-bomb 已移除（CR-FPS-011）。** Freshness 現以注入的 `asof`
@@ -482,10 +484,10 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 
 **更早已解決（2026-06-11 → 2026-06-13）：**
 
-- 預設 root 測試套件目前為 **435 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **118/118 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **29/29 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
+- 預設 root 測試套件目前為 **478 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **123/123 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **29/29 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
-- **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；每次 dashboard `dataHash` 刷新後 branch-local parity 為 `configured_not_observed`，直到 Pages 服務後於部署時重新證明 — 目前對 H-3 `dataHash c33da57d…` 在 2026-06-18 `main` 部署後為 **`proven`**。
+- **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；每次 dashboard `dataHash` 刷新後 branch-local parity 為 `configured_not_observed`，直到 Pages 服務後於部署時重新證明 — 目前對已提交 `dataHash 6c18e572…` 為 **`configured_not_observed`** / `mismatched`（待部署），線上仍服務先前的 `c33da57d…`（已於 2026-06-20 live-probe）。
 - **Visual diff 已改為 repo-baseline pixel-backed**（`browser-visual-diff.json`：`0 / 1,296,000` mismatched pixels，threshold `0.001`）— 解決先前 hash-equality 殘留，同時允許 gate 內的少量文字渲染差異。
 
 **未解決的視覺缺口：**
@@ -494,7 +496,7 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 |---|---|---|
 | 尚無 CI-managed visual baseline history（目前為 repo baseline） | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract 仍與 FRED/Yahoo/NOAA source-quorum proof 分開治理 | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`（靜態 artifact 無法自我宣稱部署）；外部 committed probe/manifest parity 現為 `proven` / `matched`，對 `dataHash c33da57d…` 在 2026-06-18 `main` 部署後 | by design | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
+| Dashboard payload `publicHosting` self-claim 依契約維持 `not_proven`（靜態 artifact 無法自我宣稱部署）；外部 committed probe/manifest parity 對已提交 `dataHash 6c18e572…` 為 `configured_not_observed` / `mismatched`（待部署，線上仍服務先前的 `c33da57d…`），待 `main`→Pages 重新部署後重新證明為 `proven` / `matched` | by design | `frontend/out/index.html`、`docs/public-hosting-probe.json` |
 | 真實資料 OOS 使用 `approximate_event_date`（非 true PIT）；具真實 vintage 歷史的 co-temporal 多資產 default universe 為後續工作 | Low | `real-data-oos-backtest/review.md` |
 | Vintage co-temporal 多資產 readiness 仍在累積（single-capture FRED；daily-vintage 回測延後） | Low | `run_vintage_slice.py` 輸出 |
 | Stooq source blocked（`ISSUE-B3-001`） | Low | `ISSUE_LOG.md` |

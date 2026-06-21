@@ -19,7 +19,7 @@ Overall: **8.9 / 10**.
 
 ## Verification Coverage
 
-- Current frontend suite: `npm test -- --run` -> 52 passed.
+- Current frontend suite: `npm test -- --run` -> 70 passed.
 - Current frontend coverage: `npm run coverage` -> 89.85% line coverage.
 - Current frontend mutation: `npm run mutation` -> 29/29 killed.
 - `npm run build` -> success.

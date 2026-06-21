@@ -27,7 +27,7 @@ to the frontend plus stakeholder assets.
 
 ## Verification
 
-- Unit/PBT/integration: `npm test -- --run` -> 52 passed.
+- Unit/PBT/integration: `npm test -- --run` -> 70 passed.
 - Line coverage: `npm run coverage` -> 89.85% lines overall.
 - Dependency audit: `npm audit --json` -> 0 vulnerabilities.
 - Mutation: `npm run mutation` -> 29/29 killed, including source metadata,
