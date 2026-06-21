@@ -155,7 +155,7 @@
 - [x] **Deploy-coupled bump — DONE (2026-06-21, PRs #135/#136):** static export/`dataHash` re-pin to
   `6c18e572…`, visual baseline + browser VRT re-pin, pytest **478** + Python mutation **123/123** +
   frontend **70** count surfaces, manual/review HTML reconciled, and a fresh `--live` public probe
-  (`proven`/`matched`). See [[deploy-coupled-payload-runbook]].
+  (`proven`/`matched`). See the deploy-coupling & count-refresh policy in `docs/{MANUAL,REVIEW}_GENERATION_GUIDE.md`.
 - [x] **Evidence (repo-side):** full Python suite (see closeout run), governance 25 green,
   mypy `quantlab/` clean, `lint-imports` KEPT, frontend **67 passed** (only the pre-existing
   `ISSUE-VRT-EXPORT-STALE-DEV-001` red), real-backend smoke 3 passed.
