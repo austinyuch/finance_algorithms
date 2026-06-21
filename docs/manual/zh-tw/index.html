@@ -54,6 +54,7 @@
   <a href="#f6">6 · 歷史回補</a>
   <a href="#f7">7 · 深度學習</a>
   <a href="#f8">8 · 互動研究</a>
+  <a href="#f9">9 · 即時重算</a>
   <h2>參考</h2>
   <a href="#gaps">視覺缺口盤點</a>
   <a href="../en/index.html">English version</a>
@@ -265,6 +266,18 @@ data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
     </div>
   </section>
 
+  <section class="card" id="f9">
+    <h2>流程 9 · 即時重算（Epic H，切片 H-4）</h2>
+    <p><b>誰／何時：</b>審閱者想 live 重跑 Epic H 實驗 — Interactive Research 面板現可從已驗證的參數觸發<b>真實 backend 重算</b>（<code>live_compute</code>），不再只是 H-3 的 <code>static_replay</code>。H-4 為 additive：在 H-3 面板之上作為第二種模式。</p>
+    <p><b>運作方式：</b>真實的 Python ASGI 即時重算 backend（<code>quantlab/showcase/rerun_service.py</code>）透過 <code>run_experiment</code> 重算 Epic H 實驗，回傳帶 checksum 的 <code>live_compute</code> artifact；Next.js proxy route（<code>app/api/experiment/rerun</code>）呼叫它，並在 backend 未啟動時提供誠實的 <b>static-replay fallback</b>。一個 <b>5-state</b> async 生命週期（<code>idle</code> / <code>computing</code> / <code>computed</code> / <code>fail_closed</code> / <code>error</code>）在 bounded client 上驅動 <code>LiveRerunStatus</code> 指示器。一個 public PIT-provider 讀取視圖曝露輸入且無 lookahead。</p>
+    <div class="alert">⚠️ <b>Charter 邊界：</b>H-4 僅為歷史 OOS-net 機制證據 — <b>無 actionable-signal surface</b>。charter guard 讓 actionable current-as-of signal lane（Lane 2）維持 deferred / charter-gated。<code>no_alpha_claim</code>；永不產生 buy/sell/actionable signal。</div>
+    <div class="evidence">
+      <span class="badge b-pass">PASS（Review PASSED · 已於 2026-06-21 部署）</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source：</b>live_command_output（real-backend uvicorn smoke，FMEA-H4-01）＋ report_artifact（帶 checksum 的 <code>live_compute</code> artifact） · <b>Coverage Tier：</b>hybrid · <b>Source Ref：</b>.agents/specs/h-live-rerun-api/review.md、docs/FEATURES.md（#12）<br>
+      <b>Captured：</b><code>test_h4_provider_view.py</code>（9）、<code>test_h4_live_rerun.py</code>（18）、<code>test_h4_rerun_smoke.py</code>（3 real-backend uvicorn smoke，FMEA-H4-01）、前端 <code>live-rerun</code> / <code>live-rerun-status</code>（18），以及 mutation <code>h4-rerun-validation-fail-closed-gate</code> 已 killed。Review PASSED 且已於 2026-06-21 部署到 hosted demo（deployed==expected <code>dataHash 6c18e572…</code>）。<code>no_alpha_claim</code> — 僅歷史 OOS-net 機制證據，無 actionable-signal surface。
+    </div>
+  </section>
+
   <section class="card" id="gaps">
     <h2>視覺缺口盤點</h2>
     <p><b>Render 驗證（2026-06-15，headless chromium 1440×2600）：</b>本手冊（en/zh）與 executive review 皆正常渲染 — 側邊導覽、hero、terminal code blocks、evidence caption 與 warning badge（<code>PASS</code>、<code>MOCK_DOMINANT_EVIDENCE</code>）皆完整，無破版 CSS 或缺失 asset。review 的 UX-flow 圖現已改為 <b>self-contained inline SVG</b>（可離線 / <code>file://</code> 渲染，無 CDN 或 client-side JS，並附 accessible 文字等價 caption），已無剩餘視覺殘留。</p>
@@ -292,7 +305,7 @@ data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
   </section>
 
   <footer>
-    生成於 2026-06-15 · H-3 互動研究流程新增於 2026-06-18 · 2026-06-20 校對（H-4 即時重算 API 已於 repo 端完成且 Review PASSED，將於下次部署上線）· 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
+    生成於 2026-06-15 · H-3 互動研究流程新增於 2026-06-18 · 2026-06-21 校對（H-4 即時重算 API Review PASSED，已於 2026-06-21 部署上線）· 來源：<code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>、<code>**/review.md</code>、<code>docs/FEATURES.md</code> · 見 <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>。
   </footer>
 </main>
 </div>

@@ -20,6 +20,7 @@
 | 研究多個景氣循環的研究者 | [流程 6 — 歷史回補與多週期研究](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
 | 訓練深度模型（真實 PyTorch）的研究者 | [流程 7 — 深度學習實驗](#流程-7--深度學習實驗epic-h真實-pytorch) |
 | 從 dashboard 探索 Epic H 的審閱者 | [流程 8 — 互動研究 UI](#流程-8--互動研究-uiepic-h切片-h-3) |
+| live 重跑 Epic H 實驗的審閱者 | [流程 9 — 即時重算](#流程-9--即時重算epic-h切片-h-4) |
 
 ## 快速開始 / Starter Assets
 
@@ -419,6 +420,41 @@ commit 的 VRT baseline `frontend/visual-baselines/interactive-research-failclos
 > - `MOCK_DOMINANT_EVIDENCE` — 對既有 H artifacts 的 `static_replay`（無 live
 >   backend rerun、JAX/TF 真實訓練、GPU/native models 或 production Tier3）；
 >   `no_alpha_claim`。
+
+---
+
+## 流程 9 — 即時重算（Epic H，切片 H-4）
+
+**誰／何時：** live 重跑 Epic H 實驗的審閱者。Interactive Research 面板現可從已驗證
+的參數觸發**真實 backend 重算**（`live_compute`），不再只是 H-3 的 `static_replay`。
+H-4 為 additive — 在 H-3 面板之上作為第二種模式。
+
+**運作方式：** 真實的 Python ASGI 即時重算 backend
+（`quantlab/showcase/rerun_service.py`）透過 `run_experiment` 重算 Epic H 實驗，
+回傳帶 checksum 的 `live_compute` artifact；Next.js proxy route
+（`app/api/experiment/rerun`）呼叫它，並在 backend 未啟動時提供誠實的
+**static-replay fallback**。一個 **5-state** async 生命週期
+（`idle` / `computing` / `computed` / `fail_closed` / `error`）在 bounded client
+上驅動 `LiveRerunStatus` 指示器。一個 public PIT-provider 讀取視圖曝露輸入且無
+lookahead。
+
+> **Charter 邊界：** H-4 僅為歷史 OOS-net 機制證據 — **無 actionable-signal
+> surface**。charter guard 讓 actionable current-as-of signal lane（Lane 2）維持
+> deferred / charter-gated。`no_alpha_claim`；永不產生 buy/sell/actionable
+> signal。
+
+> - Evidence Source：`live_command_output`（real-backend uvicorn smoke，
+>   FMEA-H4-01）＋ `report_artifact`（帶 checksum 的 `live_compute` artifact）
+> - Coverage Tier：`hybrid` · Readiness State：`PASS` —《Review PASSED · 已於
+>   2026-06-21 部署》（`h-live-rerun-api/review.md`）
+> - Source Ref：`.agents/specs/h-live-rerun-api/review.md`、`docs/FEATURES.md`（#12）
+> - Captured：`test_h4_provider_view.py`（9）、`test_h4_live_rerun.py`（18）、
+>   `test_h4_rerun_smoke.py`（3 real-backend uvicorn smoke，FMEA-H4-01）、前端
+>   `live-rerun` / `live-rerun-status`（18），以及 mutation
+>   `h4-rerun-validation-fail-closed-gate` 已 killed。已於 2026-06-21 部署到 hosted
+>   demo（deployed==expected `dataHash 6c18e572…`）。
+> - `MOCK_DOMINANT_EVIDENCE` — 僅歷史 OOS-net 機制證據，無 actionable-signal
+>   surface；`no_alpha_claim`。
 
 ---
 

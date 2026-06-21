@@ -189,6 +189,20 @@ pixels). Readiness is copied from `.agents/specs/h-interactive-research-ui/revie
 `static_replay` only — no live backend rerun, JAX/TF real training, GPU/native
 models, or production Tier3; `no_alpha_claim`.
 
+### Live rerun (Epic H slice H-4 — manual Flow 9)
+
+The manual now also covers **H-4 live rerun** as Flow 9 (added to all four manual
+files + the sidebar nav / audience quick-nav). It documents the additive
+`live_compute` mode: a real Python ASGI backend
+(`quantlab/showcase/rerun_service.py`) recomputes the experiment via
+`run_experiment` behind a Next.js proxy route (`app/api/experiment/rerun`) with an
+honest **static-replay fallback**, the 5-state `LiveRerunStatus` lifecycle, the
+public PIT-provider read view, and the charter boundary (historical OOS-net
+mechanism evidence only — no actionable-signal surface; `no_alpha_claim`).
+Readiness and the test/mutation roster are copied from
+`.agents/specs/h-live-rerun-api/review.md` (Review PASSED · deployed 2026-06-21)
+and `docs/FEATURES.md` (#12) — never from raw task counts.
+
 ## 5. Runtime governance note
 
 Any live, port-bound service (`next start`, `uvicorn`) must first obtain a
