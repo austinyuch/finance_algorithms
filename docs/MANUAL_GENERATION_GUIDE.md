@@ -134,13 +134,11 @@ allocation. The committed dashboard screenshot in `docs/manual/assets/` is
 `dashboard-browser-visual.png`; the embedded static export is
 `dashboard-static-export.html`; the `/api/showcase` payload is `showcase.json`.
 
-Public hosting for the committed payload (`dataHash 6c18e572…`) is
-`configured_not_observed` / `mismatched` (deploy-pending) — live-probed
-2026-06-20 against Pages, which still serves the prior `c33da57d…`; it re-proves
-to `proven` / `matched` after this lands and `main`→Pages redeploys
-(`scripts/refresh_public_hosting_proof.py --live`). The dashboard payload's
-own `publicHosting` self-claim stays `not_proven` by design — a static artifact
-cannot self-claim its deployment. Freshness is deterministic
+Public hosting is `proven` / `matched` for deployed==expected `dataHash 6c18e572…`
+after the 2026-06-21 `main` deploy (live-probed 2026-06-21T04:18Z via
+`scripts/refresh_public_hosting_proof.py --live`); the dashboard self-claim stays
+`not_proven` by static-artifact contract — a static artifact cannot self-claim its
+deployment. Freshness is deterministic
 (CR-FPS-011): stale committed evidence downgrades to `configured_not_observed`
 rather than crashing.
 
