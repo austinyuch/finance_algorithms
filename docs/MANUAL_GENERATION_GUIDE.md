@@ -103,10 +103,10 @@ Reason` on the asset block.
 Authoritative gates (recorded in the manual evidence panel):
 
 ```bash
-uv run python scripts/capture_pytest_gate.py       # 435 passed (2026-06-18)
+uv run python scripts/capture_pytest_gate.py       # 478 passed (2026-06-18)
 uv run mypy quantlab/ scripts/build_showcase_payload.py scripts/run_tsmc_hedge_slice.py scripts/run_vintage_slice.py scripts/scheduled_run_observer.py scripts/tier3_readiness_gate.py scripts/source_quorum_proof.py scripts/stooq_contract_proof.py scripts/run_real_data_oos_backtest.py --ignore-missing-imports # clean, 69 files
 uv run lint-imports                                # engine/data KEPT, 88 files / 242 dependencies
-(cd frontend && npm test && npm audit --omit=dev)  # 52 passed, 0 vulnerabilities
+(cd frontend && npm test && npm audit --omit=dev)  # 70 passed, 0 vulnerabilities
 ```
 
 ## 4. Evidence capture (Web UI lane — secondary)

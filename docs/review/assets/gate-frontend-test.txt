@@ -1,4 +1,4 @@
  RUN  v4.1.8 /home/ac/projects/finance_algorithms/frontend
- Test Files  7 passed (7)
-      Tests  52 passed (52)
-   Duration  673ms (transform 623ms, setup 0ms, import 1.22s, tests 624ms, environment 1ms)
+ Test Files  9 passed (9)
+      Tests  70 passed (70)
+   Duration  986ms (transform 582ms, setup 0ms, import 1.19s, tests 2.01s, environment 1ms)

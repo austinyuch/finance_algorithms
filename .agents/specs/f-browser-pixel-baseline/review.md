@@ -31,7 +31,7 @@ Live-demo readiness remains **CONDITIONAL / hybrid** because the dashboard uses 
 
 ## Verification Coverage
 
-- Focused frontend/public-demo tests are included in the current frontend suite: **52 passed**.
+- Focused frontend/public-demo tests are included in the current frontend suite: **70 passed**.
 - Frontend coverage: **84.12% line coverage**.
 - Frontend mutation: **29/29 killed**.
 - Browser visual smoke: **passed**, repo-baseline pixel diff `0 / 1,296,000`.

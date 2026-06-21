@@ -25,7 +25,7 @@
 
 ```bash
 uv sync                      # 安裝 Python 3.13 依賴
-uv run pytest -q             # 健檢：預期 435 passed, 2 skipped
+uv run pytest -q             # 健檢：預期 478 passed, 2 skipped
 cd frontend && npm install   # 前端依賴 (Next.js)
 ```
 
@@ -407,7 +407,7 @@ commit 的 VRT baseline `frontend/visual-baselines/interactive-research-failclos
 >   PASSED（repo-side/local static-replay）》（`h-interactive-research-ui/review.md`）
 > - Source Ref：`.agents/specs/h-interactive-research-ui/review.md`、
 >   `.agents/specs/h-interactive-research-ui/requirements.md`
-> - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 52 tests
+> - Captured：依 `h-interactive-research-ui/review.md`（2026-06-18）— 前端 70 tests
 >   pass、coverage 84.12%、`npm run e2e:interactive` 通過（真實 Chromium
 >   `computed`→`fail_closed`、0-pixel VRT）、browser visual diff `0 / 1,296,000`
 >   低於 threshold `0.001`，H-3 mutations `frontend-h3-interactive-claim-boundary`
@@ -482,7 +482,7 @@ caption 與 warning badge（`PASS`、`MOCK_DOMINANT_EVIDENCE`）皆完整，無�
 
 **更早已解決（2026-06-11 → 2026-06-13）：**
 
-- 預設 root 測試套件目前為 **435 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **118/118 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **29/29 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
+- 預設 root 測試套件目前為 **478 passed, 2 skipped**；**430 passed** 僅保留為 H-2 torch-enabled UAT / optional-lane 證據。Mypy 在目前 scoped `quantlab/` source set 上 clean；mutation spot checks 維持 **123/123 configured/killed**，包含 CR-RDO-004 sampling-frequency guard、root Torch dependency、stale governance evidence mutations 與 non-self-staling promotion-boundary guard、local-first CI default and skill-body guards、governance refresh review stale-evidence regression、CR-FPS public-hosting drift guards、stakeholder and app payload copy drift、import-linter count/formalization drift、governance registry row-count drift、E production evidence gates、CR-B12 scoped source-health overclaim 防護、CR-B18 broad source-quorum overclaim 防護、CR-B19 proof replay 防護，以及 CR-B20 Stooq proof exit/file replay 防護。Frontend mutation 目前 **29/29 killed**，包含 `frontend-smoke-html-api-parity-regression`，因此 local smoke 不只驗 API payload，也會檢查 HTML/API payload parity。
 - `docs/` 下首次 commit 的 manual/review 文件集。
 - **已擷取 live 瀏覽器截圖**（chromium-headless，`browser-visual.png`，狀態 `proven`）— 解決先前「無瀏覽器截圖」缺口。
 - **Public-hosting probe 已記錄 HTTP 200 與 deployed manifest contract metadata**（`public-hosting-probe.json`）；每次 dashboard `dataHash` 刷新後 branch-local parity 為 `configured_not_observed`，直到 Pages 服務後於部署時重新證明 — 目前對 H-3 `dataHash c33da57d…` 在 2026-06-18 `main` 部署後為 **`proven`**。
