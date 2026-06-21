@@ -21,6 +21,7 @@
 | A researcher studying multiple business cycles | [Flow 6 — Historical backfill & multi-cycle study](#flow-6--historical-backfill--multi-cycle-study-cr-b21) |
 | A researcher training a deep model (real PyTorch) | [Flow 7 — Deep-learning experiment](#flow-7--deep-learning-experiment-epic-h-real-pytorch) |
 | A reviewer exploring Epic H from the dashboard | [Flow 8 — Interactive research UI](#flow-8--interactive-research-ui-epic-h-slice-h-3) |
+| A reviewer re-running an Epic H experiment live | [Flow 9 — Live rerun](#flow-9--live-rerun-epic-h-slice-h-4) |
 
 ## Getting started / starter assets
 
@@ -445,6 +446,42 @@ pixels.
 > - `MOCK_DOMINANT_EVIDENCE` — `static_replay` over existing H artifacts (no live
 >   backend rerun, JAX/TF real training, GPU/native models, or production Tier3);
 >   `no_alpha_claim`.
+
+---
+
+## Flow 9 — Live rerun (Epic H, slice H-4)
+
+**Who/when:** A reviewer re-running an Epic H experiment live. The Interactive
+Research panel can now trigger a **real backend recompute** (`live_compute`) of
+the experiment from validated parameters, not just the H-3 `static_replay`. H-4
+is additive — it sits over the H-3 panel as a second mode.
+
+**How it works:** a real Python ASGI live-rerun backend
+(`quantlab/showcase/rerun_service.py`) recomputes the Epic H experiment via
+`run_experiment` and returns a checksummed `live_compute` artifact; a Next.js
+proxy route (`app/api/experiment/rerun`) calls it, with an honest
+**static-replay fallback** when the backend is not running. A **5-state** async
+lifecycle (`idle` / `computing` / `computed` / `fail_closed` / `error`) drives
+the `LiveRerunStatus` indicator over a bounded client. A public PIT-provider read
+view exposes the inputs with no lookahead.
+
+> **Charter boundary:** H-4 is historical OOS-net mechanism evidence only —
+> there is **no actionable-signal surface**. A charter guard keeps the actionable
+> current-as-of signal lane (Lane 2) deferred / charter-gated. `no_alpha_claim`;
+> no buy/sell/actionable signal is ever produced.
+
+> - Evidence Source: `live_command_output` (real-backend uvicorn smoke,
+>   FMEA-H4-01) + `report_artifact` (checksummed `live_compute` artifact)
+> - Coverage Tier: `hybrid` · Readiness State: `PASS` — *Review PASSED · deployed
+>   2026-06-21* (`h-live-rerun-api/review.md`)
+> - Source Ref: `.agents/specs/h-live-rerun-api/review.md`, `docs/FEATURES.md` (#12)
+> - Captured: `test_h4_provider_view.py` (9), `test_h4_live_rerun.py` (18),
+>   `test_h4_rerun_smoke.py` (3 real-backend uvicorn smoke, FMEA-H4-01), frontend
+>   `live-rerun` / `live-rerun-status` (18), and mutation
+>   `h4-rerun-validation-fail-closed-gate` killed. Deployed to the hosted demo on
+>   2026-06-21 (deployed==expected `dataHash 6c18e572…`).
+> - `MOCK_DOMINANT_EVIDENCE` — historical OOS-net mechanism evidence only, no
+>   actionable-signal surface; `no_alpha_claim`.
 
 ---
 

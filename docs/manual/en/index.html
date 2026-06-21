@@ -54,6 +54,7 @@
   <a href="#f6">6 · Historical backfill</a>
   <a href="#f7">7 · Deep-learning</a>
   <a href="#f8">8 · Interactive research</a>
+  <a href="#f9">9 · Live rerun</a>
   <h2>Reference</h2>
   <a href="#gaps">Visual gap inventory</a>
   <a href="../zh-tw/index.html">繁體中文版</a>
@@ -269,6 +270,18 @@ data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
     </div>
   </section>
 
+  <section class="card" id="f9">
+    <h2>Flow 9 · Live rerun (Epic H, slice H-4)</h2>
+    <p><b>Who/when:</b> a reviewer re-running an Epic H experiment live — the Interactive Research panel can now trigger a <b>real backend recompute</b> (<code>live_compute</code>) of the experiment from validated parameters, not just the H-3 <code>static_replay</code>. H-4 is additive: it sits over the H-3 panel as a second mode.</p>
+    <p><b>How it works:</b> a real Python ASGI live-rerun backend (<code>quantlab/showcase/rerun_service.py</code>) recomputes the Epic H experiment via <code>run_experiment</code> and returns a checksummed <code>live_compute</code> artifact; a Next.js proxy route (<code>app/api/experiment/rerun</code>) calls it, with an honest <b>static-replay fallback</b> when the backend is not running. A <b>5-state</b> async lifecycle (<code>idle</code> / <code>computing</code> / <code>computed</code> / <code>fail_closed</code> / <code>error</code>) drives the <code>LiveRerunStatus</code> indicator over a bounded client. A public PIT-provider read view exposes the inputs with no lookahead.</p>
+    <div class="alert">⚠️ <b>Charter boundary:</b> H-4 is historical OOS-net mechanism evidence only — there is <b>no actionable-signal surface</b>. A charter guard keeps the actionable current-as-of signal lane (Lane 2) deferred / charter-gated. <code>no_alpha_claim</code>; no buy/sell/actionable signal is ever produced.</div>
+    <div class="evidence">
+      <span class="badge b-pass">PASS (Review PASSED · deployed 2026-06-21)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
+      <b>Evidence Source:</b> live_command_output (real-backend uvicorn smoke, FMEA-H4-01) + report_artifact (checksummed <code>live_compute</code> artifact) · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> .agents/specs/h-live-rerun-api/review.md, docs/FEATURES.md (#12)<br>
+      <b>Captured:</b> <code>test_h4_provider_view.py</code> (9), <code>test_h4_live_rerun.py</code> (18), <code>test_h4_rerun_smoke.py</code> (3 real-backend uvicorn smoke, FMEA-H4-01), frontend <code>live-rerun</code> / <code>live-rerun-status</code> (18), and mutation <code>h4-rerun-validation-fail-closed-gate</code> killed. Review PASSED and deployed to the hosted demo on 2026-06-21 (deployed==expected <code>dataHash 6c18e572…</code>). <code>no_alpha_claim</code> — historical OOS-net mechanism evidence only, no actionable-signal surface.
+    </div>
+  </section>
+
   <section class="card" id="gaps">
     <h2>Visual gap inventory</h2>
     <p><b>Render validation (2026-06-15, headless chromium 1440×2600):</b> this manual (en/zh) and the executive review render cleanly — sidebar nav, hero, terminal code blocks, evidence captions and warning badges (<code>PASS</code>, <code>MOCK_DOMINANT_EVIDENCE</code>) intact, no broken CSS or missing assets. The review's UX-flow diagram is now a <b>self-contained inline SVG</b> (renders offline / <code>file://</code>, no CDN or client-side JS, with an accessible text-equivalent caption), so there is no remaining visual residual.</p>
@@ -296,7 +309,7 @@ data lineage : source=cr_b21_approximate_backfill  window 2018-01 .. 2022-12
   </section>
 
   <footer>
-    Generated 2026-06-15 · H-3 interactive-research flow added 2026-06-18 · reconciled 2026-06-20 (H-4 live-rerun API implemented repo-side &amp; Review PASSED; lands in the hosted demo at the next deploy) · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
+    Generated 2026-06-15 · H-3 interactive-research flow added 2026-06-18 · reconciled 2026-06-21 (H-4 live-rerun API Review PASSED; deployed to the hosted demo on 2026-06-21) · Sources: <code>.agents/specs/{SPECS,NEXT_STEPS,ISSUE_LOG,RTM}.md</code>, <code>**/review.md</code>, <code>docs/FEATURES.md</code> · See <a href="../../MANUAL_GENERATION_GUIDE.md">MANUAL_GENERATION_GUIDE.md</a>.
   </footer>
 </main>
 </div>
