@@ -144,6 +144,23 @@ or production Tier3; public hosting is `proven` / `matched` for deployed==expect
 via `scripts/refresh_public_hosting_proof.py --live`); the dashboard self-claim stays
 `not_proven` by static-artifact contract.
 
+### Epic H slice H-4 — live backend rerun API
+
+The review now also carries a **Live backend rerun API (H-4)** core-feature card,
+placed right after the H-3 card. Readiness and the test/mutation roster are copied
+from `.agents/specs/h-live-rerun-api/review.md` (**PASSED** · deployed 2026-06-21)
+and `docs/FEATURES.md` (#12) — never from raw task counts. The card describes the
+additive `live_compute` mode: a real Python ASGI backend
+(`quantlab/showcase/rerun_service.py`) recomputes the experiment via
+`run_experiment` behind a Next.js proxy route (`app/api/experiment/rerun`) with an
+honest static-replay fallback, the 5-state `LiveRerunStatus` lifecycle, the public
+PIT-provider read view, and the charter guard (no actionable-signal surface —
+historical OOS-net mechanism evidence only; `no_alpha_claim`). Evidence is
+`test_h4_provider_view` / `test_h4_live_rerun` / real-backend uvicorn smoke
+(FMEA-H4-01) + the frontend live-rerun tests + mutation
+`h4-rerun-validation-fail-closed-gate`. The H-3 card's boundary list no longer says
+"no live backend rerun" (it shipped as H-4).
+
 ## Deploy-coupling & count-refresh policy (read before bumping numbers)
 
 `docs/review/index.html` is a **deploy-coupled snapshot**: its gate counts (pytest
