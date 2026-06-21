@@ -156,14 +156,14 @@ intentionally unstyled — it proves render + content, not visual polish. The li
 `npm run dev` app applies `app/globals.css`.
 
 > - Evidence Source: `live_screenshot` (chromium-headless) + `static_export` + `canonical_local_result_store`
-> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; public hosting is now `proven` / `matched` for deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` after the 2026-06-18 `main` deploy (`docs/public-hosting-probe.json`)
+> - Coverage Tier: `hybrid` · Readiness State: `CONDITIONAL` (`f-demo-hardening/review.md`); browser visual `PASSED`; public hosting for the committed payload (`dataHash 6c18e572…`) is `configured_not_observed` / `mismatched` (deploy-pending) — live-probed 2026-06-20 against Pages, which still serves the prior `c33da57d…`; it re-proves to `proven` / `matched` after this lands and `main`→Pages redeploys (`docs/public-hosting-probe.json`)
 > - Source Ref: `.agents/specs/f-demo-hardening/review.md`, `.agents/specs/f-public-static-showcase/review.md`, `docs/deployment-manifest.json`
 > - Dashboard data is generated from a local `LocalResultStore` / `ExperimentRegistry` scenario (`no_alpha_claim`, `local_demo_only`), not a live backend service.
 > - Resolved: visual diff is repo-baseline pixel-backed (`0 / 1,296,000`
 >   mismatched pixels at threshold `0.001`) and the export readiness panel now
 >   reports `visualRegression=proven` (CR-FPS-009). Public-hosting probe now
->   observes HTTP 200 plus manifest-contract metadata with a matched deployed hash
->   (`status=proven`, deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` after the 2026-06-18 `main` deploy); freshness is
+>   observes HTTP 200 plus manifest-contract metadata but a mismatched deployed hash
+>   (`status=configured_not_observed`, expected `dataHash 6c18e5720c69ce322388e96a60097cd17b79b891b2cb824071f3cb542f879279…`, deployed still the prior `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…` — live-probed 2026-06-20, deploy-pending until `main`→Pages redeploys); freshness is
 >   deterministic and stale evidence downgrades rather than crashing (CR-FPS-011).
 >   The dashboard payload's own `publicHosting` self-claim **stays `not_proven`**
 >   by design — a static artifact cannot self-claim its deployment; the `proven`
@@ -438,9 +438,11 @@ pixels.
 >   `computed`→`fail_closed`, 0-pixel VRT), browser visual diff `0 / 1,296,000`
 >   under threshold `0.001`, H-3 mutations `frontend-h3-interactive-claim-boundary`
 >   / `frontend-h3-approximate-warning-gate` / `frontend-h3-e2e-failclosed-status-gate`
->   killed. Public Pages parity is now `proven` — after the dev squash-merge to
->   `main` (`49a4510`) Pages served the artifact and the probe matched deployed==expected
->   `dataHash c33da57d…` (observed `2026-06-18T07:47Z`); dashboard self-claim stays `not_proven`.
+>   killed. Public hosting for the committed payload (`dataHash 6c18e572…`) is
+>   `configured_not_observed` / `mismatched` (deploy-pending) — live-probed
+>   2026-06-20 against Pages, which still serves the prior `c33da57d…`; it
+>   re-proves to `proven` / `matched` after this lands and `main`→Pages redeploys;
+>   dashboard self-claim stays `not_proven`.
 > - `MOCK_DOMINANT_EVIDENCE` — `static_replay` over existing H artifacts (no live
 >   backend rerun, JAX/TF real training, GPU/native models, or production Tier3);
 >   `no_alpha_claim`.
@@ -500,12 +502,13 @@ caption), so there is no remaining visual residual.
 - **Dashboard visual readiness wired through (CR-FPS-009).** The export's
   readiness panel now reports `visualRegression=proven` from repo-side browser
   visual diff evidence (previously unwired).
-- **Public hosting re-proven after the H-3 deploy.**
-  The dev lane was squash-merged to `main` (`49a4510`), GitHub Pages built it, and
-  the live probe now matches deployed==expected `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`
-  (`status=proven` / `matched`, `docs/deployment-manifest.json`,
-  `docs/public-hosting-probe.json`, observed `2026-06-18T07:47Z`; committed proof
-  refreshed via `scripts/refresh_public_hosting_proof.py --live`). Older
+- **Public hosting is deploy-pending after the latest payload regen.**
+  Public hosting for the committed payload (`dataHash 6c18e5720c69ce322388e96a60097cd17b79b891b2cb824071f3cb542f879279…`)
+  is `configured_not_observed` / `mismatched` (`docs/deployment-manifest.json`,
+  `docs/public-hosting-probe.json`, observed `2026-06-20T16:58Z`) — live-probed
+  against Pages, which still serves the prior `dataHash c33da57d11c48945abcee36f2c78eb377f793536f769ddb10b87e8e4b3c7462a…`;
+  it re-proves to `proven` / `matched` after this lands and `main`→Pages redeploys
+  (`scripts/refresh_public_hosting_proof.py --live`). Older
   `e5794260…` / `0f170441…` hosting proofs remain historical point-in-time evidence
   only. The dashboard payload's own `publicHosting` self-claim stays `not_proven` by design.
 - **Hosting-freshness time-bomb removed (CR-FPS-011).** Freshness is now
@@ -518,7 +521,7 @@ caption), so there is no remaining visual residual.
 - Default-root test suite is now **478 passed, 2 skipped**; the **430 passed** count remains only the H-2 torch-enabled UAT / optional-lane evidence. Mypy is clean over the current scoped `quantlab/` source set, and mutation spot checks remain **123/123 configured/killed**, including the CR-RDO-004 sampling-frequency guard, root Torch dependency, stale governance evidence mutations plus the non-self-staling promotion-boundary guard, local-first CI default and skill-body guards, governance refresh review stale-evidence regression, CR-FPS public-hosting drift guards, stakeholder and app payload copy drift, import-linter count/formalization drift, governance registry row-count drift, E production evidence gates, CR-B12 scoped source-health overclaim protection, CR-B18 broad source-quorum overclaim protection, CR-B19 proof replay protection, and CR-B20 Stooq proof exit/file replay protection. Frontend mutation is now **29/29 killed**, including `frontend-smoke-html-api-parity-regression`, so local smoke covers HTML/API payload parity instead of only API payload validity.
 - First committed manual/review documentation set under `docs/`.
 - **Live browser screenshot now captured** (chromium-headless, `browser-visual.png`, status `proven`) — closes the prior "no browser screenshot" gap.
-- **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after each dashboard `dataHash` refresh, branch-local parity is `configured_not_observed` until Pages serves it, then re-proven on deploy — currently **`proven`** for the H-3 `dataHash c33da57d…` after the 2026-06-18 `main` deploy.
+- **Public-hosting probe records HTTP 200 and deployed manifest contract metadata** (`public-hosting-probe.json`); after each dashboard `dataHash` refresh, branch-local parity is `configured_not_observed` until Pages serves it, then re-proven on deploy — currently **`configured_not_observed`** / `mismatched` (deploy-pending) for the committed `dataHash 6c18e572…`, with Pages still serving the prior `c33da57d…` (live-probed 2026-06-20).
 - **Visual diff now repo-baseline pixel-backed** (`browser-visual-diff.json`: `0 / 1,296,000` mismatched pixels at threshold `0.001`) — closes the prior hash-equality residual while allowing small text-rendering drift under the gate.
 
 **Open visual gaps:**
@@ -527,7 +530,7 @@ caption), so there is no remaining visual residual.
 |---|---|---|
 | No CI-managed visual baseline history beyond the repo baseline | Low | `f-browser-pixel-baseline/review.md` |
 | Stooq source contract remains separate from FRED/Yahoo/NOAA source-quorum proof | Low | `b-data-platform/change-requests/cr-b19-source-quorum-live-proof.md` |
-| Dashboard payload `publicHosting` self-claim stays `not_proven` **by contract** (a static artifact can't self-claim deployment); external committed probe/manifest parity is now `proven` / `matched` for `dataHash c33da57d…` after the 2026-06-18 `main` deploy | by design | `frontend/out/index.html`, `docs/public-hosting-probe.json` |
+| Dashboard payload `publicHosting` self-claim stays `not_proven` **by contract** (a static artifact can't self-claim deployment); external committed probe/manifest parity for the committed `dataHash 6c18e572…` is `configured_not_observed` / `mismatched` (deploy-pending, Pages still serving the prior `c33da57d…`), re-proving to `proven` / `matched` after `main`→Pages redeploys | by design | `frontend/out/index.html`, `docs/public-hosting-probe.json` |
 | Real-data OOS uses `approximate_event_date` (not true PIT); a co-temporal multi-asset default universe with true vintage history is the follow-up | Low | `real-data-oos-backtest/review.md` |
 | Vintage co-temporal multi-asset readiness still accumulating (single-capture FRED; daily-vintage backtest deferred) | Low | `run_vintage_slice.py` output |
 | Stooq source blocked (`ISSUE-B3-001`) | Low | `ISSUE_LOG.md` |

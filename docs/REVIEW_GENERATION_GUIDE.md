@@ -117,9 +117,11 @@ StaticWeights baseline — `no_alpha_claim`) plus the self-contained performance
 report SVG copied to `docs/review/assets/dl-experiment-torch.svg`. Regenerate via
 `scripts/run_dl_experiment.py --backend pytorch` (needs the optional torch lane).
 Honesty cap: deep history is the CR-B21 approximate backfill (NOT true PIT);
-public hosting is `proven` / `matched` for the deployed `dataHash` after the
-2026-06-18 `main` deploy (a later payload regen re-enters `configured_not_observed`
-until the next deploy re-proves; dashboard self-claim stays `not_proven` by contract).
+public hosting for the committed payload (`dataHash 6c18e572…`) is
+`configured_not_observed` / `mismatched` (deploy-pending) — live-probed 2026-06-20
+against Pages, which still serves the prior `c33da57d…`; it re-proves to `proven` /
+`matched` after this lands and `main`→Pages redeploys (dashboard self-claim stays
+`not_proven` by contract).
 
 ### Epic H slice H-3 — interactive research UI
 
@@ -138,8 +140,11 @@ frontend mutations (`frontend-h3-interactive-claim-boundary`,
 `frontend-h3-e2e-failclosed-status-gate`). Honesty cap: `static_replay` over
 existing H artifacts only — OOS-net-only ranking with a visible baseline,
 `no_alpha_claim`, no live backend rerun, JAX/TF real training, GPU/native models,
-or production Tier3; public hosting is `proven` / `matched` for `dataHash c33da57d…`
-after the 2026-06-18 `main` deploy (dashboard self-claim stays `not_proven` by contract).
+or production Tier3; public hosting for the committed payload (`dataHash 6c18e572…`)
+is `configured_not_observed` / `mismatched` (deploy-pending) — live-probed 2026-06-20
+against Pages, which still serves the prior `c33da57d…`; it re-proves to `proven` /
+`matched` after this lands and `main`→Pages redeploys (dashboard self-claim stays
+`not_proven` by contract).
 
 ## Deploy-coupling & count-refresh policy (read before bumping numbers)
 

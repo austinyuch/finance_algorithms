@@ -29,7 +29,7 @@ threshold until it completes reliably and an explicit threshold is approved.
 
 ## Current Evidence Snapshot
 
-Default-root Python gate refreshed 2026-06-18: `uv run pytest -q` -> **478 passed, 2 skipped**. H-2 torch-enabled UAT remains **430 passed** and is optional-lane evidence, not the default-root count.
+Default-root Python gate refreshed 2026-06-20: `uv run pytest -q` -> **478 passed, 2 skipped**. H-2 torch-enabled UAT remains **430 passed** and is optional-lane evidence, not the default-root count.
 
 | Subsystem / spec | Catalog | Summary | Latest evidence |
 |---|---|---|---|
