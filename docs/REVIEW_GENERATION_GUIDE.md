@@ -161,6 +161,28 @@ historical OOS-net mechanism evidence only; `no_alpha_claim`). Evidence is
 `h4-rerun-validation-fail-closed-gate`. The H-3 card's boundary list no longer says
 "no live backend rerun" (it shipped as H-4).
 
+### Capability map + DL exploratory-analysis card
+
+The review now also carries a self-contained inline **capability / data-flow map**
+SVG (A0 → … → Epic H, `no_alpha_claim`) inside the Value-Proposition overview, and a
+dedicated **"Epic H — deep-learning exploratory analysis"** section: the multi-cycle
+OOS-net leaderboard SVG (Regime 0.669 > BuyAndHold 0.657 baseline > Forecast 0.354 >
+Robust 0.321) with EDA prose covering method (reference MLP + honest backend
+fallback), metrics (OOS-net-only + 4-panel viz), the real multi-cycle observation,
+and the `no_alpha_claim` / approximate-availability / mechanism-not-verdict boundary,
+followed by a **"Future work / Roadmap"** sub-block (JAX/TF backends, GPU/native
+models, production Tier3 with external proof, Lane 2 actionable signal **charter-gated
+/ deferred**, strict-PIT verdict-grade comparison). Sources: the SVGs and prose are
+authored in
+[`.agents/specs/docs-enrichment-h-eda/design.md`](../.agents/specs/docs-enrichment-h-eda/design.md)
+(Future-Work Roadmap table) and
+[`.agents/specs/docs-enrichment-h-eda/code/svg-snippets.html`](../.agents/specs/docs-enrichment-h-eda/code/svg-snippets.html);
+the leaderboard numbers are hard-coded from the committed report JSON
+`.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json`
+(single source of truth — never recompute them in the docs). All diagrams are inline
+SVG only (no CDN, no external `<script src>` / `<img>`), bilingual via the existing
+`.en` / `.zh` spans, and every DL slice repeats the `no_alpha_claim` charter boundary.
+
 ## Deploy-coupling & count-refresh policy (read before bumping numbers)
 
 `docs/review/index.html` is a **deploy-coupled snapshot**: its gate counts (pytest

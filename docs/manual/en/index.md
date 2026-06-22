@@ -374,6 +374,43 @@ written alongside the artifact.
 > - `MOCK_DOMINANT_EVIDENCE` — real torch training over `is_approximate=true`
 >   research data (NOT true PIT); optional torch lane; `no_alpha_claim`.
 
+### Epic H — exploratory analysis
+
+**Method.** The reference MLP is a single hidden layer of 4 tanh units trained by
+full-batch gradient descent on MSE (fixed seed, numpy-only, deterministic). A
+framework registry resolves torch / jax / tensorflow lazily and degrades honestly
+to the `reference` backend when a framework is absent (never raises); the optional
+PyTorch lane stays within a `≤1e-3` parity tolerance.
+
+**Metrics.** Each run reports OOS-net (out-of-sample, net-of-cost) Sharpe plus a
+return distribution (mean / vol / skew / excess-kurtosis / 5%-VaR), rolling
+Sharpe, a drawdown series, a per-epoch learning curve, and a deterministic SHA256
+checksum — rendered as a self-contained 4-panel SVG (equity / drawdown /
+learning-curve / return-histogram), fail-closed on degenerate input.
+
+**Real multi-cycle observation** (2000-01-04 → 2026-06-12, ~26.5y, 317 co-temporal
+months, 5 assets `{2330.TW, SPY, ^GSPC, ^IXIC, ^TWII}`, cycles dot-com / GFC /
+COVID / 2022), hard-coded from
+`.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json`:
+
+| Strategy | OOS-net Sharpe | Role |
+|---|---|---|
+| RegimeAllocationStrategy | 0.669 | model |
+| BuyAndHold | 0.657 | baseline |
+| ForecastAllocationStrategy | 0.354 | model |
+| RobustOptimizationStrategy | 0.321 | model |
+
+A single-window SP500 (~120mo) slice shows BuyAndHold 0.877 > SmaTimingStrategy
+0.808 (also approximate, mechanism-only). The H-3 `static_replay` showcase shows
+DeepForecastAllocationStrategy ~0.91 vs StaticWeights ~0.63 (illustrative canonical
+scenario, approximate CR-B21 backfill); H-4 `live_compute` reruns the same
+`run_experiment` — identical params → byte-identical `reportChecksum`.
+
+> **Boundary:** availability is `approximate_event_date` (NOT strict PIT). This is
+> mechanism + comparability evidence under `no_alpha_claim` — **not a strategy
+> verdict**, and never a current-as-of allocation or actionable buy/sell signal
+> (Lane 2 is charter-gated / deferred).
+
 ---
 
 ## Flow 8 — Interactive research UI (Epic H, slice H-3)

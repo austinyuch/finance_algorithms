@@ -230,6 +230,26 @@ require **no** port allocation and are the default evidence path.
    repo** (`out/…`), not `/tmp`. Record the result + any visual residual in the
    "Visual gap inventory" section.
 
+### 7a. Epic H pipeline SVG + DL exploratory-analysis prose (Flow area)
+
+The manual now carries, in the Flow 7 (deep-learning) area, a self-contained inline
+**Epic H pipeline SVG** (`vintage → reference MLP │ optional lazy torch → OOS-net
+report + checksum → 4-panel SVG viz → H-3 static_replay → H-4 live_compute`) plus a
+short **"Epic H — exploratory analysis"** subsection: method (reference MLP + honest
+backend fallback), metrics (OOS-net-only + 4-panel viz), the real multi-cycle
+observation (Regime 0.669 > BuyAndHold 0.657 baseline > Forecast 0.354 > Robust
+0.321), and the `no_alpha_claim` / approximate-availability / mechanism-not-verdict
+boundary. The HTML files embed both the pipeline SVG and the leaderboard SVG; the MD
+files carry the same prose plus the leaderboard as a small table. Sources: the SVGs
+and prose are authored in
+[`.agents/specs/docs-enrichment-h-eda/design.md`](../.agents/specs/docs-enrichment-h-eda/design.md)
+and [`.agents/specs/docs-enrichment-h-eda/code/svg-snippets.html`](../.agents/specs/docs-enrichment-h-eda/code/svg-snippets.html);
+the leaderboard numbers are hard-coded from the committed report JSON
+`.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json`
+(single source of truth — never recompute them in the docs). All diagrams are inline
+SVG only (no CDN, no external `<script src>` / `<img>`), and every DL slice repeats
+the `no_alpha_claim` charter boundary.
+
 ## 8. Deploy-coupling & count-refresh policy (read before bumping numbers)
 
 The committed manual HTML/MD are a **deploy-coupled snapshot**: their gate counts
