@@ -12,7 +12,7 @@
   "deployedClaimBoundary": "no_alpha_claim",
   "deployedDashboardClaim": "local_demo_only",
   "manifestContractStatus": "matched",
-  "observedAt": "2026-06-21T04:18:27.660Z",
+  "observedAt": "2026-06-22T05:12:30.775Z",
   "freshnessStatus": "fresh",
   "maxAgeHours": 24,
   "claimBoundary": "no_alpha_claim"

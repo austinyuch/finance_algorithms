@@ -9,23 +9,30 @@
     "start": "next start --hostname 127.0.0.1",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "export:public-demo": "tsx scripts/export-public-demo.tsx",
-    "export:public-demo:docs": "QUANTLAB_PUBLIC_DEMO_OUT_DIR=../docs tsx scripts/export-public-demo.tsx",
-    "visual": "tsx scripts/export-public-demo.tsx",
+    "export:public-demo": "npm run build:export-css && tsx scripts/export-public-demo.tsx",
+    "export:public-demo:docs": "npm run build:export-css && QUANTLAB_PUBLIC_DEMO_OUT_DIR=../docs tsx scripts/export-public-demo.tsx",
+    "visual": "npm run build:export-css && tsx scripts/export-public-demo.tsx",
     "visual:browser": "node scripts/browser-visual-smoke.mjs",
     "visual:browser:update-docs": "QUANTLAB_BROWSER_VISUAL_UPDATE_DOCS=1 node scripts/browser-visual-smoke.mjs",
     "e2e:interactive": "node scripts/interactive-research-e2e.mjs",
     "probe:public-demo": "node scripts/probe-public-demo.mjs",
     "mutation": "node scripts/run-mutation-checks.mjs",
-    "smoke": "node scripts/public-demo-smoke.mjs"
+    "smoke": "node scripts/public-demo-smoke.mjs",
+    "build:export-css": "tailwindcss -i app/globals.css -o .export-css/showcase.css --minify"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
     "next": "^16.0.10",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.1",
+    "@tailwindcss/postcss": "^4.3.1",
     "@types/node": "25.9.3",
     "@types/pngjs": "^6.0.5",
     "@types/react": "19.2.17",
@@ -34,12 +41,16 @@
     "@vitest/coverage-v8": "^4.0.16",
     "fast-check": "^4.4.0",
     "pngjs": "^7.0.0",
+    "tailwindcss": "^4.3.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "@emnapi/core": "1.11.1",
+    "@emnapi/runtime": "1.11.1",
+    "@emnapi/wasi-threads": "1.2.2"
   }
 }
