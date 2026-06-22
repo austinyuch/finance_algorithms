@@ -354,6 +354,41 @@ raise）。深度歷史為 CR-B21 近似 backfill（非 true PIT；strict 模式
 > - `MOCK_DOMINANT_EVIDENCE` — 真實 torch 訓練於 `is_approximate=true` research
 >   資料（非 true PIT）；選用 torch lane；`no_alpha_claim`。
 
+### Epic H — 探索分析
+
+**方法。** reference MLP 是單一隱藏層、4 個 tanh 單元，以 full-batch 梯度下降對
+MSE 訓練（固定 seed、純 numpy、deterministic）。framework registry lazy 解析
+torch / jax / tensorflow，框架缺席時誠實降級為 `reference` backend（永不 raise）；
+選用的 PyTorch lane 維持在 `≤1e-3` parity 容差內。
+
+**指標。** 每次執行回報 OOS-net（樣本外、淨成本）Sharpe，加上報酬分布（mean /
+vol / skew / excess-kurtosis / 5%-VaR）、rolling Sharpe、drawdown 序列、每-epoch
+學習曲線，與一個 deterministic 的 SHA256 checksum — 渲染為 self-contained 的 4
+面板 SVG（equity / drawdown / learning-curve / return-histogram），對退化輸入
+fail-closed。
+
+**真實多週期觀察**（2000-01-04 → 2026-06-12、約 26.5 年、317 個 co-temporal 月、
+5 個資產 `{2330.TW, SPY, ^GSPC, ^IXIC, ^TWII}`、循環 dot-com / GFC / COVID /
+2022），硬編自
+`.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json`：
+
+| 策略 | OOS-net Sharpe | 角色 |
+|---|---|---|
+| RegimeAllocationStrategy | 0.669 | model |
+| BuyAndHold | 0.657 | baseline |
+| ForecastAllocationStrategy | 0.354 | model |
+| RobustOptimizationStrategy | 0.321 | model |
+
+單一視窗 SP500（約 120mo）切片則為 BuyAndHold 0.877 > SmaTimingStrategy 0.808
+（同為近似、僅機制）。H-3 `static_replay` showcase 顯示
+DeepForecastAllocationStrategy ~0.91 vs StaticWeights ~0.63（示意性的 canonical
+情境、近似 CR-B21 backfill）；H-4 `live_compute` 以相同的 `run_experiment` 重算 —
+相同參數 → byte-identical 的 `reportChecksum`。
+
+> **邊界：** 可得性為 `approximate_event_date`（非 strict PIT）。這是
+> `no_alpha_claim` 下的機制 + 可比較性證據 — **非策略判定**，也絕非 current-as-of
+> 配置或 actionable 的買/賣訊號（Lane 2 為 charter-gated / deferred）。
+
 ---
 
 ## 流程 8 — 互動研究 UI（Epic H，切片 H-3）

@@ -234,9 +234,65 @@ OOS-net leaderboard (ranked OOS-net only; baseline visible):
   StaticWeights (buy &amp; hold)        oos_net_sharpe = +0.1292   maxDD = −65.4%   [baseline]
   DeepForecastAllocationStrategy    oos_net_sharpe = +0.0919   maxDD = −71.0%   [model]</pre>
     <p><b>How to read it:</b> with PyTorch installed, the <code>pytorch</code> backend trains the MLP for real (torch autograd, float64) behind a lazy backend boundary — the engine/data core never imports a framework. The trained model honestly <b>under-performs</b> buy-and-hold on OOS-net Sharpe: that is the point — <code>no_alpha_claim</code>, mechanism evidence, not a strategy verdict. Without torch the same call degrades to the deterministic <code>reference</code> backend (never raises). Deep history is the CR-B21 approximate backfill (NOT true PIT; strict mode excludes it).</p>
+    <figure style="margin:18px 0">
+      <svg class="dia" viewBox="0 0 820 176" role="img" aria-label="Epic H deep-learning pipeline: vintage data to reference or torch forecaster to performance report to SVG viz to showcase static replay to live compute rerun" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans TC',sans-serif">
+  <defs><marker id="arrH" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#04A9FB"/></marker></defs>
+  <text x="410" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="#005EB8">Epic H deep-learning research pipeline</text>
+  <g font-size="11">
+    <g><rect x="12" y="64" width="96" height="48" rx="9" fill="#eef3fa" stroke="#005EB8"/><text x="60" y="84" text-anchor="middle" font-weight="700" fill="#3B4559">vintage</text><text x="60" y="99" text-anchor="middle" font-size="8.5" fill="#6b7689">PIT / approx</text></g>
+    <g><rect x="140" y="40" width="128" height="40" rx="9" fill="#fff" stroke="#005EB8" stroke-width="1.5"/><text x="204" y="58" text-anchor="middle" font-weight="700" fill="#005EB8">reference MLP</text><text x="204" y="72" text-anchor="middle" font-size="8.5" fill="#6b7689">numpy · deterministic</text></g>
+    <g><rect x="140" y="92" width="128" height="40" rx="9" fill="#fff" stroke="#FF6A39" stroke-dasharray="4 3"/><text x="204" y="110" text-anchor="middle" font-weight="700" fill="#FF6A39">torch (optional)</text><text x="204" y="124" text-anchor="middle" font-size="8.5" fill="#6b7689">lazy · honest fallback</text></g>
+    <g><rect x="300" y="64" width="104" height="48" rx="9" fill="#fff" stroke="#005EB8" stroke-width="1.5"/><text x="352" y="84" text-anchor="middle" font-weight="700" fill="#005EB8">report</text><text x="352" y="99" text-anchor="middle" font-size="8.5" fill="#6b7689">OOS-net · checksum</text></g>
+    <g><rect x="436" y="64" width="96" height="48" rx="9" fill="#fff" stroke="#005EB8" stroke-width="1.5"/><text x="484" y="84" text-anchor="middle" font-weight="700" fill="#005EB8">SVG viz</text><text x="484" y="99" text-anchor="middle" font-size="8.5" fill="#6b7689">4 panels</text></g>
+    <g><rect x="564" y="64" width="116" height="48" rx="9" fill="#fff" stroke="#005EB8" stroke-width="1.5"/><text x="622" y="83" text-anchor="middle" font-weight="700" fill="#005EB8">static_replay</text><text x="622" y="98" text-anchor="middle" font-size="8.5" fill="#6b7689">H-3 dashboard</text></g>
+    <g><rect x="700" y="58" width="108" height="60" rx="10" fill="#005EB8"/><text x="754" y="80" text-anchor="middle" font-weight="700" fill="#fff">live_compute</text><text x="754" y="95" text-anchor="middle" font-size="8.5" fill="#cfe6ff">H-4 rerun API</text><text x="754" y="108" text-anchor="middle" font-size="8" fill="#9fc8ee">deterministic</text></g>
+  </g>
+  <g stroke="#04A9FB" stroke-width="1.6" marker-end="url(#arrH)" fill="none">
+    <path d="M108,80 L138,60"/><path d="M108,96 L138,112"/>
+    <path d="M268,60 L298,84"/><path d="M268,112 L298,90"/>
+    <line x1="404" y1="88" x2="434" y2="88"/><line x1="532" y1="88" x2="562" y2="88"/><line x1="680" y1="88" x2="698" y2="88"/>
+  </g>
+  <text x="410" y="150" text-anchor="middle" font-size="10.5" fill="#6b7689">Same <tspan font-family="'SF Mono',Menlo,Consolas,monospace" font-size="9.5">run_experiment</tspan> path for replay &amp; live · identical params → identical checksum</text>
+  <text x="410" y="167" text-anchor="middle" font-size="10.5" fill="#97D700" font-weight="700">no_alpha_claim · historical OOS-net mechanism evidence only · no actionable signal (Lane 2 charter-gated)</text>
+</svg>
+      <p class="cap">Epic H deep-learning pipeline: vintage data → reference MLP (numpy, deterministic) │ optional lazy torch lane (honest fallback) → OOS-net report + deterministic checksum → self-contained 4-panel SVG viz → H-3 <code>static_replay</code> dashboard → H-4 <code>live_compute</code> rerun API. The same <code>run_experiment</code> path serves replay and live; identical params → identical checksum. <code>no_alpha_claim</code> — historical OOS-net mechanism evidence only, no actionable signal (Lane 2 charter-gated). Self-contained inline SVG (renders offline, no CDN).</p>
+    </figure>
+    <h3 style="color:var(--blue)">Epic H — exploratory analysis</h3>
+    <figure style="margin:12px 0">
+      <svg class="dia" viewBox="0 0 640 260" role="img" aria-label="Multi-cycle out-of-sample net Sharpe leaderboard 2000 to 2026: Regime 0.669, BuyAndHold baseline 0.657, Forecast 0.354, Robust 0.321. Mechanism evidence, not a verdict, no alpha claim" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans TC',sans-serif">
+  <defs><linearGradient id="gBar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#04A9FB"/><stop offset="1" stop-color="#005EB8"/></linearGradient></defs>
+  <text x="20" y="24" font-size="13" font-weight="700" fill="#005EB8">Multi-cycle OOS-net Sharpe · 2000–2026 · 5 assets · 317mo co-temporal</text>
+  <line x1="150" y1="46" x2="150" y2="196" stroke="#e3e8f0"/>
+  <g font-size="9" fill="#9fb0c8" font-family="'SF Mono',Menlo,Consolas,monospace">
+    <line x1="150" y1="196" x2="600" y2="196" stroke="#e3e8f0"/>
+    <text x="150" y="210" text-anchor="middle">0.0</text><text x="300" y="210" text-anchor="middle">0.25</text><text x="450" y="210" text-anchor="middle">0.50</text><text x="585" y="210" text-anchor="middle">0.75</text>
+  </g>
+  <g font-size="11.5">
+    <text x="144" y="62" text-anchor="end" font-weight="700" fill="#3B4559">Regime</text>
+    <rect x="150" y="50" width="401" height="20" rx="3" fill="url(#gBar)"/>
+    <text x="558" y="65" font-family="'SF Mono',Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#005EB8">0.669</text>
+    <text x="144" y="94" text-anchor="end" font-weight="700" fill="#3B4559">BuyAndHold</text>
+    <rect x="150" y="82" width="394" height="20" rx="3" fill="#8aa0bf"/>
+    <rect x="150" y="82" width="394" height="20" rx="3" fill="none" stroke="#FF6A39" stroke-dasharray="3 2"/>
+    <text x="551" y="97" font-family="'SF Mono',Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#6b7689">0.657</text>
+    <text x="156" y="97" font-size="8.5" font-weight="700" fill="#fff">baseline</text>
+    <text x="144" y="126" text-anchor="end" font-weight="700" fill="#3B4559">Forecast</text>
+    <rect x="150" y="114" width="212" height="20" rx="3" fill="#7fc9f5"/>
+    <text x="369" y="129" font-family="'SF Mono',Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#6b7689">0.354</text>
+    <text x="144" y="158" text-anchor="end" font-weight="700" fill="#3B4559">Robust</text>
+    <rect x="150" y="146" width="193" height="20" rx="3" fill="#7fc9f5"/>
+    <text x="350" y="161" font-family="'SF Mono',Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#6b7689">0.321</text>
+  </g>
+  <text x="150" y="180" font-size="9" fill="#9fb0c8">universe: 2330.TW · SPY · ^GSPC · ^IXIC · ^TWII · cycles: dot-com / GFC / COVID / 2022</text>
+  <rect x="20" y="222" width="600" height="30" rx="7" fill="#eef8ff" stroke="#04A9FB"/>
+  <text x="32" y="241" font-size="10" fill="#2b4a78"><tspan font-weight="700" fill="#97D700">no_alpha_claim</tspan> · OOS-net-only · approximate-availability (NOT strict PIT) · mechanism + comparability evidence, <tspan font-weight="700">not a strategy verdict</tspan> · no buy/sell signal</text>
+</svg>
+      <p class="cap">Multi-cycle OOS-net Sharpe leaderboard (hard-coded from <code>multi-cycle-family-oos-artifact.json</code>): RegimeAllocationStrategy 0.669 &gt; BuyAndHold (baseline) 0.657 &gt; Forecast 0.354 &gt; Robust 0.321.</p>
+    </figure>
+    <p><b>Exploratory analysis.</b> The reference MLP (single hidden layer, 4 tanh units, full-batch gradient descent on MSE, fixed seed, numpy-only, deterministic) resolves torch/jax/tensorflow lazily and degrades honestly to the <code>reference</code> backend when a framework is absent (never raises); the optional PyTorch lane stays within ≤<code>1e-3</code> parity. Each run reports OOS-net (out-of-sample, net-of-cost) Sharpe plus return distribution, rolling Sharpe, drawdown, per-epoch learning curve, and a deterministic SHA256 checksum, drawn as a self-contained 4-panel SVG. Over a deep multi-cycle window (2000–2026, ~26.5y, 317 co-temporal months, 5 assets, cycles dot-com / GFC / COVID / 2022) the OOS-net leaderboard reads <b>RegimeAllocationStrategy 0.669 &gt; BuyAndHold (baseline) 0.657 &gt; Forecast 0.354 &gt; Robust 0.321</b> (a single-window SP500 ~120mo slice shows BuyAndHold 0.877 &gt; SmaTimingStrategy 0.808). Availability is <code>approximate_event_date</code> (NOT strict PIT); this is mechanism + comparability evidence under <code>no_alpha_claim</code> — <b>not a strategy verdict</b>, and never a current-asof allocation or actionable signal (Lane 2 is charter-gated / deferred).</p>
     <div class="evidence">
       <span class="badge b-pass">PASS (Review PASSED · repo-side + torch UAT)</span><span class="badge b-mock">MOCK_DOMINANT_EVIDENCE</span><br>
-      <b>Evidence Source:</b> report_artifact (<code>out/dl-demo/exp-torch-gspc-ixic.json</code>, checksum <code>b73b21e9…</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> h-deep-learning-real-training/review.md · real torch training over <code>is_approximate=true</code> research data; optional torch lane; <code>no_alpha_claim</code>.
+      <b>Evidence Source:</b> report_artifact (<code>out/dl-demo/exp-torch-gspc-ixic.json</code>, checksum <code>b73b21e9…</code>) + live_command_output · <b>Coverage Tier:</b> hybrid · <b>Source Ref:</b> h-deep-learning-real-training/review.md · real torch training over <code>is_approximate=true</code> research data; optional torch lane; <code>no_alpha_claim</code>. Leaderboard numbers hard-coded from <code>.agents/specs/real-data-oos-backtest/reports/multi-cycle-family-oos-artifact.json</code>.
     </div>
   </section>
 
