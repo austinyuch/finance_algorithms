@@ -128,7 +128,16 @@ function assertDashboardEvidenceFresh(dashboard: ReturnType<typeof getShowcaseDa
 const dashboard = getShowcaseDashboard();
 assertDashboardEvidenceFresh(dashboard);
 const html = renderToStaticMarkup(<Dashboard data={dashboard} />);
-const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>QuantLab Showcase</title></head><body>${html}</body></html>`;
+// Self-contained: inline the compiled Tailwind CSS (built by `npm run build:export-css`)
+// into <head> so the deployed single-file dashboard is styled with no CDN/external link.
+const exportCssPath = join(root, ".export-css", "showcase.css");
+if (!existsSync(exportCssPath)) {
+  throw new Error(
+    `compiled export CSS missing at ${exportCssPath}; run \`npm run build:export-css\` before exporting`,
+  );
+}
+const inlineCss = readFileSync(exportCssPath, "utf8");
+const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QuantLab Showcase</title><style>${inlineCss}</style></head><body>${html}</body></html>`;
 const manifest = buildPublicDemoManifest(dashboard, {
   pagesConfigured: true,
   ...(hostingProbeFromEnv() ?? hostingProbeFromExistingArtifact()),

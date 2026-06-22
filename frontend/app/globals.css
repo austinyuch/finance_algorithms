@@ -1,409 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #005eb8;
+  --color-brand-sky: #04a9fb;
+  --color-brand-orange: #ff6a39;
+  --color-brand-green: #97d700;
+  --color-brand-grey: #3b4559;
+  --color-brand-line: #e3e8f0;
+  --color-brand-surface: #f5f7fb;
+}
+
 :root {
   color-scheme: light;
-  --ink: #17211b;
-  --muted: #52635a;
-  --line: #d7dfd9;
-  --surface: #f7faf8;
-  --panel: #ffffff;
-  --accent: #1d6f5f;
-  --accent-2: #b84f2f;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  background: var(--surface);
-  color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(4, 169, 251, 0.06), transparent 60%),
+    radial-gradient(1000px 520px at -10% 0%, rgba(0, 94, 184, 0.05), transparent 55%),
+    var(--color-brand-surface);
+  color: #17202a;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.dashboard-shell {
-  width: min(1180px, calc(100vw - 32px));
-  margin: 0 auto;
-  padding: 28px 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+/* Dark hero background — the Giant-brand quant-research banner. */
+.hero-gradient {
+  background:
+    radial-gradient(900px 380px at 85% -40%, rgba(4, 169, 251, 0.28), transparent 60%),
+    radial-gradient(700px 360px at 0% 120%, rgba(255, 106, 57, 0.18), transparent 55%),
+    linear-gradient(135deg, #0a0e1a 0%, #0d2247 55%, #13315c 100%);
 }
 
-.dashboard-header {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 18px;
-}
-
-.dashboard-header p,
-.panel-heading p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.dashboard-header h1,
-.panel h2 {
-  margin: 0;
-  letter-spacing: 0;
-}
-
-.dashboard-header h1 {
-  font-size: 2rem;
-}
-
-.dashboard-header span,
-.warnings span {
-  border: 1px solid var(--line);
-  background: #fff;
-  padding: 6px 9px;
-  font-size: 0.82rem;
-}
-
-.dashboard-header {
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.header-cta {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--accent);
-  font-size: 0.86rem;
-  padding: 6px 10px;
-  text-decoration: none;
-}
-
-.header-cta:hover,
-.header-cta:focus-visible {
-  border-color: var(--accent);
-  background: #eef5f3;
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 16px;
-}
-
-.leaderboard-panel,
-.experiments-panel,
-.interactive-panel,
-.evidence-panel,
-.investment-charts-panel {
-  grid-column: 1 / -1;
-}
-
-.panel-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  text-align: left;
-  border-top: 1px solid var(--line);
-  padding: 10px 8px;
-  font-size: 0.95rem;
-}
-
-th {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.allocation-grid,
-.date-list,
-.evidence-panel ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.readiness-grid {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 14px;
-}
-
-.readiness-grid span {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  padding: 8px 10px;
-}
-
-.allocation-row,
-.date-list li,
-.evidence-panel li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid var(--line);
-  padding: 10px 0;
-}
-
-.allocation-row strong {
-  color: var(--accent);
-}
-
-.warnings {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.warnings span {
-  border-color: #e3b9a9;
-  color: var(--accent-2);
-}
-
-.chart-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.dashboard-controls {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-bottom: 12px;
-}
-
-.dashboard-controls label {
-  color: var(--muted);
-  display: grid;
-  font-size: 0.8rem;
-  gap: 5px;
-}
-
-.dashboard-controls input,
-.dashboard-controls select {
-  appearance: none;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--ink);
-  font: inherit;
-  min-block-size: 38px;
-  min-inline-size: 0;
-  padding: 8px 10px;
-}
-
-.dashboard-result-strip {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 12px;
-}
-
-.dashboard-result-strip span,
-.chart-fail-closed {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  padding: 9px 10px;
-}
-
-.dashboard-result-strip[data-status="computed"] span:first-child {
-  border-color: #9fccc0;
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.dashboard-result-strip[data-status="fail_closed"] span:first-child,
-.chart-fail-closed {
-  border-color: #e3b9a9;
-  color: var(--accent-2);
-  font-weight: 700;
-}
-
-.chart-card {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  min-block-size: 210px;
-  padding: 10px;
-}
-
-.chart-card strong {
-  display: block;
-  font-size: 0.84rem;
-  margin-bottom: 8px;
-}
-
-.chart-card canvas {
-  block-size: 150px;
-  inline-size: 100%;
-}
-
-.chart-fail-closed {
-  display: grid;
-  min-block-size: 128px;
-}
-
-.chart-fail-closed p {
-  color: var(--muted);
-  font-weight: 400;
-  margin: 0;
-}
-
-.chart-wide {
-  grid-column: span 2;
-}
-
-.dashboard-result-table {
-  margin-top: 12px;
-}
-
-.research-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-bottom: 14px;
-}
-
-.research-grid label {
-  color: var(--muted);
-  display: grid;
-  font-size: 0.8rem;
-  gap: 5px;
-}
-
-.research-grid input,
-.research-grid select {
-  appearance: none;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--ink);
-  font: inherit;
-  min-block-size: 38px;
-  min-inline-size: 0;
-  padding: 8px 10px;
-}
-
-.artifact-select {
-  grid-column: span 2;
-}
-
-.research-status {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 14px;
-}
-
-.research-status span,
-.empty-state {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  min-block-size: 36px;
-  padding: 9px 10px;
-}
-
-.research-status[data-status="computed"] span:first-child {
-  border-color: #9fccc0;
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.research-status[data-status="fail_closed"] span:first-child,
-.empty-state {
-  border-color: #e3b9a9;
-  color: var(--accent-2);
-  font-weight: 700;
-}
-
-.research-chart-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 14px;
-}
-
-.research-chart-grid > div {
-  border-top: 1px solid var(--line);
-  min-block-size: 96px;
-  padding-top: 10px;
-}
-
-.research-chart-grid strong {
-  display: block;
-  font-size: 0.86rem;
-  margin-bottom: 8px;
-}
-
+/* Mini sparkline bars used by the interactive-research panel (no chart.js in SSR). */
 .mini-bars {
   display: grid;
   gap: 5px;
 }
 
-.mini-bars span {
-  background: #edf2ee;
+.mini-bars > span {
+  background: #eef2f8;
   block-size: 9px;
+  border-radius: 9999px;
   display: block;
   overflow: hidden;
 }
 
-.mini-bars i {
-  background: var(--accent);
+.mini-bars > span > i {
+  background: var(--color-brand-blue);
   block-size: 100%;
+  border-radius: 9999px;
   display: block;
 }
 
-.mini-bars.drawdown i {
-  background: var(--accent-2);
+.mini-bars.drawdown > span > i {
+  background: var(--color-brand-orange);
 }
 
-@media (max-width: 760px) {
-  .dashboard-shell {
-    grid-template-columns: 1fr;
-    width: min(100vw - 20px, 680px);
-  }
+/* Subtle spinner for the live-rerun "computing" lifecycle. */
+.live-rerun-spinner {
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 94, 184, 0.25);
+  border-top-color: var(--color-brand-blue);
+  display: inline-block;
+  animation: live-rerun-spin 0.7s linear infinite;
+}
 
-  .dashboard-header,
-  .panel-heading {
-    align-items: start;
-    flex-direction: column;
-  }
-
-  .dashboard-header {
-    align-items: start;
-    flex-direction: column;
-  }
-
-  .research-grid,
-  .research-chart-grid,
-  .dashboard-controls,
-  .chart-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-wide {
-    grid-column: auto;
-  }
-
-  .artifact-select {
-    grid-column: auto;
+@keyframes live-rerun-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
