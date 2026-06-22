@@ -15,9 +15,9 @@ const LABEL: Record<LiveRerunState["lifecycle"], string> = {
   error: "live rerun error",
 };
 
-const DOT: Record<LiveRerunState["lifecycle"], string> = {
+// `computing` shows a spinner (not a dot), so it is intentionally excluded here.
+const DOT: Record<Exclude<LiveRerunState["lifecycle"], "computing">, string> = {
   idle: "bg-slate-400",
-  computing: "bg-brand-blue",
   computed: "bg-brand-green",
   fail_closed: "bg-brand-orange",
   error: "bg-red-500",
@@ -33,7 +33,7 @@ export function LiveRerunStatus({ state }: { state: LiveRerunState }) {
       aria-busy={lifecycle === "computing"}
     >
       {lifecycle !== "computing" && (
-        <span className={cn("h-2 w-2 rounded-full", DOT[lifecycle])} aria-hidden="true" />
+        <span className={cn("h-2 w-2 rounded-full", DOT[lifecycle as Exclude<LiveRerunState["lifecycle"], "computing">])} aria-hidden="true" />
       )}
       <span className="font-medium text-slate-700">{LABEL[lifecycle]}</span>
       {lifecycle === "computing" && <span className="live-rerun-spinner" aria-hidden="true" />}

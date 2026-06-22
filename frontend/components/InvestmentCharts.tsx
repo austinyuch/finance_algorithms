@@ -47,9 +47,9 @@ Chart.register(
 );
 
 const palette = {
-  green: "#005EB8",
-  copper: "#FF6A39",
-  gold: "#04A9FB",
+  blue: "#005EB8",
+  orange: "#FF6A39",
+  sky: "#04A9FB",
   slate: "#3B4559",
   line: "#e3e8f0",
 };
@@ -166,7 +166,7 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: "OOS net Sharpe",
               data: data.leaderboard.map((row) => row.oosNetSharpe),
-              backgroundColor: data.leaderboard.map((row) => (row.isBaseline ? palette.slate : palette.green)),
+              backgroundColor: data.leaderboard.map((row) => (row.isBaseline ? palette.slate : palette.blue)),
               borderRadius: 5,
             },
           ],
@@ -186,7 +186,7 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: "Allocation",
               data: Object.values(data.allocation).map((value) => value * 100),
-              backgroundColor: [palette.green, palette.gold, palette.copper, palette.slate],
+              backgroundColor: [palette.blue, palette.sky, palette.orange, palette.slate],
               borderColor: "#ffffff",
               borderWidth: 2,
             },
@@ -217,7 +217,7 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: "Real-data OOS-net Sharpe",
               data: data.realData?.rows.map((row) => row.oosNetSharpe) ?? [],
-              backgroundColor: data.realData?.rows.map((row) => (row.isBaseline ? palette.slate : palette.copper)) ?? [],
+              backgroundColor: data.realData?.rows.map((row) => (row.isBaseline ? palette.slate : palette.orange)) ?? [],
               borderRadius: 5,
             },
           ],
@@ -237,7 +237,7 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: metricLabel(researchMetric),
               data: selectedRows.map((row) => metricValue(row, researchMetric)),
-              backgroundColor: selectedRows.map((row) => (row.isBaseline ? palette.slate : palette.green)),
+              backgroundColor: selectedRows.map((row) => (row.isBaseline ? palette.slate : palette.blue)),
               borderRadius: 5,
             },
           ],
@@ -257,8 +257,8 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: modelRow?.strategyName ?? "Model",
               data: modelRow?.equityCurve.map((point) => point.value) ?? [],
-              borderColor: palette.green,
-              backgroundColor: palette.green,
+              borderColor: palette.blue,
+              backgroundColor: palette.blue,
               tension: 0.25,
             },
             {
@@ -285,8 +285,8 @@ export function InvestmentCharts({ data }: { data: ShowcaseDashboard }) {
             {
               label: `${modelRow?.strategyName ?? "Model"} drawdown`,
               data: modelRow?.drawdown.map((point) => point.value) ?? [],
-              borderColor: palette.copper,
-              backgroundColor: palette.copper,
+              borderColor: palette.orange,
+              backgroundColor: palette.orange,
               tension: 0.25,
             },
             {
