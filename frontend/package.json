@@ -48,6 +48,9 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "@emnapi/core": "1.11.1",
+    "@emnapi/runtime": "1.11.1",
+    "@emnapi/wasi-threads": "1.2.2"
   }
 }
