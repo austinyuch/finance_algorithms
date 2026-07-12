@@ -54,6 +54,30 @@ A0 `DataProvider.get(asof)` 一律 `WHERE available_date <= asof`。**禁止事�
 - 儲存:append-only parquet,依 `snapshot_date` 分區;查詢用 DuckDB(輕量、無服務)。
 - raw snapshot(未處理)與 processed(對齊後)分層,raw 永不修改。
 
+## Decision 6 — 每日 Snapshot 的網路 egress allowlist(daily loop 執行環境約束)
+
+> Status: **Accepted(2026-07-12)**。起因:daily loop 在 2026-06-12 之後連續失敗,`data/vintage/raw/` 從該日起無新 snapshot。
+
+**根因(root cause):** daily loop 跑在 Claude Code 遠端執行環境內,對外 HTTPS 一律經過 policy-enforcing egress proxy。當環境的 network policy 未把資料源主機列入 allowlist 時,proxy 對 `CONNECT` 回 **`403 Forbidden`**(`gateway answered 403 to CONNECT`,policy denial),`scripts/daily_snapshot.py` 22 個 job 全數 `ProxyError` 失敗、`main()` 回 exit code 1,daily loop 因而記為 failure。這是**組織 egress 政策拒絕,不是程式 bug**;依 proxy 規約,egress 403/407 **只回報、不繞道**(不得改用替代主機或關閉 proxy 迴避政策)。
+
+**必要 allowlist 主機(缺一即該源當日失敗):**
+
+| 主機 | 用途 | 必要性 |
+|---|---|---|
+| `fred.stlouisfed.org` | FRED 總經 + 價格代理 CSV(`fetch_fred`) | **必要** |
+| `query1.finance.yahoo.com` | Yahoo chart JSON — TSMC/TWSE/ETF 收盤(`fetch_yahoo_chart`) | **必要** |
+| `www.cpc.ncep.noaa.gov` | NOAA Oceanic Niño Index(`fetch_noaa_oni`) | **必要** |
+| `stooq.com` | Stooq 報價(`fetch_stooq`) | 選用;預設停用,僅 `QUANTLAB_STOOQ_SYMBOLS` opt-in 時才需要 |
+
+**解法(operator 動作,非 repo 變更):** 在該 daily loop 執行環境的 network policy 內,把上述**必要**三個主機加入 allowlist(或改用允許這些主機的 policy)。設定位置為 Claude Code 環境設定 → network policy;參見 https://code.claude.com/docs/en/claude-code-on-the-web 。改完後以 `uv run python scripts/daily_snapshot.py --report-json artifacts/snapshot-report.json` 驗證 `fail=0`。
+
+**preserve daily data:** `data/vintage/raw/` 已被 git 追蹤、未列入 `.gitignore`,故資料只要「擷取成功並 commit」即永久保存(append-only / immutable,見 Decision 4)。preservation 無缺口;唯一阻斷點是上述 egress。allowlist 補上後,daily loop 每日 capture→commit→push 即恢復。
+
+**快速自我診斷(未來 daily loop 失敗時):**
+- 症狀:所有 source `ProxyError: ... Tunnel connection failed: 403 Forbidden`。
+- 確認:`curl -sS "$HTTPS_PROXY/__agentproxy/status"` 的 `recentRelayFailures` 是否為對上述主機的 `connect_rejected` / 403。
+- 若是 → egress allowlist 缺該主機(本 Decision);**不是**程式或資料問題。
+
 ---
 
 ## 對下游的約束
