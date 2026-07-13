@@ -69,7 +69,22 @@ A0 `DataProvider.get(asof)` 一律 `WHERE available_date <= asof`。**禁止事�
 | `www.cpc.ncep.noaa.gov` | NOAA Oceanic Niño Index(`fetch_noaa_oni`) | **必要** |
 | `stooq.com` | Stooq 報價(`fetch_stooq`) | 選用;預設停用,僅 `QUANTLAB_STOOQ_SYMBOLS` opt-in 時才需要 |
 
-**解法(operator 動作,非 repo 變更):** 在該 daily loop 執行環境的 network policy 內,把上述**必要**三個主機加入 allowlist(或改用允許這些主機的 policy)。設定位置為 Claude Code 環境設定 → network policy;參見 https://code.claude.com/docs/en/claude-code-on-the-web 。改完後以 `uv run python scripts/daily_snapshot.py --report-json artifacts/snapshot-report.json` 驗證 `fail=0`。
+**解法(operator 動作,非 repo 變更 — 只能在 Claude Code web UI 設定,無法由 sandbox 內套用):**
+
+egress allowlist 屬 Anthropic 託管的**環境設定**,不是 repo 檔案,session 內沒有工具可改。步驟(見 https://code.claude.com/docs/en/claude-code-on-the-web#network-access):
+
+1. 在 `claude.ai/code` 開啟本環境編輯(cloud 圖示 → Edit environment),或編輯驅動 daily loop 的 routine 的環境。
+2. **Network access** 選 **Custom**。
+3. **Allowed domains** 欄每行一個,加入:
+   ```
+   fred.stlouisfed.org
+   query1.finance.yahoo.com
+   www.cpc.ncep.noaa.gov
+   ```
+   (若要啟用 Stooq opt-in,再加 `stooq.com`。)
+4. **務必勾選 “Also include default list of common package managers”** — 否則 `pypi.org` / `files.pythonhosted.org` 被擋,`uv sync` 會先失敗,daily loop 連跑都跑不起來。
+   - 或直接把 access level 設 **Full**(任何網域),即免維護 allowlist。
+5. 儲存後以 `uv run python scripts/daily_snapshot.py --report-json artifacts/snapshot-report.json` 驗證 `fail=0`。
 
 **preserve daily data:** `data/vintage/raw/` 已被 git 追蹤、未列入 `.gitignore`,故資料只要「擷取成功並 commit」即永久保存(append-only / immutable,見 Decision 4)。preservation 無缺口;唯一阻斷點是上述 egress。allowlist 補上後,daily loop 每日 capture→commit→push 即恢復。
 
