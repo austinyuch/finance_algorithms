@@ -1,0 +1,11 @@
+{
+  "source": "fred:SP500",
+  "available_date": "2026-06-15",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "observation_date,SP500\n2026-06-15,7554.29\n",
+  "event_date": "2026-06-15"
+}

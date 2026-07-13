@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:SPY",
+  "available_date": "2026-06-19",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"USD\", \"symbol\": \"SPY\", \"exchangeName\": \"PCX\", \"fullExchangeName\": \"NYSEArca\", \"instrumentType\": \"ETF\", \"firstTradeDate\": 728317800, \"regularMarketTime\": 1783972800, \"hasPrePostMarketData\": true, \"gmtoffset\": -14400, \"timezone\": \"EDT\", \"exchangeTimezoneName\": \"America/New_York\", \"regularMarketPrice\": 749.17, \"fiftyTwoWeekHigh\": 760.4, \"fiftyTwoWeekLow\": 618.05, \"regularMarketDayHigh\": 753.911, \"regularMarketDayLow\": 748.03, \"regularMarketVolume\": 43420412, \"longName\": \"State Street SPDR S&P 500 ETF Trust\", \"shortName\": \"State Street SPDR S&P 500 ETF T\", \"chartPreviousClose\": 741.75, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"EDT\", \"start\": 1783929600, \"end\": 1783949400, \"gmtoffset\": -14400}, \"regular\": {\"timezone\": \"EDT\", \"start\": 1783949400, \"end\": 1783972800, \"gmtoffset\": -14400}, \"post\": {\"timezone\": \"EDT\", \"start\": 1783972800, \"end\": 1783987200, \"gmtoffset\": -14400}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781530200, 1781616600, 1781703000, 1781789400], \"indicators\": {\"quote\": [{\"low\": [751.760009765625, 749.8800048828125, 739.219970703125, 743.8599853515625], \"volume\": [60176400, 67093100, 85945200, 80875700], \"high\": [756.6799926757812, 755.4400024414062, 752.1500244140625, 748.22998046875], \"close\": [754.8300170898438, 750.3300170898438, 740.9600219726562, 746.739990234375], \"open\": [751.8499755859375, 754.5499877929688, 751.2899780273438, 747.760009765625]}], \"adjclose\": [{\"adjclose\": [752.890380859375, 748.4019775390625, 739.0560302734375, 746.739990234375]}]}}], \"error\": null}}",
+  "event_date": "2026-06-18"
+}

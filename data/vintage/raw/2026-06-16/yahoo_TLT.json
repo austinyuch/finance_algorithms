@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:TLT",
+  "available_date": "2026-06-16",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"USD\", \"symbol\": \"TLT\", \"exchangeName\": \"NGM\", \"fullExchangeName\": \"NasdaqGM\", \"instrumentType\": \"ETF\", \"firstTradeDate\": 1028035800, \"regularMarketTime\": 1783972801, \"hasPrePostMarketData\": true, \"gmtoffset\": -14400, \"timezone\": \"EDT\", \"exchangeTimezoneName\": \"America/New_York\", \"regularMarketPrice\": 83.97, \"fiftyTwoWeekHigh\": 92.19, \"fiftyTwoWeekLow\": 82.77, \"regularMarketDayHigh\": 84.28, \"regularMarketDayLow\": 83.934, \"regularMarketVolume\": 18428529, \"longName\": \"iShares 20+ Year Treasury Bond ETF\", \"shortName\": \"iShares 20+ Year Treasury Bond \", \"chartPreviousClose\": 85.77, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"EDT\", \"start\": 1783929600, \"end\": 1783949400, \"gmtoffset\": -14400}, \"regular\": {\"timezone\": \"EDT\", \"start\": 1783949400, \"end\": 1783972800, \"gmtoffset\": -14400}, \"post\": {\"timezone\": \"EDT\", \"start\": 1783972800, \"end\": 1783987200, \"gmtoffset\": -14400}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781530200, 1781616600], \"indicators\": {\"quote\": [{\"high\": [86.11000061035156, 86.37999725341797], \"volume\": [17632700, 26472500], \"close\": [85.72000122070312, 86.19000244140625], \"open\": [85.95999908447266, 85.95999908447266], \"low\": [85.66999816894531, 85.93000030517578]}], \"adjclose\": [{\"adjclose\": [85.40457916259766, 85.87284851074219]}]}}], \"error\": null}}",
+  "event_date": "2026-06-16"
+}

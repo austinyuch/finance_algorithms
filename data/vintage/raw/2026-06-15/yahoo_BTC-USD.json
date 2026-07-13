@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:BTC-USD",
+  "available_date": "2026-06-15",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"USD\", \"symbol\": \"BTC-USD\", \"exchangeName\": \"CCC\", \"fullExchangeName\": \"CCC\", \"instrumentType\": \"CRYPTOCURRENCY\", \"firstTradeDate\": 1410912000, \"regularMarketTime\": 1783978363, \"hasPrePostMarketData\": false, \"gmtoffset\": 0, \"timezone\": \"UTC\", \"exchangeTimezoneName\": \"UTC\", \"regularMarketPrice\": 61990.88, \"fiftyTwoWeekHigh\": 126198.07, \"fiftyTwoWeekLow\": 57747.766, \"regularMarketDayHigh\": 64252.098, \"regularMarketDayLow\": 61786.31, \"regularMarketVolume\": 30428020736, \"longName\": \"Bitcoin USD\", \"shortName\": \"Bitcoin USD\", \"chartPreviousClose\": 64421.324, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"UTC\", \"start\": 1783900800, \"end\": 1783900800, \"gmtoffset\": 0}, \"regular\": {\"timezone\": \"UTC\", \"start\": 1783900800, \"end\": 1783987140, \"gmtoffset\": 0}, \"post\": {\"timezone\": \"UTC\", \"start\": 1783987140, \"end\": 1783987140, \"gmtoffset\": 0}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781308800, 1781395200, 1781481600], \"indicators\": {\"quote\": [{\"open\": [63541.515625, 64420.16796875, 65711.109375], \"close\": [64421.32421875, 65710.3984375, 66289.5], \"low\": [63431.3203125, 63634.0234375, 65315.8359375], \"high\": [64700.87890625, 65749.78125, 67248.1328125], \"volume\": [16956245530, 21572226975, 32927321950]}], \"adjclose\": [{\"adjclose\": [64421.32421875, 65710.3984375, 66289.5]}]}}], \"error\": null}}",
+  "event_date": "2026-06-15"
+}

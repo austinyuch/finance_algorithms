@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:AGG",
+  "available_date": "2026-06-16",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"USD\", \"symbol\": \"AGG\", \"exchangeName\": \"PCX\", \"fullExchangeName\": \"NYSEArca\", \"instrumentType\": \"ETF\", \"firstTradeDate\": 1064842200, \"regularMarketTime\": 1783972800, \"hasPrePostMarketData\": true, \"gmtoffset\": -14400, \"timezone\": \"EDT\", \"exchangeTimezoneName\": \"America/New_York\", \"regularMarketPrice\": 97.71, \"fiftyTwoWeekHigh\": 101.46, \"fiftyTwoWeekLow\": 97.52, \"regularMarketDayHigh\": 98.02, \"regularMarketDayLow\": 97.71, \"regularMarketVolume\": 8315348, \"longName\": \"iShares Core U.S. Aggregate Bond ETF\", \"shortName\": \"iShares Core U.S. Aggregate Bon\", \"chartPreviousClose\": 98.76, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"EDT\", \"end\": 1783949400, \"start\": 1783929600, \"gmtoffset\": -14400}, \"regular\": {\"timezone\": \"EDT\", \"end\": 1783972800, \"start\": 1783949400, \"gmtoffset\": -14400}, \"post\": {\"timezone\": \"EDT\", \"end\": 1783987200, \"start\": 1783972800, \"gmtoffset\": -14400}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781530200, 1781616600], \"indicators\": {\"quote\": [{\"low\": [98.81999969482422, 98.87999725341797], \"close\": [98.8499984741211, 98.97000122070312], \"open\": [98.95999908447266, 98.9000015258789], \"high\": [99.02999877929688, 99.08999633789062], \"volume\": [7115800, 6353200]}], \"adjclose\": [{\"adjclose\": [98.5194320678711, 98.63903045654297]}]}}], \"error\": null}}",
+  "event_date": "2026-06-16"
+}
