@@ -1,0 +1,33 @@
+name: semgrep-diag
+
+# TEMPORARY diagnostic — prints the exact `--config auto` findings to the job log
+# so they can be resolved precisely. Non-blocking, not a required check. Removed
+# once the findings are fixed.
+
+on:
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    name: semgrep-diag
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:1.126.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: List semgrep auto findings (non-blocking)
+        run: |
+          semgrep scan --config auto --json --output sg.json --metrics=off || true
+          python - <<'PY'
+          import json
+          d = json.load(open("sg.json"))
+          res = d.get("results", [])
+          print(f"TOTAL_AUTO_FINDINGS={len(res)}")
+          for r in res:
+              print(f"{r['check_id']}\t{r['path']}:{r['start']['line']}")
+          PY
