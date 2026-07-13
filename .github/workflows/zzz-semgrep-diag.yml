@@ -22,10 +22,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: List semgrep auto findings (non-blocking)
         run: |
-          semgrep scan --config auto --json --output sg.json --metrics=off || true
+          semgrep scan --config auto --json --output sg.json || true
           python - <<'PY'
           import json
-          d = json.load(open("sg.json"))
+          try:
+              d = json.load(open("sg.json"))
+          except Exception as e:
+              print("NO_JSON", e); raise SystemExit(0)
           res = d.get("results", [])
           print(f"TOTAL_AUTO_FINDINGS={len(res)}")
           for r in res:
