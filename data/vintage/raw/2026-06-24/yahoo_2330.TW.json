@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:2330.TW",
+  "available_date": "2026-06-24",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"TWD\", \"symbol\": \"2330.TW\", \"exchangeName\": \"TAI\", \"fullExchangeName\": \"Taiwan\", \"instrumentType\": \"EQUITY\", \"firstTradeDate\": 946947600, \"regularMarketTime\": 1783920608, \"hasPrePostMarketData\": false, \"gmtoffset\": 28800, \"timezone\": \"CST\", \"exchangeTimezoneName\": \"Asia/Taipei\", \"regularMarketPrice\": 2440.0, \"fiftyTwoWeekHigh\": 2535.0, \"fiftyTwoWeekLow\": 1085.0, \"regularMarketDayHigh\": 2480.0, \"regularMarketDayLow\": 2440.0, \"regularMarketVolume\": 34539893, \"longName\": \"Taiwan Semiconductor Manufacturing Company Limited\", \"shortName\": \"TAIWAN SEMICONDUCTOR MANUFACTUR\", \"chartPreviousClose\": 2310.0, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"CST\", \"start\": 1783990800, \"end\": 1783990800, \"gmtoffset\": 28800}, \"regular\": {\"timezone\": \"CST\", \"start\": 1783990800, \"end\": 1784007000, \"gmtoffset\": 28800}, \"post\": {\"timezone\": \"CST\", \"start\": 1784007000, \"end\": 1784007000, \"gmtoffset\": 28800}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781485200, 1781571600, 1781658000, 1781744400, 1782090000, 1782176400, 1782262800], \"indicators\": {\"quote\": [{\"close\": [2375.0, 2400.0, 2385.0, 2410.0, 2510.0, 2490.0, 2390.0], \"high\": [2375.0, 2400.0, 2385.0, 2415.0, 2510.0, 2535.0, 2445.0], \"volume\": [25573718, 29594351, 25510076, 46429815, 39272494, 34264856, 55667954], \"low\": [2345.0, 2350.0, 2350.0, 2385.0, 2455.0, 2490.0, 2390.0], \"open\": [2360.0, 2375.0, 2355.0, 2395.0, 2455.0, 2510.0, 2435.0]}], \"adjclose\": [{\"adjclose\": [2375.0, 2400.0, 2385.0, 2410.0, 2510.0, 2490.0, 2390.0]}]}}], \"error\": null}}",
+  "event_date": "2026-06-24"
+}
