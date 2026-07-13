@@ -1,0 +1,11 @@
+{
+  "source": "yahoo:^TWII",
+  "available_date": "2026-06-18",
+  "is_approximate": true,
+  "backfill": true,
+  "gap_fill": true,
+  "gap_window_since": "2026-06-13",
+  "captured_at": "2026-07-13T21:32:44.767481+00:00",
+  "raw": "{\"chart\": {\"result\": [{\"meta\": {\"currency\": \"TWD\", \"symbol\": \"^TWII\", \"exchangeName\": \"TAI\", \"fullExchangeName\": \"Taiwan\", \"instrumentType\": \"INDEX\", \"firstTradeDate\": 867805200, \"regularMarketTime\": 1783920805, \"hasPrePostMarketData\": false, \"gmtoffset\": 28800, \"timezone\": \"CST\", \"exchangeTimezoneName\": \"Asia/Taipei\", \"regularMarketPrice\": 45380.52, \"fiftyTwoWeekHigh\": 48218.87, \"fiftyTwoWeekLow\": 22525.66, \"regularMarketDayHigh\": 46330.91, \"regularMarketDayLow\": 45272.9, \"regularMarketVolume\": 0, \"longName\": \"TWSE Capitalization Weighted Stock Index\", \"shortName\": \"TSEC CAPITALIZATION WEIGHTED ST\", \"chartPreviousClose\": 44169.04, \"priceHint\": 2, \"currentTradingPeriod\": {\"pre\": {\"timezone\": \"CST\", \"end\": 1783990800, \"start\": 1783990800, \"gmtoffset\": 28800}, \"regular\": {\"timezone\": \"CST\", \"end\": 1784007000, \"start\": 1783990800, \"gmtoffset\": 28800}, \"post\": {\"timezone\": \"CST\", \"end\": 1784007000, \"start\": 1784007000, \"gmtoffset\": 28800}}, \"dataGranularity\": \"1d\", \"range\": \"\", \"validRanges\": [\"1d\", \"5d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\"]}, \"timestamp\": [1781485200, 1781571600, 1781658000, 1781744400], \"indicators\": {\"quote\": [{\"close\": [45396.98828125, 45809.19140625, 45877.390625, 46465.19921875], \"high\": [45483.62890625, 45809.19140625, 45877.390625, 46565.69921875], \"open\": [44447.87109375, 45500.078125, 45685.26953125, 45972.26171875], \"volume\": [6161900, 6574400, 6992700, 9801100], \"low\": [44447.87109375, 45266.33984375, 45159.51171875, 45972.26171875]}], \"adjclose\": [{\"adjclose\": [45396.98828125, 45809.19140625, 45877.390625, 46465.19921875]}]}}], \"error\": null}}",
+  "event_date": "2026-06-18"
+}

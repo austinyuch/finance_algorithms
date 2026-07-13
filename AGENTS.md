@@ -110,6 +110,7 @@ need no port allocation and are the default evidence path.
 - `available_date` represents when the project captured or could have known a value.
 - If historical data is reconstructed without a true vintage source, mark it approximate and keep strict/lenient behavior explicit. The CR-B21 deep historical backfill (`scripts/backfill_history.py` → `data/vintage/raw/backfill-1990-01-01/`, 1990+) is exactly this case: every record is `is_approximate=true` + `backfill=true`, **strict PIT mode excludes it**, and only `approximate_availability=True` (research mode) exposes it under `no_alpha_claim`.
 - Snapshot fetching should degrade per source: one failed external source should not corrupt other captures (the CR-B21 backfill follows the same per-source degradation + idempotent-skip contract).
+- The daily loop needs outbound HTTPS to `fred.stlouisfed.org`, `query1.finance.yahoo.com`, and `www.cpc.ncep.noaa.gov`. When it runs in a Claude Code remote environment, the egress proxy must allowlist those hosts; a blanket `403 Forbidden` / `ProxyError: Tunnel connection failed` on **every** source is an egress-policy denial (operator allowlists the hosts), not a code or data bug. See `.agents/specs/allweather-portfolio-platform/03-data-vintage-snapshot-policy.md` Decision 6.
 
 ## Testing Expectations
 

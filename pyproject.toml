@@ -30,6 +30,11 @@ dev = [
 
 # Application project (not a distributable package): uv manages the
 # virtualenv but does not build/install the project itself.
+# Supply-chain reproducibility is enforced by the committed uv.lock (fully
+# pinned resolution). A relative `exclude-newer` cooldown is unsupported by the
+# pinned uv (0.8.17 parses `exclude-newer` as an absolute date only) and would
+# break `uv sync`, so the advisory below is suppressed rather than misapplied.
+# nosemgrep: package_managers.uv.uv-missing-dependency-cooldown.uv-missing-dependency-cooldown
 [tool.uv]
 package = false
 
