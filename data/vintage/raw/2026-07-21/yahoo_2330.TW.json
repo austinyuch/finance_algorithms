@@ -1,0 +1,8 @@
+{
+  "source": "yahoo:2330.TW",
+  "available_date": "2026-07-21",
+  "is_approximate": false,
+  "captured_at": "2026-07-21T00:07:52.414676+00:00",
+  "raw": "{\"chart\":{\"result\":[{\"meta\":{\"currency\":\"TWD\",\"symbol\":\"2330.TW\",\"exchangeName\":\"TAI\",\"fullExchangeName\":\"Taiwan\",\"instrumentType\":\"EQUITY\",\"firstTradeDate\":946947600,\"regularMarketTime\":1784525404,\"hasPrePostMarketData\":false,\"gmtoffset\":28800,\"timezone\":\"CST\",\"exchangeTimezoneName\":\"Asia/Taipei\",\"regularMarketPrice\":2320.0,\"fiftyTwoWeekHigh\":2535.0,\"fiftyTwoWeekLow\":1125.0,\"regularMarketDayHigh\":2345.0,\"regularMarketDayLow\":2300.0,\"regularMarketVolume\":48402655,\"longName\":\"Taiwan Semiconductor Manufacturing Company Limited\",\"shortName\":\"TAIWAN SEMICONDUCTOR MANUFACTUR\",\"chartPreviousClose\":2420.0,\"priceHint\":2,\"currentTradingPeriod\":{\"pre\":{\"timezone\":\"CST\",\"end\":1784595600,\"start\":1784595600,\"gmtoffset\":28800},\"regular\":{\"timezone\":\"CST\",\"end\":1784611800,\"start\":1784595600,\"gmtoffset\":28800},\"post\":{\"timezone\":\"CST\",\"end\":1784611800,\"start\":1784611800,\"gmtoffset\":28800}},\"dataGranularity\":\"1d\",\"range\":\"5d\",\"validRanges\":[\"1d\",\"5d\",\"1mo\",\"3mo\",\"6mo\",\"1y\",\"2y\",\"5y\",\"10y\",\"ytd\",\"max\"]},\"timestamp\":[1783990800,1784077200,1784163600,1784250000,1784509200],\"indicators\":{\"quote\":[{\"high\":[2430.0,2460.0,2470.0,2395.0,2345.0],\"low\":[2390.0,2415.0,2420.0,2290.0,2300.0],\"close\":[2420.0,2440.0,2470.0,2290.0,2320.0],\"volume\":[35607811,28532735,27848158,75253147,45272691],\"open\":[2410.0,2425.0,2430.0,2375.0,2300.0]}],\"adjclose\":[{\"adjclose\":[2420.0,2440.0,2470.0,2290.0,2320.0]}]}}],\"error\":null}}",
+  "event_date": "2026-07-20"
+}
